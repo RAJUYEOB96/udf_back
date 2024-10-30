@@ -62,7 +62,7 @@ jobs:
             echo "9. 배포 상태 확인 중... (10초 대기)"
             sleep 10
             
-            if pgrep -f "*SNAPSHOT.jar" > /dev/null; then
+            if ps aux | grep "[S]NAPSHOT.jar" > /dev/null; then
               echo "===== 배포 성공 ====="
               echo "애플리케이션 로그:"
               tail -n 50 ./output.log
