@@ -24,6 +24,13 @@ jobs:
           script: |
             echo "===== 배포 시작 ====="
             
+            echo "0. 작업 디렉토리 확인 및 정리"
+            if [ -d "/home/ubuntu/backend/backend" ]; then
+              cd /home/ubuntu
+              rm -rf backend
+              git clone https://github.com/undefinedus/backend.git
+            fi
+            
             echo "1. 작업 디렉토리로 이동"
             cd /home/ubuntu/backend
             pwd
