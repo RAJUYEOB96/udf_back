@@ -28,12 +28,20 @@ jobs:
             # 이전 프로세스 종료
             sudo fuser -k -n tcp 8080 || true
             
-            # 존재하는 .yml 삭제
-            rm -rf src/main/resources/application.yml
+            # git pull 전에 변경사항 제거
+            git reset --hard HEAD
+            
+            # git checkout main
+            git checkout main
             
             # 코드 업데이트 및 빌드
             git pull origin main
+            
+            # resources 디렉토리 없으면 생성 및 application.yml 파일 생성
+            mkdir -p src/main/resources
             echo "$APPLICATION_YML" > src/main/resources/application.yml
+            
+            # build 하기
             chmod +x ./gradlew 
             ./gradlew clean build
             
