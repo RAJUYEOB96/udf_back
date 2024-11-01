@@ -68,7 +68,7 @@ public class Book extends BaseEntity {
     @Column(length = 100, nullable = false)
     private String publisher; // 출판사
     
-    @Column(length = 50)
+    @Column(length = 50, nullable = false)
     private String category;        // 책 카테고리/장르 // // Member의 preferences와 일치하는 것을 책추천할때 해줌
     
     @Column(nullable = false)   // api로 불러올 거기 때문에 필수로 값이 들어가야함
