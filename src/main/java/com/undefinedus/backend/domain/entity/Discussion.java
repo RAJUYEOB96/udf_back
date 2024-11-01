@@ -41,11 +41,11 @@ public class Discussion extends BaseEntity{
     
     // === 연관 관계 === //
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_id")
+    @JoinColumn(name = "book_id", nullable = false)
     private Book book;  // 어떤 책의 토론인지
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;  // 작성자
     
     // === 토론 주제 === //
@@ -55,7 +55,7 @@ public class Discussion extends BaseEntity{
     @Column(length = 2000, nullable = false)
     private String content;  // 토론 내용
     
-    @Column(length = 50)
+    @Column(length = 50, nullable = false)
     private String category;  // 토론 카테고리 (예: 줄거리, 해석, 감상 등)
     
     // === 토론 상태 === //
