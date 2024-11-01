@@ -42,11 +42,11 @@ public class DiscussionComment extends BaseEntity {
     
     // === 연관 관계 === //
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "discussion_id")
+    @JoinColumn(name = "discussion_id", nullable = false)
     private Discussion discussion;  // 어떤 토론의 댓글인지
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;  // 작성자
     
     @ManyToOne(fetch = FetchType.LAZY)

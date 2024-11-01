@@ -8,13 +8,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
@@ -32,7 +29,7 @@ public class BookPhrase extends BaseEntity{
     @Column(length = 2000, nullable = false)
     private String content;  // 구절 내용
     
-    @Column(length = 50)
+    @Column(length = 50, nullable = false)
     private String category;  // 구절 카테고리 (ex. 사랑, 우정, 가족)
     
     // === 연관 관계 === //
