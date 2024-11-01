@@ -49,7 +49,7 @@ public class AladinBook{
     private String publisher;     // 출판사
     
     // === 카테고리 정보 === //
-    @Column(length = 100)
+    @Column(length = 100, nullable = false)
     private String category;  // 카테고리명
     
     // === 평가 정보 === //
