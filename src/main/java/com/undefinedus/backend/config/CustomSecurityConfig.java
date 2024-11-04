@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,7 +26,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Log4j2
 @RequiredArgsConstructor
 @EnableMethodSecurity
-// 김용
 public class CustomSecurityConfig {
 
     @Bean
@@ -41,6 +41,15 @@ public class CustomSecurityConfig {
 
         http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable());
 
+        http.authorizeHttpRequests(authz -> authz
+            .requestMatchers("/api/member/refresh").permitAll()
+            .requestMatchers("/api/member/register").permitAll()
+            .requestMatchers("/api/member/login").permitAll()
+            .anyRequest().authenticated() // 다른 요청은 인증 필요
+        );
+
+        http.httpBasic(AbstractHttpConfigurer::disable);
+
         http.formLogin(config -> {
             config.loginPage("/api/member/login");
             config.successHandler(new APILoginSuccessHandler());
@@ -52,11 +61,6 @@ public class CustomSecurityConfig {
         http.exceptionHandling(config -> {
             config.accessDeniedHandler(new CustomAccessDeniedHandler());
         });
-
-        http.authorizeHttpRequests(authz -> authz
-            .requestMatchers("/api/member/refresh").permitAll()
-            .anyRequest().authenticated() // 다른 요청은 인증 필요
-        );
 
         return http.build();
     }

@@ -6,10 +6,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-// 김용
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
-    @Query("select m from Member m where m.username = :username")
+    @Query("select m from Member m "
+        + "left join fetch m.memberRoleList  mr "
+        + "left join fetch m.preferences p "
+        + "where m.username = :username")
     Optional<Member> getWithRoles(@Param("username") String username);
 
+    Optional<Member> findByUsername(String username);
 }
