@@ -44,4 +44,6 @@ public class SocialLogin extends BaseEntity{
     
     @Column(name = "provider_id", length = 50, nullable = false)
     private String providerId;  // 소셜 로그인 제공자의 식별자
+
+
 }
