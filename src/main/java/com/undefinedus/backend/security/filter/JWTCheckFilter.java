@@ -12,21 +12,26 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-// 김용
+@Slf4j
 public class JWTCheckFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
 
         String path = request.getRequestURI();
-        if (path.contains("/api/member/login")) {
+
+        if (path.contains("/api/member/login")
+            || path.contains("/api/member/register")
+            || path.contains("/api/member/refresh")) {
+
             return true;
         }
-
         return false;
     }
 
@@ -34,7 +39,6 @@ public class JWTCheckFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
         FilterChain filterChain) throws ServletException, IOException {
-
 
         String authHeaderStr = request.getHeader("Authorization");
 
@@ -46,6 +50,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             String password = (String) claims.get("password");
             String nickname = (String) claims.get("nickname");
             List<String> memberRoleList = (List<String>) claims.get("memberRoleList");
+            Set<String> preferences = (Set<String>) claims.get("preferences");
 
             SocialLoginDTO socialLoginDTO = null;
             if (claims.get("socialLoginDTO") != null) {
@@ -53,7 +58,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
                 socialLoginDTO = new Gson().fromJson(new Gson().toJson(socialLoginClaims), SocialLoginDTO.class);
             }
 
-            MemberDTO memberDTO = new MemberDTO(username, password, nickname, socialLoginDTO, memberRoleList);
+            MemberDTO memberDTO = new MemberDTO(username, password, nickname, socialLoginDTO, memberRoleList, preferences);
 
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(memberDTO, password, memberDTO.getAuthorities());
 
@@ -62,6 +67,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
         } catch (Exception e) {
+
             Gson gson = new Gson();
 
             String msg = gson.toJson(Map.of(
@@ -72,6 +78,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
             response.setContentType("application/json");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
             PrintWriter printWriter = response.getWriter();
             printWriter.println(msg);
             printWriter.close();

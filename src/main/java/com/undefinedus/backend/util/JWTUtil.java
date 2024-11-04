@@ -11,7 +11,6 @@ import java.util.Date;
 import java.util.Map;
 import javax.crypto.SecretKey;
 
-// 김용
 public class JWTUtil {
     private static String key = "C3D55646D69EFB646A3C5B316ED4E66793666D7AD1E85FE121B28D5575";
 

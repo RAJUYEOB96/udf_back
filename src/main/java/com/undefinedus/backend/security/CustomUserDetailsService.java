@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
 @Log4j2
-// 김용
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
@@ -39,14 +38,18 @@ public class CustomUserDetailsService implements UserDetailsService {
         SocialLoginDTO socialLoginDTO;
 
         if (socialLogin != null) {
+
             socialLoginDTO = new SocialLoginDTO(
                 socialLogin.getId(),
                 socialLogin.getMember().getId(),
                 socialLogin.getProvider(),
                 socialLogin.getProviderId()
             );
+
         } else {
+
             socialLoginDTO = new SocialLoginDTO();
+
         }
 
         MemberDTO memberDTO = new MemberDTO(
@@ -56,10 +59,11 @@ public class CustomUserDetailsService implements UserDetailsService {
             socialLoginDTO,
             member.get().getMemberRoleList()
                 .stream()
-                .map(memberType -> memberType.name()).collect(Collectors.toList())
+                .map(memberType -> memberType.name()).collect(Collectors.toList()),
+            member.get().getPreferences()
+                .stream()
+                .map(preferencesType -> preferencesType.name()).collect(Collectors.toSet())
         );
-
-        log.info(memberDTO);
 
         return memberDTO;
     }

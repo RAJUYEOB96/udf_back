@@ -12,7 +12,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
 @Log4j2
-// 김용
 public class APILoginFailHandler implements AuthenticationFailureHandler {
 
     @Override
