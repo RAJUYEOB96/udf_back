@@ -39,8 +39,6 @@ import org.hibernate.annotations.SQLRestriction;
 // @SQLRestriction은 Spring Data JPA Repository 메서드 사용시에만 자동 적용
 // JPQL이나 QueryDSL 사용시에는 조건을 직접 추가해야 함:
 @SQLRestriction("is_deleted = false")  // @Where 대신 @SQLRestriction 사용
-
-// 김용
 @ToString(exclude = {"socialLogin", "followings", "followers"})
 public class Member extends BaseEntity {
     
@@ -113,8 +111,6 @@ public class Member extends BaseEntity {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-
-    // 김용
     public void addRole(MemberType memberType) {
         memberRoleList.add(memberType);
     }
