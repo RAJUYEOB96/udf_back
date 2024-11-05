@@ -20,69 +20,74 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 @Slf4j
 public class JWTCheckFilter extends OncePerRequestFilter {
-
+    
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-
+        
         String path = request.getRequestURI();
-
-        if (path.contains("/api/member/login")
-            || path.contains("/api/member/register")
-            || path.contains("/api/member/refresh")) {
-
-            return true;
-        }
-        return false;
+        
+        return path.contains("/api/member/login") ||
+                path.startsWith("/swagger-ui/") ||
+                path.startsWith("/v3/api-docs") ||
+                path.equals("/swagger-ui.html") ||
+                path.startsWith("/swagger-resources") ||
+                path.startsWith("/webjars/") ||
+                path.contains("/api/member/register") ||
+                path.contains("/api/member/refresh");
     }
-
-    @SuppressWarnings("unchecked")
+    
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-        FilterChain filterChain) throws ServletException, IOException {
-
+            FilterChain filterChain) throws ServletException, IOException {
+        
         String authHeaderStr = request.getHeader("Authorization");
-
+        
+        // JWT 토큰이 없는 경우 바로 다음 필터로 진행
+        if(authHeaderStr == null || !authHeaderStr.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+        
         try {
             String accessToken = authHeaderStr.substring(7);
             Map<String, Object> claims = JWTUtil.validateToken(accessToken);
-
+            
             String username = (String) claims.get("username");
             String password = (String) claims.get("password");
             String nickname = (String) claims.get("nickname");
             List<String> memberRoleList = (List<String>) claims.get("memberRoleList");
-            Set<String> preferences = (Set<String>) claims.get("preferences");
-
+            
             SocialLoginDTO socialLoginDTO = null;
             if (claims.get("socialLoginDTO") != null) {
                 Map<String, Object> socialLoginClaims = (Map<String, Object>) claims.get("socialLoginDTO");
                 socialLoginDTO = new Gson().fromJson(new Gson().toJson(socialLoginClaims), SocialLoginDTO.class);
             }
-
-            MemberDTO memberDTO = new MemberDTO(username, password, nickname, socialLoginDTO, memberRoleList, preferences);
-
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(memberDTO, password, memberDTO.getAuthorities());
-
+            
+            MemberDTO memberDTO = new MemberDTO(username, password, nickname, socialLoginDTO, memberRoleList);
+            
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(memberDTO,
+                    password, memberDTO.getAuthorities());
+            
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
+            
             filterChain.doFilter(request, response);
-
+            
         } catch (Exception e) {
 
             Gson gson = new Gson();
-
+            
             String msg = gson.toJson(Map.of(
-                "error", "ERROR_ACCESS_TOKEN",
-                "message", e.getMessage(),
-                "cause", e.getCause() != null ? e.getCause().toString() : "No cause available"
+                    "error", "ERROR_ACCESS_TOKEN",
+                    "message", e.getMessage(),
+                    "cause", e.getCause() != null ? e.getCause().toString() : "No cause available"
             ));
-
+            
             response.setContentType("application/json");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-
             PrintWriter printWriter = response.getWriter();
             printWriter.println(msg);
             printWriter.close();
         }
-
+        
     }
 }

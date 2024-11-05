@@ -13,6 +13,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
         + "left join fetch m.preferences p "
         + "where m.username = :username")
     Optional<Member> getWithRoles(@Param("username") String username);
-
+    
     Optional<Member> findByUsername(String username);
+    
+    Optional<Member> findByNickname(String nickname);
+    
+    Optional<Member> findByUsernameAndNickname(String kakaoId, String nickname);
 }
