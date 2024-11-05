@@ -33,7 +33,10 @@ public class JWTCheckFilter extends OncePerRequestFilter {
                 path.startsWith("/swagger-resources") ||
                 path.startsWith("/webjars/") ||
                 path.contains("/api/member/register") ||
-                path.contains("/api/member/refresh");
+                path.contains("/api/member/test") ||
+                path.contains("/api/member/refresh") ||
+                path.contains("/api/member/email/send-verification") ||  // 이메일 인증 발송
+                path.contains("/api/member/email/verify");              // 이메일 인증 확인
     }
     
     @Override
