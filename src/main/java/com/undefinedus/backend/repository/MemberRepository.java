@@ -11,7 +11,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("select m from Member m "
         + "left join fetch m.memberRoleList  mr "
         + "left join fetch m.preferences p "
-        + "where m.username = :username")
+        + "where m.username = :username"
+        + " and m.isDeleted = false")
     Optional<Member> getWithRoles(@Param("username") String username);
     
     Optional<Member> findByUsername(String username);

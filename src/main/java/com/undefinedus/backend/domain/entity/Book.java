@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -49,34 +50,6 @@ public class Book extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private BookStatus status;  // bookStatus -> status (Book 엔티티 안에 있으므로 book 접두어 불필요)
     
-    // === 책 기본 정보 (API에서 가져오는 정보) === //
-    @Column(length = 50, nullable = false)
-    private String title;   // 책 제목
-    
-    @Column(length = 100, nullable = false)
-    private String author; // 저자
-    
-    @Column(length = 200, nullable = false)
-    private String coverImage; // 표지 이미지
-    
-    @Column(length = 13, nullable = false) // api로 불러올 거기 때문에 필수로 값이 들어가야함
-    private String isbn;    // ISBN-13 형식
-    
-    @Column(length = 500, nullable = false)
-    private String summary; // 요약
-    
-    @Column(length = 100, nullable = false)
-    private String publisher; // 출판사
-    
-    @Column(length = 50, nullable = false)
-    private String category;        // 책 카테고리/장르 // // Member의 preferences와 일치하는 것을 책추천할때 해줌
-    
-    @Column(nullable = false)   // api로 불러올 거기 때문에 필수로 값이 들어가야함
-    private Double averageRating; // api를 사용해서 정보를 들고 옴 (읽고 싶은 책 에 필요)
-    
-    @Column(nullable = false) // api로 불러올 거기 때문에 필수로 값이 들어가야함
-    private Integer totalPages;    // totalPageNumber -> totalPages (더 간단하고 명확)
-    
     // === 사용자의 독서 활동 정보 === //
     @Column                      // 아직 안읽었을 수 있기 때문에 null 가능
     private Double myRating;    // 다 읽은 책, 읽고 있는 책 일때 사용할 별점
@@ -87,7 +60,7 @@ public class Book extends BaseEntity {
     @Column                     // 아직 안읽었을 수 있기 때문에 null 가능
     private Integer currentPage;   // readPageNumber -> currentPage (더 직관적)
     
-    // startDate, endDate는 총 책을 읽기 시작해서 끝난 날짜
+    // startDate, finishDate는 총 책을 읽기 시작해서 끝난 날짜
     @Column
     private LocalDate startDate;    // 읽기 시작한 날짜
     @Column
@@ -110,5 +83,38 @@ public class Book extends BaseEntity {
     
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
-    
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "aladin_book_id")
+    private AladinBook aladinBook;
+
+    public void setStatus(BookStatus status) {
+        this.status = status;
+    }
+
+    public void setMyRating(Double myRating) {
+        this.myRating = myRating;
+    }
+
+    public void setOneLineReview(String oneLineReview) {
+        this.oneLineReview = oneLineReview;
+    }
+
+    public void setCurrentPage(Integer currentPage) {
+        this.currentPage = currentPage;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public void setFinishDate(LocalDate finishDate) {
+        this.finishDate = finishDate;
+    }
+
+    public void setReadDates(List<LocalDate> readDates) {
+        this.readDates = readDates;
+    }
+
 }

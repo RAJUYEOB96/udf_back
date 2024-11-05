@@ -10,12 +10,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class AladinBook{
     
     // === ID === //
@@ -35,6 +37,9 @@ public class AladinBook{
     
     @Column(length = 100, nullable = false)
     private String author;        // 저자
+
+    @Column(length = 500, nullable = false)
+    private String summary;       // 요약
     
     @Column(length = 200, nullable = false)
     private String link;          // 도서 상세 링크
