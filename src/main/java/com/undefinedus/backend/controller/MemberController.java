@@ -2,7 +2,6 @@ package com.undefinedus.backend.controller;
 
 import com.undefinedus.backend.dto.MemberDTO;
 import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
-import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.service.EmailService;
 import com.undefinedus.backend.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
