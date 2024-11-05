@@ -1,12 +1,15 @@
 package com.undefinedus.backend.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.enums.MemberType;
 import com.undefinedus.backend.domain.enums.PreferencesType;
-import com.undefinedus.backend.dto.MemberDTO;
+import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
 import com.undefinedus.backend.repository.MemberRepository;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -31,17 +34,17 @@ class MemberServiceImplTest {
     @Commit
     public void testRegisterMember() {
 
-        MemberDTO memberDTO = new MemberDTO(
-            "testUser",
-            "testPassword",
-            "testNickname",
-            null,  // socialLoginDTO
-            List.of("USER"),
-            Set.of("소설", "예술")
-        );
+        RegisterRequestDTO memberDTO = RegisterRequestDTO.builder()
+                .username("testUser")
+                .password("testPassword")
+                .nickname("testNickname")
+                .birth(LocalDate.now().minusYears(20))
+                .gender("남자")
+                .preferences(List.of("기타"))
+                .build();
 
 
-        memberService.registerMember(memberDTO);
+        memberService.regularRegister(memberDTO);
 
         Optional<Member> result = memberRepository.findByUsername("testUser");
         assertTrue(result.isPresent(), "사용자가 등록되지 않았습니다.");

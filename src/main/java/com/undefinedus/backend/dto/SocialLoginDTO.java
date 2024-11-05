@@ -2,15 +2,14 @@ package com.undefinedus.backend.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class SocialLoginDTO {
 
     private Long id;
@@ -20,7 +19,5 @@ public class SocialLoginDTO {
     private String provider;
 
     private String providerId;
-
-
-
+    
 }
