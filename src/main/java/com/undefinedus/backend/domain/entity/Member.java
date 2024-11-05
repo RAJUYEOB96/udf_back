@@ -16,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -63,6 +64,12 @@ public class Member extends BaseEntity {
     
     @Column(length = 500)
     private String introduction;    // 자기소개
+    
+    @Column
+    private LocalDate birth;
+    
+    @Column
+    private String gender;
     
     // === 소셜 로그인 === //
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -118,4 +125,7 @@ public class Member extends BaseEntity {
         memberRoleList.clear();
     }
     
+    public void setSocialLogin(SocialLogin socialLogin) {
+        this.socialLogin = socialLogin;
+    }
 }

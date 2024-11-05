@@ -30,28 +30,26 @@ public class CustomUserDetailsService implements UserDetailsService {
         Optional<Member> member = memberRepository.getWithRoles(username);
 
         if (member.isEmpty()) {
-            throw new UsernameNotFoundException("Not Found");
+            throw new UsernameNotFoundException("해당 Member를 찾을 수 없습니다. : " + username);
         }
 
         // MemberDTO 생성 시 SocialLogin을 SocialLoginDTO로 변환
-        SocialLogin socialLogin = member.get().getSocialLogin();
-        SocialLoginDTO socialLoginDTO;
-
-        if (socialLogin != null) {
-
-            socialLoginDTO = new SocialLoginDTO(
-                socialLogin.getId(),
-                socialLogin.getMember().getId(),
-                socialLogin.getProvider(),
-                socialLogin.getProviderId()
-            );
-
-        } else {
-
-            socialLoginDTO = new SocialLoginDTO();
-
-        }
-
+//        SocialLogin socialLogin = member.get().getSocialLogin();
+//        SocialLoginDTO socialLoginDTO;
+//        if (socialLogin != null) {
+//            socialLoginDTO = new SocialLoginDTO(
+//                socialLogin.getId(),
+//                socialLogin.getMember().getId(),
+//                socialLogin.getProvider(),
+//                socialLogin.getProviderId()
+//            );
+//        } else {
+//            socialLoginDTO = new SocialLoginDTO();
+//        }
+        
+        // 일반로그인은 social이 없기때문에 빈 DTO를 생성후 넣어주기
+        SocialLoginDTO socialLoginDTO = new SocialLoginDTO();
+        
         MemberDTO memberDTO = new MemberDTO(
             member.get().getUsername(),
             member.get().getPassword(),
@@ -59,11 +57,10 @@ public class CustomUserDetailsService implements UserDetailsService {
             socialLoginDTO,
             member.get().getMemberRoleList()
                 .stream()
-                .map(memberType -> memberType.name()).collect(Collectors.toList()),
-            member.get().getPreferences()
-                .stream()
-                .map(preferencesType -> preferencesType.name()).collect(Collectors.toSet())
+                .map(memberType -> memberType.name()).collect(Collectors.toList())
         );
+
+        log.info(memberDTO);
 
         return memberDTO;
     }
