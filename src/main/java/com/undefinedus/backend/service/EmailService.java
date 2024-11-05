@@ -23,7 +23,7 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final Map<String, VerificationCode> verificationCodes = new ConcurrentHashMap<>();
     
-    @Value("${mail.username}")
+    @Value("${spring.mail.username}")
     private String fromEmail;
     
     public void sendVerificationEmail(String toEmail) {
