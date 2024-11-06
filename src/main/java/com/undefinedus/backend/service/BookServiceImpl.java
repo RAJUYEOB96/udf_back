@@ -2,20 +2,23 @@ package com.undefinedus.backend.service;
 
 import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.domain.entity.Book;
+import com.undefinedus.backend.domain.entity.CalendarStamp;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.enums.BookStatus;
-import com.undefinedus.backend.dto.request.book.BookChoiceRequestDTO;
+import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
 import com.undefinedus.backend.repository.AladinBookRepository;
 import com.undefinedus.backend.repository.BookRepository;
+import com.undefinedus.backend.repository.CalendarStampRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import jakarta.transaction.Transactional;
-import java.util.Map;
-import java.util.Objects;
+import java.time.LocalDate;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.modelmapper.ModelMapper;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -30,140 +33,137 @@ public class BookServiceImpl implements BookService {
 
     private final MemberRepository memberRepository;
 
+    private final CalendarStampRepository calendarStampRepository;
+
+    private final ModelMapper modelMapper;
+
+
     @Override
-    public Map<String, Long> choiceBook(BookChoiceRequestDTO bookChoiceRequestDTO) {
+    public boolean existsBook(Long memberId, String isbn13) {
 
-        Optional<AladinBook> savedAladinBook = aladinBookRepository.findByIsbn13(
-            bookChoiceRequestDTO.getAladinBookRequestDTO().getIsbn13());
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new UsernameNotFoundException("해당 member를 찾을 수 없습니다. : " + memberId));
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String name = authentication.getName();
-        Member member = memberRepository.findByUsername(name).orElseThrow();
+        return bookRepository.findByMemberIdAndIsbn13(member.getId(), isbn13).isPresent();
 
-        System.out.println("member = " + member);
+    }
 
-        // DB에 저장되어 있고 내 책장에도 책이 저장되어 있는 것 -> 내 책장의 알라딘 ID
-        Optional<Book> memberBook = bookRepository.findMemberBook(member.getId());
+    @Override
+    public void insertNewBookByStatus(Long memberId, String tabCondition, AladinBook savedAladinBook,
+        BookStatusRequestDTO requestDTO) {
+        try {
 
-        Long bookId = 0L;
+            Member findMember = getLoginMember(memberId);
 
-        // DB에 저장된 책 없음
-        if (savedAladinBook.isEmpty()) {
+            System.out.println("findMember = " + findMember);
 
-            // 검색한 책이 DB에 없으면, 책을 DB에 저장하고, Book 스키마(내 책장)에 내 user_id와 book_id를 저장한다.
-            bookId = saveSelectedAladinBook(bookChoiceRequestDTO, member);
+            Book book = Book.builder()
+                .member(findMember)
+                .aladinBook(savedAladinBook)
+                .isbn13(savedAladinBook.getIsbn13())
+                .build();
 
-            return Map.of("result", bookId);
-            // DB에 저장된 책 있음
+            // TODO : 나중 QueryDSL 적용하면 바꿀지 말지 고민필요
+            saveBookAndCalenarStampByStatus(tabCondition, requestDTO, book, savedAladinBook, findMember);
+        } catch (UsernameNotFoundException e) {
+            log.error("사용자를 찾을 수 없습니다. : ", e);
+            throw new RuntimeException("사용자 인증에 실패했습니다.", e);
+        } catch (Exception e) {
+            log.error("에러가 발생했습니다. : ", e);
+            throw new RuntimeException("사용자 인증에 실패했습니다.", e);
+        }
+
+    }
+
+    private void saveBookAndCalenarStampByStatus(String tabCondition,
+        BookStatusRequestDTO requestDTO, Book book,
+        AladinBook findAladinBook, Member findMember) {
+        if (BookStatus.COMPLETED.name().equals(tabCondition.toUpperCase())) {
+            book = saveBookWithCompletedStatus(requestDTO, book, findAladinBook);
+            recordCalendarStamp(findMember, book);
+        } else if (BookStatus.READING.name().equals(tabCondition.toUpperCase())) {
+            book = saveBookWithReadingStatus(requestDTO, book);
+            recordCalendarStamp(findMember, book);
+        } else if (BookStatus.WISH.name().equals(tabCondition.toUpperCase())) {
+            book = saveBookWithWishStatus(book);
+            recordCalendarStamp(findMember, book);
+        } else if (BookStatus.STOPPED.name().equals(tabCondition.toUpperCase())) {
+            book = saveBookWithStoppedStatus(requestDTO, book);
+            recordCalendarStamp(findMember, book);
         } else {
-
-            // 책장에 책이 없으면
-            if (memberBook.isEmpty()) {
-
-                // 검색한 책이 DB에 있지만, 내 Book 스키마(내 책장)에 없으면, DB에는 저장안하고, Book 스키마(내 책장)에 내 user_id와 book_id를 저장한다.
-                bookId = saveSelectedBook(bookChoiceRequestDTO,
-                    member);
-
-                return Map.of("result", bookId);
-
-                // 책장에 있는 책의 알라딘 ID와 알라딘 ID가 같으면
-            } else if (Objects.equals(memberBook.get().getAladinBook().getId(),
-                savedAladinBook.get().getId())) {
-
-                // 검색한 책이 DB에 있고, 내 Book 스키마(내 책장)에도 있으면, 저장이 안된다.
-                return Map.of("result", -1L);
-            }
+            throw new IllegalArgumentException("알맞은 status값이 들어와야 합니다. : " + tabCondition);
         }
-
-
-        Book myBook = bookRepository.findById(bookId).orElseThrow();
-
-        myBook.setStatus(
-            BookStatus.valueOf(bookChoiceRequestDTO.getBookStatusRequestDTO().getStatus()));
-
-        BookStatus bookStatus = BookStatus.valueOf(
-            bookChoiceRequestDTO.getBookStatusRequestDTO().getStatus());
-
-        if (bookStatus.equals(BookStatus.COMPLETED)) {
-
-            myBook.setMyRating(bookChoiceRequestDTO.getBookStatusRequestDTO().getMyRating());
-            myBook.setOneLineReview(
-                bookChoiceRequestDTO.getBookStatusRequestDTO().getOneLineReview());
-            myBook.setFinishDate(bookChoiceRequestDTO.getBookStatusRequestDTO().getFinishDate());
-            myBook.setCurrentPage(bookChoiceRequestDTO.getBookStatusRequestDTO().getCurrentPage());
-
-            bookRepository.save(myBook);
-
-        } else if (bookStatus.equals(BookStatus.STOPPED)) {
-
-            myBook.setMyRating(bookChoiceRequestDTO.getBookStatusRequestDTO().getMyRating());
-
-            bookRepository.save(myBook);
-
-        } else if (bookStatus.equals(BookStatus.READING)) {
-
-            myBook.setStartDate(bookChoiceRequestDTO.getBookStatusRequestDTO().getStartDate());
-            myBook.setCurrentPage(bookChoiceRequestDTO.getBookStatusRequestDTO().getCurrentPage());
-            myBook.setReadDates(bookChoiceRequestDTO.getBookStatusRequestDTO().getReadDates());
-
-            bookRepository.save(myBook);
-
-        } else if (bookStatus.equals(BookStatus.WISH)) {
-
-            bookRepository.save(myBook);
-
-        }
-
-        return null;
-
     }
 
-    private Long saveSelectedAladinBook(BookChoiceRequestDTO bookChoiceRequestDTO, Member member) {
-
-        AladinBook aladinBook = AladinBook.builder()
-            .isbn13(bookChoiceRequestDTO.getAladinBookRequestDTO().getIsbn13())
-            .title(bookChoiceRequestDTO.getAladinBookRequestDTO().getTitle())
-            .subTitle(bookChoiceRequestDTO.getAladinBookRequestDTO().getSubTitle())
-            .author(bookChoiceRequestDTO.getAladinBookRequestDTO().getAuthor())
-            .summary(bookChoiceRequestDTO.getAladinBookRequestDTO().getSummary())
-            .link(bookChoiceRequestDTO.getAladinBookRequestDTO().getLink())
-            .cover(bookChoiceRequestDTO.getAladinBookRequestDTO().getCover())
-            .description(bookChoiceRequestDTO.getAladinBookRequestDTO().getDescription())
-            .publisher(bookChoiceRequestDTO.getAladinBookRequestDTO().getPublisher())
-            .category(bookChoiceRequestDTO.getAladinBookRequestDTO().getCategory())
-            .customerReviewRank(
-                bookChoiceRequestDTO.getAladinBookRequestDTO().getCustomerReviewRank())
-            .isAdult(bookChoiceRequestDTO.getAladinBookRequestDTO().isAdult())
-            .pagesCount(bookChoiceRequestDTO.getAladinBookRequestDTO().getPagesCount())
+    private Book saveBookWithStoppedStatus(BookStatusRequestDTO requestDTO, Book book) {
+        book = book.toBuilder()
+            .status(BookStatus.STOPPED)
+            .myRating(requestDTO.getMyRating())
+            .oneLineReview(requestDTO.getOneLineReview())
+            .currentPage(requestDTO.getCurrentPage())
+            .startDate(requestDTO.getStartDate())
+            .finishDate(requestDTO.getFinishDate())
             .build();
 
-
-        AladinBook newBook = aladinBookRepository.save(aladinBook);
-
-        Book choicedBook = Book.builder()
-            .member(member)
-            .status(BookStatus.valueOf(bookChoiceRequestDTO.getBookStatusRequestDTO().getStatus()))
-            .aladinBook(newBook)
-            .build();
-
-        Book book = bookRepository.save(choicedBook);
-
-        return book.getId();
+        bookRepository.save(book);
+        return book;
     }
 
-    private Long saveSelectedBook(BookChoiceRequestDTO bookChoiceRequestDTO, Member member) {
-
-        Optional<AladinBook> byIsbn13 = aladinBookRepository.findByIsbn13(
-            bookChoiceRequestDTO.getAladinBookRequestDTO().getIsbn13());
-
-        Book choicedBook = Book.builder()
-            .member(member)
-            .status(BookStatus.valueOf(bookChoiceRequestDTO.getBookStatusRequestDTO().getStatus()))
-            .aladinBook(byIsbn13.get())
+    private Book saveBookWithWishStatus(Book book) {
+        book = book.toBuilder()
+            .status(BookStatus.WISH)
             .build();
 
-        Book book = bookRepository.save(choicedBook);
+        bookRepository.save(book);
+        return book;
+    }
 
-        return book.getId();
+    private Book saveBookWithReadingStatus(BookStatusRequestDTO requestDTO, Book book) {
+        book = book.toBuilder()
+            .status(BookStatus.READING)
+            .myRating(requestDTO.getMyRating())
+            .currentPage(requestDTO.getCurrentPage())
+            .startDate(LocalDate.now())
+            .build();
+
+        bookRepository.save(book);
+        return book;
+    }
+
+    private Book saveBookWithCompletedStatus(BookStatusRequestDTO requestDTO, Book book,
+        AladinBook findAladinBook) {
+        book = book.toBuilder()
+            .status(BookStatus.COMPLETED)
+            .myRating(requestDTO.getMyRating())
+            .oneLineReview(requestDTO.getOneLineReview())
+            .currentPage(findAladinBook.getPagesCount()) // 다 읽었으니 100%로 만들기 위해
+            .startDate(requestDTO.getStartDate())
+            .finishDate(requestDTO.getFinishDate())
+            .build();
+
+        bookRepository.save(book);
+        return book;
+    }
+
+    private void recordCalendarStamp(Member findMember, Book book) {
+        CalendarStamp calendarStamp = CalendarStamp.builder()
+            .member(findMember)
+            .book(book)
+            .recordDate(LocalDate.now())
+            .status(book.getStatus())
+            .build();
+
+        calendarStampRepository.save(calendarStamp);
+    }
+
+    private Member getLoginMember(Long memberId) {
+
+        Member findMember = memberRepository.findById(memberId)
+            .orElseThrow(
+                () -> new UsernameNotFoundException("해당 member를 찾을 수 없습니다. : " + memberId));
+
+        log.info("찾아온 member 정보: " + findMember);
+
+        return findMember;
     }
 }

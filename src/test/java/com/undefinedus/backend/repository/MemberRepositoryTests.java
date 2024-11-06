@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -34,6 +35,8 @@ public class MemberRepositoryTests {
     }
 
     @Test
+    @DisplayName("test용 member 10개 추가")
+    @Commit
     public void testInsertMember() {
 
         for (int i = 0; i < 10; i++) {
