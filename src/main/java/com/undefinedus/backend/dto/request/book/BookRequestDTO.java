@@ -5,8 +5,10 @@ import lombok.Data;
 
 @Data
 @Builder
-public class BookChoiceRequestDTO {
+public class BookRequestDTO {
 
     AladinBookRequestDTO aladinBookRequestDTO;
     BookStatusRequestDTO bookStatusRequestDTO;
+
+    private String tapCondition;
 }
