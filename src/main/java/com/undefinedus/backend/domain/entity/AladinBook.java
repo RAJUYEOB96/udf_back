@@ -69,4 +69,5 @@ public class AladinBook{
     @Column(nullable = false)
     private Integer pagesCount;    // 총 페이지 수
 
+
 }

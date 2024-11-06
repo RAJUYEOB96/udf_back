@@ -22,6 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -34,6 +35,7 @@ import org.hibernate.annotations.SQLRestriction;
 // @SQLRestriction은 Spring Data JPA Repository 메서드 사용시에만 자동 적용
 // JPQL이나 QueryDSL 사용시에는 조건을 직접 추가해야 함
 @SQLRestriction("is_deleted = false")  // @Where 대신 @SQLRestriction 사용
+@ToString(exclude = {"member, st"})
 public class Book extends BaseEntity {
     
     // === ID & 연관관계 매핑 === //
