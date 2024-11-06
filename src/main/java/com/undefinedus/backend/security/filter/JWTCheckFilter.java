@@ -26,6 +26,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
+        // TODO : 나중에 실제 배포할 때에는 JWT토큰 입력 받아야 하는 건 빼기
         return path.contains("/api/member/login") ||
                 path.startsWith("/swagger-ui/") ||
                 path.startsWith("/v3/api-docs") ||
@@ -33,10 +34,10 @@ public class JWTCheckFilter extends OncePerRequestFilter {
                 path.startsWith("/swagger-resources") ||
                 path.startsWith("/webjars/") ||
                 path.contains("/api/member/register") ||
-                path.contains("/api/member/test") ||
                 path.contains("/api/member/refresh") ||
                 path.contains("/api/member/email/send-verification") ||  // 이메일 인증 발송
-                path.contains("/api/member/email/verify");              // 이메일 인증 확인
+                path.contains("/api/member/email/verify") || // 이메일 인증 확인
+                path.contains("/api/book/**"); // 나중에 제거 필요
     }
 
     @Override
