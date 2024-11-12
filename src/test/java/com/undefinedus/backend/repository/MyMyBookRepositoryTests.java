@@ -21,10 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Transactional
 @Log4j2
-public class MyBookRepositoryTests {
+public class MyMyBookRepositoryTests {
 
     @Autowired
-    private BookRepository bookRepository;
+    private MyBookRepository myBookRepository;
 
     @Autowired
     private MemberRepository memberRepository;
@@ -38,7 +38,7 @@ public class MyBookRepositoryTests {
     @Test
     @DisplayName("BookRepository 연결 확인 테스트")
     void checkConnections() {
-        assertNotNull(bookRepository, "BookRepository가 주입되지 않았습니다.");
+        assertNotNull(myBookRepository, "BookRepository가 주입되지 않았습니다.");
     }
 
     @Test
@@ -75,17 +75,18 @@ public class MyBookRepositoryTests {
                 .oneLineReview("test")
                 .currentPage(100)
                 .startDate(LocalDate.now().minusDays(1))
-                .finishDate(LocalDate.now())
+                .endDate(LocalDate.now())
                 .build();
 
             CalendarStamp calendarStamp = CalendarStamp.builder()
                 .member(findMember.get())
                 .myBook(myBook)
-                .recordDate(LocalDate.now())
+                .bookCoverUrl(myBook.getAladinBook().getCover())
                 .status(myBook.getStatus())
                 .build();
 
-            bookRepository.save(myBook);
+            myBookRepository.save(myBook);
+            calendarStampRepository.save(calendarStamp);
         }
 
     }
@@ -98,7 +99,7 @@ public class MyBookRepositoryTests {
         Long memberId = 1L;
 
         // when
-        Optional<MyBook> findBook = bookRepository.findByMemberIdAndIsbn13(memberId,
+        Optional<MyBook> findBook = myBookRepository.findByMemberIdAndIsbn13(memberId,
             isbn13);
 
         if (findBook.isEmpty()) {
@@ -118,7 +119,7 @@ public class MyBookRepositoryTests {
         Long memberId = 1L;
 
         // when
-        Optional<MyBook> findBook = bookRepository.findByMemberIdAndIsbn13(memberId,
+        Optional<MyBook> findBook = myBookRepository.findByMemberIdAndIsbn13(memberId,
             isbn13);
 
         if (findBook.isEmpty()) {

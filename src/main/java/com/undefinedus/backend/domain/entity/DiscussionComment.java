@@ -58,7 +58,7 @@ public class DiscussionComment extends BaseEntity {
     @Column
     private Long groupId;
     
-    @Column
+    @Column(name = "comment_order")  // 'order' 대신 'comment_order' 사용
     private Long order;
     
     // === 내용 === //
