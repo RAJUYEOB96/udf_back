@@ -7,7 +7,7 @@ import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.enums.BookStatus;
 import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
 import com.undefinedus.backend.repository.AladinBookRepository;
-import com.undefinedus.backend.repository.BookRepository;
+import com.undefinedus.backend.repository.MyBookRepository;
 import com.undefinedus.backend.repository.CalendarStampRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import jakarta.transaction.Transactional;
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class BookServiceImpl implements BookService {
 
-    private final BookRepository bookRepository;
+    private final MyBookRepository myBookRepository;
 
     private final AladinBookRepository aladinBookRepository;
 
@@ -41,7 +41,7 @@ public class BookServiceImpl implements BookService {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new UsernameNotFoundException("해당 member를 찾을 수 없습니다. : " + memberId));
 
-        return bookRepository.findByMemberIdAndIsbn13(member.getId(), isbn13).isPresent();
+        return myBookRepository.findByMemberIdAndIsbn13(member.getId(), isbn13).isPresent();
 
     }
 
@@ -99,10 +99,10 @@ public class BookServiceImpl implements BookService {
             .oneLineReview(requestDTO.getOneLineReview())
             .currentPage(requestDTO.getCurrentPage())
             .startDate(requestDTO.getStartDate())
-            .finishDate(requestDTO.getFinishDate())
+            .endDate(requestDTO.getEndDate())
             .build();
 
-        bookRepository.save(myBook);
+        myBookRepository.save(myBook);
         return myBook;
     }
 
@@ -111,7 +111,7 @@ public class BookServiceImpl implements BookService {
             .status(BookStatus.WISH)
             .build();
 
-        bookRepository.save(myBook);
+        myBookRepository.save(myBook);
         return myBook;
     }
 
@@ -123,7 +123,7 @@ public class BookServiceImpl implements BookService {
             .startDate(LocalDate.now())
             .build();
 
-        bookRepository.save(myBook);
+        myBookRepository.save(myBook);
         return myBook;
     }
 
@@ -135,10 +135,10 @@ public class BookServiceImpl implements BookService {
             .oneLineReview(requestDTO.getOneLineReview())
             .currentPage(findAladinBook.getPagesCount()) // 다 읽었으니 100%로 만들기 위해
             .startDate(requestDTO.getStartDate())
-            .finishDate(requestDTO.getFinishDate())
+            .endDate(requestDTO.getEndDate())
             .build();
 
-        bookRepository.save(myBook);
+        myBookRepository.save(myBook);
         return myBook;
     }
 
@@ -146,7 +146,7 @@ public class BookServiceImpl implements BookService {
         CalendarStamp calendarStamp = CalendarStamp.builder()
             .member(findMember)
             .myBook(myBook)
-            .recordDate(LocalDate.now())
+            .bookCoverUrl(myBook.getAladinBook().getCover())
             .status(myBook.getStatus())
             .build();
 

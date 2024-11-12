@@ -85,7 +85,7 @@ class MyBookServiceImplTest {
             .oneLineReview("test 뭐먹을거야?")
             .currentPage(50)
             .startDate(LocalDate.now().minusDays(3))
-            .finishDate(LocalDate.now())
+            .endDate(LocalDate.now())
             .build();
         // when & then
         Assertions.assertDoesNotThrow(

@@ -16,6 +16,6 @@ public class BookStatusRequestDTO {
 
     private LocalDate startDate;
 
-    private LocalDate finishDate;
+    private LocalDate endDate;
 
 }
