@@ -3,7 +3,6 @@ package com.undefinedus.backend.domain.enums;
 public enum DiscussionStatus {
     PROPOSED("발의됨"),        // 토론 시작 전 (발의)
     WAITING("대기중"),        // 토론 시작 전 (대기)
-    REJECTED("기각됨"),       // 토론 기각 (시작도 못함)
     IN_PROGRESS("진행중"),    // 토론 진행 중 (ONGOING보다 더 일반적인 표현)
     ANALYZING("분석중"),      // AI 분석 중
     COMPLETED("종료됨"),
