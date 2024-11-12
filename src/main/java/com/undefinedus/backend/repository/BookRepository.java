@@ -1,15 +1,12 @@
 package com.undefinedus.backend.repository;
 
-import com.undefinedus.backend.domain.entity.Book;
-import java.util.List;
+import com.undefinedus.backend.domain.entity.MyBook;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
-public interface BookRepository extends JpaRepository<Book, Long> {
+public interface BookRepository extends JpaRepository<MyBook, Long> {
 
 
-    Optional<Book> findByMemberIdAndIsbn13(Long memberId, String isbn13);
+    Optional<MyBook> findByMemberIdAndIsbn13(Long memberId, String isbn13);
 
 }

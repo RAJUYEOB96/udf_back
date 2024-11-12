@@ -23,6 +23,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -33,6 +34,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Builder
 @SQLDelete(sql = "UPDATE discussion_comment SET is_deleted = true, deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("is_deleted = false")
+@ToString(exclude = {"discussion", "member", "parent", "children"})  // 순환참조 방지
 public class DiscussionComment extends BaseEntity {
     
     // === ID === //
@@ -49,13 +51,15 @@ public class DiscussionComment extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;  // 작성자
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
-    private DiscussionComment parent;  // 부모 댓글, 없으면 null
+    // 대댓글 단순한 버전 =================================
+    @Column
+    private Long parentId; // 부모Id // 고유 아이디는 id로 사용
     
-    @OneToMany(mappedBy = "parent", orphanRemoval = true)
-    @Builder.Default
-    private List<DiscussionComment> children = new ArrayList<>();  // 자식 댓글들
+    @Column
+    private Long groupId;
+    
+    @Column
+    private Long order;
     
     // === 내용 === //
     @Enumerated(EnumType.STRING)
@@ -65,25 +69,16 @@ public class DiscussionComment extends BaseEntity {
     @Column(length = 2000, nullable = false)
     private String content;  // 댓글 내용
     
+    // === 좋아요/싫어요 === //
+    // like, dislike count는 CommentLike 엔티티에서 계산하는 것이 좋을 것 같습니다
+    @OneToMany(mappedBy = "comment", orphanRemoval = true)
+    @Builder.Default
+    private List<CommentLike> likes = new ArrayList<>();  // likeCount, likedByMembers 대체
+    
+    // === 토론 관련 === //
     @Column(nullable = false)
     @Builder.Default
-    private Integer likeCount = 0;  // 좋아요 수
-    
-    @ElementCollection
-    @CollectionTable(
-            name = "discussion_comment_likes",
-            joinColumns = @JoinColumn(name = "comment_id")
-    )
-    @Builder.Default
-    private Set<Long> likedByMembers = new HashSet<>();
-    
-    @Column(nullable = false)
-    @Builder.Default
-    private boolean isSelected = false;  // 채택된 답변인지, 댓글의 최상위로 좋아요 많이 받은 3개를 올리기 위한?
-    
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer reportCount = 0;  // 신고 수
+    private boolean isSelected = false;  // 채택된 답변인지, 댓글의 최상위로 좋아요 많이 받은 3개를 올리기 위한? 잘 모르겠음
     
     // === Soft Delete 관련 === //
     @Column(nullable = false)

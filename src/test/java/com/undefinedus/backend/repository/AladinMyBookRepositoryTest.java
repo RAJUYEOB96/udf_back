@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Transactional
 @Log4j2
-class AladinBookRepositoryTest {
+class AladinMyBookRepositoryTest {
 
     @Autowired
     private AladinBookRepository aladinBookRepository;

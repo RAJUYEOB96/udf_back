@@ -4,21 +4,16 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.undefinedus.backend.domain.entity.AladinBook;
-import com.undefinedus.backend.domain.entity.Book;
+import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.entity.CalendarStamp;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.enums.BookStatus;
-import com.undefinedus.backend.domain.enums.MemberType;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Transactional
 @Log4j2
-public class BookRepositoryTests {
+public class MyBookRepositoryTests {
 
     @Autowired
     private BookRepository bookRepository;
@@ -71,7 +66,7 @@ public class BookRepositoryTests {
                 return;
             }
 
-            Book book = Book.builder()
+            MyBook myBook = MyBook.builder()
                 .member(findMember.get())
                 .aladinBook(findAladinBook.get())
                 .isbn13(findAladinBook.get().getIsbn13())
@@ -85,12 +80,12 @@ public class BookRepositoryTests {
 
             CalendarStamp calendarStamp = CalendarStamp.builder()
                 .member(findMember.get())
-                .book(book)
+                .myBook(myBook)
                 .recordDate(LocalDate.now())
-                .status(book.getStatus())
+                .status(myBook.getStatus())
                 .build();
 
-            bookRepository.save(book);
+            bookRepository.save(myBook);
         }
 
     }
@@ -103,7 +98,7 @@ public class BookRepositoryTests {
         Long memberId = 1L;
 
         // when
-        Optional<Book> findBook = bookRepository.findByMemberIdAndIsbn13(memberId,
+        Optional<MyBook> findBook = bookRepository.findByMemberIdAndIsbn13(memberId,
             isbn13);
 
         if (findBook.isEmpty()) {
@@ -123,7 +118,7 @@ public class BookRepositoryTests {
         Long memberId = 1L;
 
         // when
-        Optional<Book> findBook = bookRepository.findByMemberIdAndIsbn13(memberId,
+        Optional<MyBook> findBook = bookRepository.findByMemberIdAndIsbn13(memberId,
             isbn13);
 
         if (findBook.isEmpty()) {

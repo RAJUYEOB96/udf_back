@@ -25,25 +25,29 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder
 @ToString
-public class CalendarStamp {
-
+public class CalendarStamp {    // 달력 화면에서만 쓸 예정이지만 기록이 등록, 수정 될때마다 이것도 넣어줘야함
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id",nullable = false)
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false)
-    private Book book;
-
+    private MyBook myBook;
+    
+    // 달력에 표시할 책 표지 URL // 이건 book 에서 get으로 표지이미지를 들고 오면 되는거 아닌가?
+    @Column(length = 255, nullable = false)
+    private String bookCoverUrl;
+    
     @Column(nullable = false)
-    private LocalDate recordDate;
-
+    private LocalDate recordedAt;     // 독서 기록 날짜
+    
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private BookStatus status;
-
+    
 }

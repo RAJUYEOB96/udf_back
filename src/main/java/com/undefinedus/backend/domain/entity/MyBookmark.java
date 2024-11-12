@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BookPhrase extends BaseEntity{
+public class MyBookmark extends BaseEntity {
     
     // === ID === //
     @Id
@@ -26,26 +26,19 @@ public class BookPhrase extends BaseEntity{
     private Long id;
     
     // === 내용 === //
-    @Column(length = 2000, nullable = false)
-    private String content;  // 구절 내용
+    @Column(length = 200, nullable = false)
+    private String phrase;  // 구절 내용
     
-    @Column(length = 50, nullable = false)
-    private String category;  // 구절 카테고리 (ex. 사랑, 우정, 가족)
+    @Column
+    private int pageNumber;  // 구절이 있는 페이지
     
     // === 연관 관계 === //
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aladin_book_id", nullable = false)
-    private AladinBook aladinBook;  // 구절이 포함된 책
+    private AladinBook aladinBook;  // 구절이 포함된 책 - 책 제목(메인 + 서브)같은 것을 뽑아쓰기 위해
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;  // 구절을 저장한 회원
     
-    // === Soft Delete 관련 === // 구절에는 소프트 딜리트 필요 없지 않을까
-//    @Column(nullable = false)
-//    @Builder.Default
-//    private boolean isDeleted = false;
-//
-//    @Column(name = "deleted_at")
-//    private LocalDateTime deletedAt;
 }
