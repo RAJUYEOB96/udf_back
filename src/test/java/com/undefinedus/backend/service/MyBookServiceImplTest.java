@@ -34,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Transactional
 @Log4j2
-class BookServiceImplTest {
+class MyBookServiceImplTest {
 
     @Autowired
     private BookService bookService;

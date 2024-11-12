@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SocialLogin extends BaseEntity{
+public class SocialLogin extends BaseEntity {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,7 +43,5 @@ public class SocialLogin extends BaseEntity{
     private String provider;    // GOOGLE, KAKAO 등
     
     @Column(name = "provider_id", length = 50, nullable = false)
-    private String providerId;  // 소셜 로그인 제공자의 식별자
-
-
+    private String providerId;  // 소셜 로그인 제공자의 식별자 (우리가 username에 넣는 kakaoID)
 }
