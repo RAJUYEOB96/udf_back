@@ -50,13 +50,13 @@ public class Member extends BaseEntity {
     
     // === 기본 정보 === //
     @Column(length = 40, unique = true, nullable = false)
-    private String username;    // 아이디 (일반 로그인 유저 : 이메일형식, 소셜 로그인 유저 : 숫자?형식)
+    private String username;    // 아이디 (일반 로그인 유저 : 이메일형식, 소셜 로그인 유저 : 숫자형식(kakaoId))
     
-    @Column(length = 70, nullable = false)
+    @Column(length = 20, nullable = false)
     private String password;   // 비밀번호
     
     @Column(length = 30, unique = true, nullable = false)
-    private String nickname;
+    private String nickname;    // 일반, 소셜 둘다 회원 가입시 임의 작성
     
     // === 프로필 정보 === //
     @Column(length = 255)
@@ -73,7 +73,7 @@ public class Member extends BaseEntity {
     
     // === 소셜 로그인 === //
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private SocialLogin socialLogin;
+    private SocialLogin socialLogin;    // null 인 경우 일반 로그인
     
     // === 권한 및 취향 정보 === //
     @ElementCollection(fetch = FetchType.LAZY)
@@ -97,11 +97,11 @@ public class Member extends BaseEntity {
     private Set<PreferencesType> preferences = new HashSet<>(); // Book의 category와 일치하는 것을 책추천할때 해줌
     
     // === 팔로우 관계 === //
-    @OneToMany(mappedBy = "follower", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "follower", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @Builder.Default
     private Set<Follow> followings = new HashSet<>(); // 내가 팔로우하는 관계들
     
-    @OneToMany(mappedBy = "following", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "following", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @Builder.Default
     private Set<Follow> followers = new HashSet<>(); // 나를 팔로우하는 관계들
     
@@ -110,6 +110,12 @@ public class Member extends BaseEntity {
     @Builder.Default
     private boolean isPublic = true;    // 소셜 계정 공개 여부 (true: 공개, false: 비공개)
     
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean isMessageToKakao = false;    // 책갈피 내용 카톡으로 보낼지 말지
+    
+    // 알림 관련은 한달안에 알림 기능까지 넣기는 빡세다고 생각 다음 버전 만들시 추가 예정
+    
     // === Soft Delete 관련 === //
     @Column(nullable = false)
     @Builder.Default
@@ -117,10 +123,12 @@ public class Member extends BaseEntity {
     
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
-
+    
+    // === 메서드 === //
     public void addRole(MemberType memberType) {
         memberRoleList.add(memberType);
     }
+    
     public void clearRole() {
         memberRoleList.clear();
     }
