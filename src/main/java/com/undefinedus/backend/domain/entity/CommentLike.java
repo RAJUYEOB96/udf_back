@@ -8,38 +8,42 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import java.time.LocalDateTime;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_comment_like",
+                        columnNames = {"comment_id", "member_id"}
+                )
+        }
+)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ReadingRecord {    // 다 읽은책, 읽고 있는책, 중단한 책은 생성이든, 수정이든 이부분도 함께 저장해야함
+@ToString(exclude = {"comment", "member"})
+public class CommentLike {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    // 기록과 연결된 책 정보
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_id", nullable = false)
-    private Book book;
+    @JoinColumn(name = "comment_id", nullable = false)
+    private DiscussionComment comment;
     
-    // 독서 기록을 남긴 회원 정보
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
     
-    // 달력에 표시할 책 표지 URL // 이건 book 에서 get으로 표지이미지를 들고 오면 되는거 아닌가?
-    @Column(length = 255, nullable = false)
-    private String bookCoverUrl;
-    
-    // 독서 기록 날짜
     @Column(nullable = false)
-    private LocalDateTime recordedAt;
+    private boolean isLike; // true: 좋아요, false: 싫어요
 }

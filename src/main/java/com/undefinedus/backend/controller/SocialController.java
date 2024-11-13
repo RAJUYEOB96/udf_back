@@ -1,6 +1,6 @@
 package com.undefinedus.backend.controller;
 
-import com.undefinedus.backend.dto.MemberDTO;
+import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
 import com.undefinedus.backend.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -136,8 +136,8 @@ public class SocialController {
         Map<String, Object> result = new HashMap<>();
         
         try {
-            MemberDTO memberDTO = memberService.socialRegister(requestDTO);
-            result.put("member", memberDTO);
+            MemberSecurityDTO memberSecurityDTO = memberService.socialRegister(requestDTO);
+            result.put("member", memberSecurityDTO);
             result.put("result", "success");
             return result;
         } catch (Exception e) {

@@ -1,8 +1,7 @@
 package com.undefinedus.backend.controller;
 
-import com.undefinedus.backend.dto.MemberDTO;
+import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
-import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.service.EmailService;
 import com.undefinedus.backend.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -82,8 +80,8 @@ public class MemberController {
             @RequestBody RegisterRequestDTO requestDTO) {
         Map<String, Object> result = new HashMap<>();
         try {
-            MemberDTO memberDTO = memberService.regularRegister(requestDTO);
-            result.put("member", memberDTO);
+            MemberSecurityDTO memberSecurityDTO = memberService.regularRegister(requestDTO);
+            result.put("member", memberSecurityDTO);
             result.put("result", "success");
             return result;
         } catch (Exception e) {
