@@ -86,6 +86,7 @@ class MyBookServiceImplTest {
                 .currentPage(50)
                 .myRating(4.5)
                 .build();
+
     }
     
     @Test
@@ -136,7 +137,14 @@ class MyBookServiceImplTest {
     void insertNewBookByStatus_WhenStatusIsCompleted() {
         // given: 테스트 조건 설정
         when(memberRepository.findById(anyLong())).thenReturn(Optional.of(testMember));
-        
+
+        // 이 테스트에서만 필요한 save 설정 추가
+        when(myBookRepository.save(any(MyBook.class))).thenAnswer(invocation -> {
+            MyBook myBook = invocation.getArgument(0);
+            myBook.setId(1L);
+            return myBook;
+        });
+
         BookStatusRequestDTO completedRequestDTO = BookStatusRequestDTO.builder()
                 .status(BookStatus.COMPLETED.name())
                 .myRating(4.5)
@@ -167,6 +175,13 @@ class MyBookServiceImplTest {
     void insertNewBookByStatus_WhenStatusIsReading() {
         // given: 테스트 조건 설정
         when(memberRepository.findById(anyLong())).thenReturn(Optional.of(testMember));
+
+        // 이 테스트에서만 필요한 save 설정 추가
+        when(myBookRepository.save(any(MyBook.class))).thenAnswer(invocation -> {
+            MyBook myBook = invocation.getArgument(0);
+            myBook.setId(1L);
+            return myBook;
+        });
         
         BookStatusRequestDTO readingRequestDTO = BookStatusRequestDTO.builder()
                 .status(BookStatus.READING.name())
