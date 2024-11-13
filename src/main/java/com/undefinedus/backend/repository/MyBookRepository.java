@@ -12,4 +12,6 @@ public interface MyBookRepository extends JpaRepository<MyBook, Long> {
     Optional<MyBook> findByMemberIdAndIsbn13(Long memberId, String isbn13);
     
     Optional<Object> findByMemberAndAladinBook(Member reader1, AladinBook dallagut);
+    
+    Optional<MyBook> findByMemberIdAndId(Long memberId, Long bookId);
 }

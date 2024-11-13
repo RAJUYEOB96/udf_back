@@ -21,6 +21,8 @@ public class APILoginSuccessHandler implements AuthenticationSuccessHandler {
         Authentication authentication) throws IOException, ServletException {
 
         MemberSecurityDTO memberSecurityDTO = (MemberSecurityDTO) authentication.getPrincipal();
+        
+        System.out.println("memberSecurityDTO = " + memberSecurityDTO);
 
         Map<String, Object> claims = memberSecurityDTO.getClaims();
 
@@ -33,7 +35,9 @@ public class APILoginSuccessHandler implements AuthenticationSuccessHandler {
         Gson gson = new Gson();
 
         String jsonStr = gson.toJson(claims);
-
+        
+        System.out.println("jsonStr = " + jsonStr);
+        
         response.setContentType("application/json; charset=UTF-8");
 
         PrintWriter printWriter = response.getWriter();
