@@ -1,7 +1,7 @@
 package com.undefinedus.backend.handler;
 
 import com.google.gson.Gson;
-import com.undefinedus.backend.dto.MemberDTO;
+import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.util.JWTUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,12 +20,12 @@ public class APILoginSuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
         Authentication authentication) throws IOException, ServletException {
 
-        MemberDTO memberDTO = (MemberDTO) authentication.getPrincipal();
+        MemberSecurityDTO memberSecurityDTO = (MemberSecurityDTO) authentication.getPrincipal();
 
-        Map<String, Object> claims = memberDTO.getClaims();
+        Map<String, Object> claims = memberSecurityDTO.getClaims();
 
-        String accessToken = JWTUtil.generateToken(claims, 10);
-        String refreshToken = JWTUtil.generateToken(claims, 60*24);
+        String accessToken = JWTUtil.generateAccessToken(claims);
+        String refreshToken = JWTUtil.generateRefreshToken(claims);
 
         claims.put("accessToken", accessToken);
         claims.put("refreshToken", refreshToken);
