@@ -116,6 +116,7 @@ class SecurityTest {
         MemberSecurityDTO dto = new MemberSecurityDTO(
                 "test@test.com",
                 "password123",
+                10005L,
                 "테스터",
                 List.of("USER"),
                 "일반"
