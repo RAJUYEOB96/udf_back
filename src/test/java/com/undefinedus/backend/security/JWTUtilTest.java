@@ -27,6 +27,7 @@ class JWTUtilTest {
         MemberSecurityDTO dto = new MemberSecurityDTO(
                 "test@test.com",
                 "password123",
+                10000L,
                 "테스터",
                 List.of("USER"),
                 "일반"
@@ -51,6 +52,7 @@ class JWTUtilTest {
         MemberSecurityDTO dto = new MemberSecurityDTO(
                 "12345678",
                 "password123",
+                10001L,
                 "카카오테스터",
                 List.of("USER"),
                 "kakao"
@@ -77,6 +79,7 @@ class JWTUtilTest {
         MemberSecurityDTO dto = new MemberSecurityDTO(
                 "admin@test.com",
                 "password123",
+                10002L,
                 "관리자",
                 List.of("USER", "ADMIN"),
                 "일반"
@@ -104,6 +107,7 @@ class JWTUtilTest {
         Map<String, Object> claims = Map.of(
                 "username", "test@test.com",
                 "nickname", "테스터",
+                    "id", "10003",
                 "roles", List.of("USER"),
                 "socialProvider", "일반"
         );
@@ -136,6 +140,7 @@ class JWTUtilTest {
         MemberSecurityDTO dto = new MemberSecurityDTO(
                 "test@test.com",
                 "password123",
+                10004L,
                 "테스터",
                 List.of("USER"),
                 "일반"

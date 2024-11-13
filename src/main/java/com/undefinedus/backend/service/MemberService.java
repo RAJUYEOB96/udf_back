@@ -23,6 +23,7 @@ public interface MemberService {
         return new MemberSecurityDTO(
                 member.getUsername(),
                 member.getPassword(),
+                member.getId(),
                 member.getNickname(),
                 member.getMemberRoleList().stream()
                         .map(memberRole -> memberRole.name())
@@ -36,6 +37,7 @@ public interface MemberService {
         return new MemberSecurityDTO(
                 member.getUsername(),
                 member.getPassword(),
+                member.getId(),
                 member.getNickname(),
                 member.getMemberRoleList().stream()
                         .map(memberRole -> memberRole.name())
