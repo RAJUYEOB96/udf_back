@@ -52,7 +52,7 @@ public class Member extends BaseEntity {
     @Column(length = 40, unique = true, nullable = false)
     private String username;    // 아이디 (일반 로그인 유저 : 이메일형식, 소셜 로그인 유저 : 숫자형식(kakaoId))
     
-    @Column(length = 20, nullable = false)
+    @Column(length = 100, nullable = false) // 암호화해서 길이 늘어남
     private String password;   // 비밀번호
     
     @Column(length = 30, unique = true, nullable = false)

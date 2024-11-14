@@ -4,10 +4,9 @@ import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.SocialLogin;
 import com.undefinedus.backend.domain.enums.MemberType;
 import com.undefinedus.backend.domain.enums.PreferencesType;
-import com.undefinedus.backend.dto.MemberDTO;
+import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
 import com.undefinedus.backend.repository.MemberRepository;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,9 +51,9 @@ public class MemberServiceImpl implements MemberService {
         );
         
         if (isRegister.isPresent()) {
-            MemberDTO memberDTO = entityToDTOWithSocial(isRegister.get());
+            MemberSecurityDTO memberSecurityDTO = entityToDTOWithSocial(isRegister.get());
             result.put("result", "exists");
-            result.put("member", memberDTO);
+            result.put("member", memberSecurityDTO);
             return result;
         }
         
@@ -66,7 +65,7 @@ public class MemberServiceImpl implements MemberService {
     }
     
     @Override
-    public MemberDTO socialRegister(RegisterRequestDTO requestDTO) {
+    public MemberSecurityDTO socialRegister(RegisterRequestDTO requestDTO) {
         
         Member socialMember = makeSocialMember(requestDTO);
         
@@ -77,7 +76,7 @@ public class MemberServiceImpl implements MemberService {
     }
     
     @Override
-    public MemberDTO regularRegister(RegisterRequestDTO requestDTO) {
+    public MemberSecurityDTO regularRegister(RegisterRequestDTO requestDTO) {
         Member member = Member.builder()
                 .username(requestDTO.getUsername())
                 .password(passwordEncoder.encode(requestDTO.getPassword()))

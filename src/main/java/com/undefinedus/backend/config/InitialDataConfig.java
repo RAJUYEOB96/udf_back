@@ -65,7 +65,7 @@ public class InitialDataConfig {
                 .birth(LocalDate.of(1990, 1, 1))
                 .gender("MALE")
                 .memberRoleList(List.of(MemberType.ADMIN, MemberType.USER))
-                .preferences(Set.of(PreferencesType.소설, PreferencesType.과학, PreferencesType.컴퓨터IT))
+                .preferences(Set.of(PreferencesType.소설_시_희곡, PreferencesType.과학, PreferencesType.컴퓨터_모바일))
                 .isPublic(true)
                 .build();
         members.add(admin);
@@ -80,7 +80,7 @@ public class InitialDataConfig {
                 .birth(LocalDate.of(1995, 3, 15))
                 .gender("FEMALE")
                 .memberRoleList(List.of(MemberType.USER))
-                .preferences(Set.of(PreferencesType.소설, PreferencesType.시, PreferencesType.에세이))
+                .preferences(Set.of(PreferencesType.소설_시_희곡, PreferencesType.예술_대중문화, PreferencesType.에세이))
                 .isPublic(true)
                 .build();
         members.add(user1);
@@ -95,7 +95,7 @@ public class InitialDataConfig {
                 .birth(LocalDate.of(1998, 7, 20))
                 .gender("MALE")
                 .memberRoleList(List.of(MemberType.USER))
-                .preferences(Set.of(PreferencesType.컴퓨터IT, PreferencesType.경제경영, PreferencesType.자기계발))
+                .preferences(Set.of(PreferencesType.컴퓨터_모바일, PreferencesType.경제경영, PreferencesType.자기계발))
                 .isPublic(true)
                 .isMessageToKakao(true)
                 .build();
@@ -131,7 +131,7 @@ public class InitialDataConfig {
                 .birth(LocalDate.of(1997, 9, 25))
                 .gender("FEMALE")
                 .memberRoleList(List.of(MemberType.USER))
-                .preferences(Set.of(PreferencesType.소설, PreferencesType.에세이, PreferencesType.자서전))
+                .preferences(Set.of(PreferencesType.소설_시_희곡, PreferencesType.에세이, PreferencesType.인문학))
                 .isPublic(true)
                 .build();
         members.add(user3);
@@ -145,7 +145,7 @@ public class InitialDataConfig {
                 .birth(LocalDate.of(1993, 11, 30))
                 .gender("MALE")
                 .memberRoleList(List.of(MemberType.USER))
-                .preferences(Set.of(PreferencesType.과학, PreferencesType.컴퓨터IT, PreferencesType.인터넷))
+                .preferences(Set.of(PreferencesType.과학, PreferencesType.컴퓨터_모바일, PreferencesType.자기계발))
                 .isPublic(true)
                 .build();
         members.add(user4);
@@ -159,7 +159,7 @@ public class InitialDataConfig {
                 .birth(LocalDate.of(1991, 8, 15))
                 .gender("FEMALE")
                 .memberRoleList(List.of(MemberType.USER))
-                .preferences(Set.of(PreferencesType.요리, PreferencesType.인터넷, PreferencesType.취미레저))
+                .preferences(Set.of(PreferencesType.가정_요리_뷰티, PreferencesType.컴퓨터_모바일, PreferencesType.건강_취미_레저))
                 .isPublic(true)
                 .build();
         members.add(user5);
@@ -173,7 +173,7 @@ public class InitialDataConfig {
                 .birth(LocalDate.of(1996, 4, 5))
                 .gender("FEMALE")
                 .memberRoleList(List.of(MemberType.USER))
-                .preferences(Set.of(PreferencesType.건강스포츠, PreferencesType.취미레저, PreferencesType.요리))
+                .preferences(Set.of(PreferencesType.자기계발, PreferencesType.건강_취미_레저, PreferencesType.가정_요리_뷰티))
                 .isPublic(false)
                 .build();
         members.add(user6);
@@ -187,7 +187,7 @@ public class InitialDataConfig {
                 .birth(LocalDate.of(1988, 12, 20))
                 .gender("MALE")
                 .memberRoleList(List.of(MemberType.USER))
-                .preferences(Set.of(PreferencesType.경제경영, PreferencesType.자기계발, PreferencesType.자서전))
+                .preferences(Set.of(PreferencesType.경제경영, PreferencesType.자기계발, PreferencesType.인문학))
                 .isPublic(true)
                 .build();
         members.add(user7);

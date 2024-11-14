@@ -1,8 +1,7 @@
 package com.undefinedus.backend.security.filter;
 
 import com.google.gson.Gson;
-import com.undefinedus.backend.dto.MemberDTO;
-import com.undefinedus.backend.dto.SocialLoginDTO;
+import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.util.JWTUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -12,7 +11,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -55,22 +53,32 @@ public class JWTCheckFilter extends OncePerRequestFilter {
         try {
             String accessToken = authHeaderStr.substring(7);
             Map<String, Object> claims = JWTUtil.validateToken(accessToken);
-
+            
             String username = (String) claims.get("username");
-            String password = (String) claims.get("password");
+            Long id = ((Number) claims.get("id")).longValue();
             String nickname = (String) claims.get("nickname");
-            List<String> memberRoleList = (List<String>) claims.get("memberRoleList");
-
-            SocialLoginDTO socialLoginDTO = null;
-            if (claims.get("socialLoginDTO") != null) {
-                Map<String, Object> socialLoginClaims = (Map<String, Object>) claims.get("socialLoginDTO");
-                socialLoginDTO = new Gson().fromJson(new Gson().toJson(socialLoginClaims), SocialLoginDTO.class);
-            }
-
-            MemberDTO memberDTO = new MemberDTO(username, password, nickname, socialLoginDTO, memberRoleList);
-
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(memberDTO,
-                    password, memberDTO.getAuthorities());
+            List<String> roles = (List<String>) claims.get("roles");
+            String socialProvider = (String) claims.get("socialProvider");
+            
+            
+            // 이미 로그인으로 인증된 사용자의 토큰이므로
+            // password는 빈 문자열로 설정해도 됨
+            MemberSecurityDTO memberSecurityDTO = new MemberSecurityDTO(
+                    username,
+                    "", // 빈 문자열 또는 임의의 값으로 설정 (실제로 사용되지 않음)
+                    id,
+                    nickname,
+                    roles,
+                    socialProvider
+            );
+            
+            // 인증 객체 생성 시 credentials(password)도 null로 설정
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(
+                            memberSecurityDTO,
+                            null, // 이미 토큰으로 인증되었으므로 credentials 불필요
+                            memberSecurityDTO.getAuthorities()
+                    );
 
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 

@@ -2,11 +2,9 @@ package com.undefinedus.backend.security;
 
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.SocialLogin;
-import com.undefinedus.backend.dto.MemberDTO;
-import com.undefinedus.backend.dto.SocialLoginDTO;
+import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.repository.MemberRepository;
 import jakarta.transaction.Transactional;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -19,49 +17,37 @@ import org.springframework.stereotype.Service;
 @Service
 @Log4j2
 public class CustomUserDetailsService implements UserDetailsService {
-
+    
     private final MemberRepository memberRepository;
-
-
+    
     @Transactional
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
-        Optional<Member> member = memberRepository.getWithRoles(username);
-
-        if (member.isEmpty()) {
-            throw new UsernameNotFoundException("해당 Member를 찾을 수 없습니다. : " + username);
-        }
-
-        // MemberDTO 생성 시 SocialLogin을 SocialLoginDTO로 변환
-//        SocialLogin socialLogin = member.get().getSocialLogin();
-//        SocialLoginDTO socialLoginDTO;
-//        if (socialLogin != null) {
-//            socialLoginDTO = new SocialLoginDTO(
-//                socialLogin.getId(),
-//                socialLogin.getMember().getId(),
-//                socialLogin.getProvider(),
-//                socialLogin.getProviderId()
-//            );
-//        } else {
-//            socialLoginDTO = new SocialLoginDTO();
-//        }
         
-        // 일반로그인은 social이 없기때문에 빈 DTO를 생성후 넣어주기
-        SocialLoginDTO socialLoginDTO = new SocialLoginDTO();
+        Member member = memberRepository.getWithRoles(username)
+                .orElseThrow(() -> new UsernameNotFoundException("해당 Member를 찾을 수 없습니다. : " + username));
         
-        MemberDTO memberDTO = new MemberDTO(
-            member.get().getUsername(),
-            member.get().getPassword(),
-            member.get().getNickname(),
-            socialLoginDTO,
-            member.get().getMemberRoleList()
-                .stream()
-                .map(memberType -> memberType.name()).collect(Collectors.toList())
+        MemberSecurityDTO memberSecurityDTO = new MemberSecurityDTO(
+                member.getUsername(),
+                member.getPassword(),
+                member.getId(),
+                member.getNickname(),
+                member.getMemberRoleList()
+                        .stream()
+                        .map(memberType -> memberType.name())
+                        .distinct() // 중복 제거, 왜 중복되어 들어간지 모르겠음, DB안에는 잘 들어가 있는데
+                        .collect(Collectors.toList()),
+                "일반"
         );
-
-        log.info(memberDTO);
-
-        return memberDTO;
+        
+        if (member.getSocialLogin() != null) {
+            SocialLogin socialLogin = member.getSocialLogin();
+            String socialProvider = socialLogin.getProvider();
+            memberSecurityDTO.setSocialProvider(socialProvider);
+        }
+        
+        log.info(memberSecurityDTO);
+        
+        return memberSecurityDTO;
     }
 }
