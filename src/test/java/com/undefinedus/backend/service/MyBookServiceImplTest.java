@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,15 +16,23 @@ import com.undefinedus.backend.domain.entity.CalendarStamp;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.enums.BookStatus;
+import com.undefinedus.backend.dto.request.BookScrollRequestDTO;
 import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
+import com.undefinedus.backend.dto.response.ScrollResponseDTO;
+import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
 import com.undefinedus.backend.repository.CalendarStampRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.MyBookRepository;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -67,8 +76,15 @@ class MyBookServiceImplTest {
         testAladinBook = AladinBook.builder()
                 .id(1L)
                 .isbn13("9788956746425")
-                .pagesCount(300)
+                .title("테스트 책")           // title 추가
+                .author("테스트 작가")        // author 추가
+                .itemPage(300)              // pagesCount -> itemPage
                 .cover("test-cover-url")
+                .link("test-link-url")      // link 추가
+                .fullDescription("테스트 설명") // fullDescription 추가
+                .publisher("테스트 출판사")    // publisher 추가
+                .categoryName("IT/컴퓨터")   // categoryName 추가
+                .customerReviewRank(4.5)    // customerReviewRank 추가
                 .build();
         
         // 테스트용 MyBook 객체 생성
@@ -149,7 +165,7 @@ class MyBookServiceImplTest {
                 .status(BookStatus.COMPLETED.name())
                 .myRating(4.5)
                 .oneLineReview("좋은 책이었습니다.")
-                .currentPage(testAladinBook.getPagesCount())
+                .currentPage(testAladinBook.getItemPage())  // pagesCount -> itemPage
                 .startDate(LocalDate.now().minusDays(7))
                 .endDate(LocalDate.now())
                 .build();
@@ -163,7 +179,7 @@ class MyBookServiceImplTest {
             return myBook.getStatus() == BookStatus.COMPLETED &&
                     myBook.getMyRating() == 4.5 &&
                     myBook.getOneLineReview().equals("좋은 책이었습니다.") &&
-                    myBook.getCurrentPage() == testAladinBook.getPagesCount() &&
+                    myBook.getCurrentPage() == testAladinBook.getItemPage() && // pagesCount -> itemPage
                     myBook.getStartDate() != null &&
                     myBook.getEndDate() != null;
         }));
@@ -293,7 +309,7 @@ class MyBookServiceImplTest {
                 .status(BookStatus.COMPLETED.name())
                 .myRating(4.5)                               // 별점 추가
                 .oneLineReview("완독했습니다!")               // 한줄평 추가
-                .currentPage(testAladinBook.getPagesCount()) // 전체 페이지로 설정
+                .currentPage(testAladinBook.getItemPage()) // 전체 페이지로 설정
                 .startDate(LocalDate.now().minusDays(7))     // 일주일 전 시작
                 .endDate(LocalDate.now())                    // 오늘 완료
                 .build();
@@ -436,5 +452,147 @@ class MyBookServiceImplTest {
                 myBookService.updateBookStatus(1L, 1L, invalidRequestDTO))
                 .isInstanceOf(InvalidStatusException.class)
                 .hasMessage("상태값은 필수 입력값입니다.");  // 구체적인 에러 메시지 검증
+    }
+    
+    @Nested
+    @DisplayName("도서 목록 무한 스크롤 조회 테스트")
+    class GetMyBookListTest {
+        
+        @Test
+        @DisplayName("첫 페이지 조회 시 size+1개 가져오는지 확인")
+        void getMyBookList_FirstPage() {
+            // given
+            BookScrollRequestDTO requestDTO = BookScrollRequestDTO.builder()
+                    .lastId(0L)
+                    .size(3)
+                    .build();
+            
+            // Arrays.asList()는 수정 불가능한(immutable) 리스트를 반환하기 때문에 remove() 메서드를 사용할 수 없습니다.
+            // 대신 새로운 ArrayList를 생성해야 합니다:
+            List<MyBook> mockBooks = new ArrayList<>(Arrays.asList(  // ArrayList로 감싸기
+                    createMyBook(5L, "책5"),
+                    createMyBook(4L, "책4"),
+                    createMyBook(3L, "책3"),
+                    createMyBook(2L, "책2") // size + 1 개
+            ));
+            
+            when(myBookRepository.findBooksWithScroll(eq(1L), any(BookScrollRequestDTO.class)))
+                    .thenReturn(mockBooks);
+            
+            // when
+            ScrollResponseDTO<MyBookResponseDTO> result = myBookService.getMyBookList(1L, requestDTO);
+            
+            // then
+            assertThat(result.getContent()).hasSize(3); // size 만큼만 반환
+            assertThat(result.isHasNext()).isTrue(); // 다음 페이지 존재
+            assertThat(result.getLastId()).isEqualTo(3L); // 마지막으로 반환된 항목의 ID
+            assertThat(result.getNumberOfElements()).isEqualTo(3);
+            verify(myBookRepository).findBooksWithScroll(eq(1L), any(BookScrollRequestDTO.class));
+        }
+        
+        @Test
+        @DisplayName("마지막 페이지 조회 시 남은 데이터만 반환")
+        void getMyBookList_LastPage() {
+            // given
+            BookScrollRequestDTO requestDTO = BookScrollRequestDTO.builder()
+                    .lastId(3L)
+                    .size(3)
+                    .build();
+            
+            List<MyBook> mockBooks = Arrays.asList(
+                    createMyBook(2L, "책2"),
+                    createMyBook(1L, "책1")
+            );
+            
+            when(myBookRepository.findBooksWithScroll(eq(1L), any(BookScrollRequestDTO.class)))
+                    .thenReturn(mockBooks);
+            
+            // when
+            ScrollResponseDTO<MyBookResponseDTO> result = myBookService.getMyBookList(1L, requestDTO);
+            
+            // then
+            assertThat(result.getContent()).hasSize(2); // 남은 데이터만큼만 반환
+            assertThat(result.isHasNext()).isFalse(); // 다음 페이지 없음
+            assertThat(result.getLastId()).isEqualTo(1L);
+            assertThat(result.getNumberOfElements()).isEqualTo(2);
+        }
+        
+        @Test
+        @DisplayName("검색어와 함께 조회")
+        void getMyBookList_WithSearch() {
+            // given
+            BookScrollRequestDTO requestDTO = BookScrollRequestDTO.builder()
+                    .lastId(0L)
+                    .size(3)
+                    .search("특정")
+                    .build();
+            
+            List<MyBook> mockBooks = Arrays.asList(
+                    createMyBook(3L, "특정 책3"),
+                    createMyBook(2L, "특정 책2"),
+                    createMyBook(1L, "특정 책1")
+            );
+            
+            when(myBookRepository.findBooksWithScroll(eq(1L), any(BookScrollRequestDTO.class)))
+                    .thenReturn(mockBooks);
+            
+            // when
+            ScrollResponseDTO<MyBookResponseDTO> result = myBookService.getMyBookList(1L, requestDTO);
+            
+            // then
+            assertThat(result.getContent())
+                    .hasSize(3)
+                    .extracting(dto -> dto.getTitle())
+                    .allMatch(title -> title.contains("특정"));
+            assertThat(result.isHasNext()).isFalse();
+        }
+        
+        @Test
+        @DisplayName("빈 결과 조회")
+        void getMyBookList_EmptyResult() {
+            // given
+            BookScrollRequestDTO requestDTO = BookScrollRequestDTO.builder()
+                    .lastId(0L)
+                    .size(3)
+                    .search("존재하지않는책")
+                    .build();
+            
+            when(myBookRepository.findBooksWithScroll(eq(1L), any(BookScrollRequestDTO.class)))
+                    .thenReturn(Collections.emptyList());
+            
+            // when
+            ScrollResponseDTO<MyBookResponseDTO> result = myBookService.getMyBookList(1L, requestDTO);
+            
+            // then
+            assertThat(result.getContent()).isEmpty();
+            assertThat(result.isHasNext()).isFalse();
+            assertThat(result.getLastId()).isEqualTo(0L); // 요청한 lastId 그대로 반환
+            assertThat(result.getNumberOfElements()).isZero();
+        }
+        
+        // 테스트용 MyBook 객체 생성 헬퍼 메서드
+        private MyBook createMyBook(Long id, String title) {
+            AladinBook aladinBook = AladinBook.builder()
+                    .id(id)
+                    .isbn13(String.format("978895674%04d", id))
+                    .title(title)
+                    .author("테스트 작가")
+                    .itemPage(300)
+                    .cover("test-cover-url")
+                    .link("test-link")
+                    .fullDescription("테스트 설명")
+                    .publisher("테스트 출판사")
+                    .categoryName("IT/컴퓨터")
+                    .customerReviewRank(4.5)
+                    .build();
+            
+            return MyBook.builder()
+                    .id(id)
+                    .member(testMember)
+                    .aladinBook(aladinBook)
+                    .isbn13(aladinBook.getIsbn13())
+                    .status(BookStatus.READING)
+                    .build();
+        }
     }
 }
