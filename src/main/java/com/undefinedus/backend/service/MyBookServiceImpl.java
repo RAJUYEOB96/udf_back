@@ -154,7 +154,7 @@ public class MyBookServiceImpl implements MyBookService {
                 .status(BookStatus.COMPLETED)
                 .myRating(requestDTO.getMyRating())
                 .oneLineReview(requestDTO.getOneLineReview())
-                .currentPage(findAladinBook.getPagesCount()) // 다 읽었으니 100%로 만들기 위해
+                .currentPage(findAladinBook.getItemPage()) // 다 읽었으니 100%로 만들기 위해
                 .startDate(requestDTO.getStartDate())
                 .endDate(requestDTO.getEndDate())
                 .build();
