@@ -14,9 +14,11 @@ public interface MyBookService {
 
     void insertNewBookByStatus(Long memberId, AladinBook savedAladinBook, BookStatusRequestDTO requestDTO);
     
-    void updateBookStatus(Long memberId, Long bookId, BookStatusRequestDTO requestDTO);
+    void updateMyBookStatus(Long memberId, Long bookId, BookStatusRequestDTO requestDTO);
     
     ScrollResponseDTO<MyBookResponseDTO> getMyBookList(Long memberId, BookScrollRequestDTO requestDTO);
     
     MyBookResponseDTO getMyBook(Long memberId, Long bookId);
+    
+    void deleteMyBook(Long id, Long bookId);
 }

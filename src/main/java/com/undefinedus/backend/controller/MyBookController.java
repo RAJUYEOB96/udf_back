@@ -1,7 +1,6 @@
 package com.undefinedus.backend.controller;
 
 import com.undefinedus.backend.domain.entity.AladinBook;
-import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.BookScrollRequestDTO;
 import com.undefinedus.backend.dto.request.book.BookRequestDTO;
@@ -9,20 +8,17 @@ import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
-import com.undefinedus.backend.exception.book.BookExistsException;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.service.AladinBookService;
 import com.undefinedus.backend.service.MyBookService;
 import jakarta.validation.Valid;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -107,7 +103,7 @@ public class MyBookController {
         
         try {
             // 해당 사용자의 책장에서 지정된 책의 상태를 업데이트합니다.
-            myBookService.updateBookStatus(memberSecurityDTO.getId(), bookId, requestDTO);
+            myBookService.updateMyBookStatus(memberSecurityDTO.getId(), bookId, requestDTO);
         } catch (BookNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponseDTO.error(e.getMessage()));
@@ -117,6 +113,27 @@ public class MyBookController {
                     .body(ApiResponseDTO.error("책 상태 업데이트에 실패했습니다."));
         }
         
+        
+        // 성공적으로 처리되었음을 나타내는 응답을 반환합니다.
+        return ResponseEntity.ok()
+                .body(ApiResponseDTO.success(null));
+    }
+    
+    @DeleteMapping("/{bookId}")
+    public ResponseEntity<ApiResponseDTO<Void>> deleteMyBook(
+            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+            @PathVariable("bookId") Long bookId) {
+        
+        try {
+            myBookService.deleteMyBook(memberSecurityDTO.getId(), bookId);
+        } catch (BookNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                   .body(ApiResponseDTO.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("도서를 삭제하지 못했습니다.", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                   .body(ApiResponseDTO.error("도서 삭제에 실패했습니다."));
+        }
         
         // 성공적으로 처리되었음을 나타내는 응답을 반환합니다.
         return ResponseEntity.ok()

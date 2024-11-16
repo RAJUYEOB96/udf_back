@@ -132,5 +132,59 @@ class CalendarStampRepositoryTest {
         // then
         assertEquals(0, count); // 존재하지 않는 데이터는 0 반환
     }
-  
+    
+    @Test
+    @DisplayName("MyBook ID로 CalendarStamp 삭제 테스트")
+    void testDeleteAllByMyBookId() {
+        // given
+        Long myBookId = testMyBook.getId();
+        
+        // 삭제 전 개수 확인
+        Integer beforeCount = calendarStampRepository.countByMemberIdAndMyBookId(
+                testMember.getId(), myBookId);
+        assertEquals(1, beforeCount); // setUp에서 생성한 1개 존재 확인
+        
+        // when
+        calendarStampRepository.deleteAllByMyBookId(myBookId);
+        em.flush();  // 변경사항을 DB에 반영
+        em.clear();  // 영속성 컨텍스트 초기화
+        
+        // then
+        Integer afterCount = calendarStampRepository.countByMemberIdAndMyBookId(
+                testMember.getId(), myBookId);
+        assertEquals(0, afterCount); // 삭제 후 0개 확인
+    }
+    
+    @Test
+    @DisplayName("여러 개의 CalendarStamp 삭제 테스트")
+    void testDeleteMultipleStamps() {
+        // given - 추가 스탬프 생성
+        CalendarStamp additionalStamp = CalendarStamp.builder()
+                .member(testMember)
+                .myBook(testMyBook)
+                .bookCoverUrl(testMyBook.getAladinBook().getCover())
+                .recordedAt(LocalDate.now().minusDays(1))
+                .status(BookStatus.READING)
+                .build();
+        calendarStampRepository.save(additionalStamp);
+        em.flush();
+        em.clear();
+        
+        Long myBookId = testMyBook.getId();
+        
+        // 삭제 전 개수 확인
+        Integer beforeCount = calendarStampRepository.countByMemberIdAndMyBookId(
+                testMember.getId(), myBookId);
+        assertEquals(2, beforeCount); // 총 2개 존재 확인
+        
+        // when
+        calendarStampRepository.deleteAllByMyBookId(myBookId);
+        em.flush();
+        em.clear();
+        
+        // then
+        Integer afterCount = calendarStampRepository.countByMemberIdAndMyBookId(
+                testMember.getId(), myBookId);
+        assertEquals(0, afterCount); // 모두 삭제되어 0개
+    }
 }

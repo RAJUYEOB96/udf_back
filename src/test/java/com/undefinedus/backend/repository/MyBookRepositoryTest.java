@@ -319,6 +319,74 @@ class MyBookRepositoryTest {
                             "국내도서>소설"       // categoryName
                     );
         }
+    }
+    
+    @Nested
+    @DisplayName("도서 삭제 테스트")
+    class DeleteMyBookTest {
         
+        @Test
+        @DisplayName("내 책 정상 삭제")
+        void deleteMyBookSuccess() {
+            // given
+            MyBook firstBook = myBookRepository.findBooksWithScroll(
+                    member.getId(),
+                    BookScrollRequestDTO.builder()
+                            .size(1)
+                            .sort("asc")
+                            .status(null)  // status null로 명시
+                            .build()
+            ).get(0);
+            
+            // when
+            myBookRepository.deleteByIdAndMemberId(firstBook.getId(), member.getId());
+            em.flush();
+            em.clear();
+            
+            // then
+            List<MyBook> result = myBookRepository.findBooksWithScroll(
+                    member.getId(),
+                    BookScrollRequestDTO.builder()
+                            .size(10)
+                            .status(null)  // status null로 명시
+                            .build()
+            );
+            assertThat(result).hasSize(9);  // 10개 중 1개 삭제되어 9개
+            assertThat(result).extracting("id")
+                    .doesNotContain(firstBook.getId());
+        }
+        
+        @Test
+        @DisplayName("다른 사용자의 책 삭제 시도")
+        void deleteOtherUserBookFail() {
+            // given
+            MyBook firstBook = myBookRepository.findBooksWithScroll(
+                    member.getId(),
+                    BookScrollRequestDTO.builder()
+                            .size(1)
+                            .sort("asc")
+                            .status(null)  // status null로 명시
+                            .build()
+            ).get(0);
+            
+            Long wrongMemberId = member.getId() + 999L;  // 잘못된 member ID
+            
+            // when
+            myBookRepository.deleteByIdAndMemberId(firstBook.getId(), wrongMemberId);
+            em.flush();
+            em.clear();
+            
+            // then
+            List<MyBook> result = myBookRepository.findBooksWithScroll(
+                    member.getId(),
+                    BookScrollRequestDTO.builder()
+                            .size(10)
+                            .status(null)  // status null로 명시
+                            .build()
+            );
+            assertThat(result).hasSize(10);  // 삭제되지 않고 10개 그대로
+            assertThat(result).extracting("id")
+                    .contains(firstBook.getId());
+        }
     }
 }

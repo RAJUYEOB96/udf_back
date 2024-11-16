@@ -16,7 +16,7 @@ public interface MyBookRepository extends JpaRepository<MyBook, Long>, MyBookRep
     
     Optional<Object> findByMemberAndAladinBook(Member memberId, AladinBook aladinBookId);   // initData 할때 사용하고 있음
     
-    Optional<MyBook> findByMemberIdAndId(Long memberId, Long bookId);
+    Optional<MyBook> findByIdAndMemberId(Long bookId, Long memberId);
     
     @Query("select mb from MyBook mb "
             + "left join fetch mb.member m "
@@ -25,4 +25,5 @@ public interface MyBookRepository extends JpaRepository<MyBook, Long>, MyBookRep
             + "and m.id = :memberId ")
     Optional<MyBook> findByIdAndMemberIdWithAladinBook(@Param("bookId") Long bookId, @Param("memberId") Long memberId);
     
+    void deleteByIdAndMemberId(Long bookId, Long memberid);
 }

@@ -7,7 +7,9 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -297,10 +299,10 @@ class MyBookServiceImplTest {
     
     @Test
     @DisplayName("책 상태 업데이트 - COMPLETED 상태로 변경")
-    void updateBookStatus_ToCompleted() {
+    void updateMyBookStatus_ToCompleted() {
         // given: 테스트 조건 설정
         // 필요한 객체들을 찾을 수 있도록 Mock 설정
-        when(myBookRepository.findByMemberIdAndId(anyLong(), anyLong()))
+        when(myBookRepository.findByIdAndMemberId(anyLong(), anyLong()))
                 .thenReturn(Optional.of(testMyBook));
         when(memberRepository.findById(anyLong()))
                 .thenReturn(Optional.of(testMember));
@@ -316,11 +318,11 @@ class MyBookServiceImplTest {
                 .build();
         
         // when: 상태 업데이트 메서드 실행
-        myBookService.updateBookStatus(1L, 1L, completedRequestDTO);
+        myBookService.updateMyBookStatus(1L, 1L, completedRequestDTO);
         
         // then: 결과 검증
         // 1. MyBook이 정확한 상태와 데이터로 업데이트되었는지 검증
-        verify(myBookRepository).findByMemberIdAndId(1L, 1L);
+        verify(myBookRepository).findByIdAndMemberId(1L, 1L);
         
         // 2. Member 조회가 실행되었는지 검증
         verify(memberRepository).findById(1L);
@@ -331,9 +333,9 @@ class MyBookServiceImplTest {
     
     @Test
     @DisplayName("책 상태 업데이트 - READING 상태로 변경")
-    void updateBookStatus_ToReading() {
+    void updateMyBookStatus_ToReading() {
         // given: 테스트 조건 설정
-        when(myBookRepository.findByMemberIdAndId(anyLong(), anyLong()))
+        when(myBookRepository.findByIdAndMemberId(anyLong(), anyLong()))
                 .thenReturn(Optional.of(testMyBook));
         when(memberRepository.findById(anyLong()))
                 .thenReturn(Optional.of(testMember));
@@ -346,11 +348,11 @@ class MyBookServiceImplTest {
                 .build();
         
         // when: 상태 업데이트 메서드 실행
-        myBookService.updateBookStatus(1L, 1L, readingRequestDTO);
+        myBookService.updateMyBookStatus(1L, 1L, readingRequestDTO);
         
         // then: 결과 검증
         // 1. 필요한 데이터 조회가 실행되었는지 검증
-        verify(myBookRepository).findByMemberIdAndId(1L, 1L);
+        verify(myBookRepository).findByIdAndMemberId(1L, 1L);
         verify(memberRepository).findById(1L);
         
         // 2. READING 상태이므로 CalendarStamp가 생성되었는지 검증
@@ -359,9 +361,9 @@ class MyBookServiceImplTest {
     
     @Test
     @DisplayName("책 상태 업데이트 - WISH 상태로 변경")
-    void updateBookStatus_ToWish() {
+    void updateMyBookStatus_ToWish() {
         // given: 테스트 조건 설정
-        when(myBookRepository.findByMemberIdAndId(anyLong(), anyLong()))
+        when(myBookRepository.findByIdAndMemberId(anyLong(), anyLong()))
                 .thenReturn(Optional.of(testMyBook));
         when(memberRepository.findById(anyLong()))
                 .thenReturn(Optional.of(testMember));
@@ -373,10 +375,10 @@ class MyBookServiceImplTest {
                 .build();
         
         // when: 상태 업데이트 메서드 실행
-        myBookService.updateBookStatus(1L, 1L, wishRequestDTO);
+        myBookService.updateMyBookStatus(1L, 1L, wishRequestDTO);
         
         // then: 결과 검증
-        verify(myBookRepository).findByMemberIdAndId(1L, 1L);
+        verify(myBookRepository).findByIdAndMemberId(1L, 1L);
         verify(memberRepository).findById(1L);
         
         // WISH 상태는 CalendarStamp를 생성하지 않음
@@ -385,9 +387,9 @@ class MyBookServiceImplTest {
     
     @Test
     @DisplayName("책 상태 업데이트 - STOPPED 상태로 변경")
-    void updateBookStatus_ToStopped() {
+    void updateMyBookStatus_ToStopped() {
         // given: 테스트 조건 설정
-        when(myBookRepository.findByMemberIdAndId(anyLong(), anyLong()))
+        when(myBookRepository.findByIdAndMemberId(anyLong(), anyLong()))
                 .thenReturn(Optional.of(testMyBook));
         when(memberRepository.findById(anyLong()))
                 .thenReturn(Optional.of(testMember));
@@ -403,10 +405,10 @@ class MyBookServiceImplTest {
                 .build();
         
         // when: 상태 업데이트 메서드 실행
-        myBookService.updateBookStatus(1L, 1L, stoppedRequestDTO);
+        myBookService.updateMyBookStatus(1L, 1L, stoppedRequestDTO);
         
         // then: 결과 검증
-        verify(myBookRepository).findByMemberIdAndId(1L, 1L);
+        verify(myBookRepository).findByIdAndMemberId(1L, 1L);
         verify(memberRepository).findById(1L);
         
         // STOPPED 상태는 CalendarStamp를 생성하지 않음
@@ -415,9 +417,9 @@ class MyBookServiceImplTest {
     
     @Test
     @DisplayName("책 상태 업데이트 - 잘못된 상태값으로 시도")
-    void updateBookStatus_WithInvalidStatus() {
+    void updateMyBookStatus_WithInvalidStatus() {
         // given: 테스트 조건 설정
-        when(myBookRepository.findByMemberIdAndId(anyLong(), anyLong()))
+        when(myBookRepository.findByIdAndMemberId(anyLong(), anyLong()))
                 .thenReturn(Optional.of(testMyBook));
         when(memberRepository.findById(anyLong()))
                 .thenReturn(Optional.of(testMember));
@@ -430,15 +432,15 @@ class MyBookServiceImplTest {
         // when & then: 실행 및 검증
         // InvalidStatusException이 발생하는지 확인
         assertThatThrownBy(() ->
-                myBookService.updateBookStatus(1L, 1L, invalidRequestDTO))
+                myBookService.updateMyBookStatus(1L, 1L, invalidRequestDTO))
                 .isInstanceOf(InvalidStatusException.class)
                 .hasMessageContaining("잘못된 상태값입니다");    }
     
     @Test
     @DisplayName("책 상태 업데이트 - 필수 데이터 누락")
-    void updateBookStatus_WithMissingRequiredData() {
+    void updateMyBookStatus_WithMissingRequiredData() {
         // given: 테스트 조건 설정
-        when(myBookRepository.findByMemberIdAndId(anyLong(), anyLong()))
+        when(myBookRepository.findByIdAndMemberId(anyLong(), anyLong()))
                 .thenReturn(Optional.of(testMyBook));
         when(memberRepository.findById(anyLong()))
                 .thenReturn(Optional.of(testMember));
@@ -450,7 +452,7 @@ class MyBookServiceImplTest {
         
         // when & then: 실행 및 검증
         assertThatThrownBy(() ->
-                myBookService.updateBookStatus(1L, 1L, invalidRequestDTO))
+                myBookService.updateMyBookStatus(1L, 1L, invalidRequestDTO))
                 .isInstanceOf(InvalidStatusException.class)
                 .hasMessage("상태값은 필수 입력값입니다.");  // 구체적인 에러 메시지 검증
     }
@@ -644,6 +646,86 @@ class MyBookServiceImplTest {
             assertThatThrownBy(() -> myBookService.getMyBook(1L, 999L))
                     .isInstanceOf(BookNotFoundException.class)
                     .hasMessageContaining("해당 기록된 책을 찾을 수 없습니다.");
+        }
+    }
+    
+    @Nested
+    @DisplayName("내 책장 기록 삭제  테스트")
+    class DeleteMyBookTest {
+        
+        @Test
+        @DisplayName("내 책 삭제 성공 테스트")
+        void testDeleteMyBook() {
+            // given
+            Long memberId = 1L;
+            Long bookId = 1L;
+            
+            MyBook myBook = MyBook.builder()
+                    .id(bookId)
+                    .member(Member.builder().id(memberId).build())
+                    .build();
+            
+            when(myBookRepository.findByIdAndMemberId(bookId, memberId)) // 이 메소드가 호출되면
+                    .thenReturn(Optional.of(myBook));                   // myBook을 반환하도록 설정
+            
+            // when
+            myBookService.deleteMyBook(memberId, bookId); // 실제 삭제 메소드 호출
+            
+            // then
+            // 1. findByIdAndMemberId 메소드가 정확히 한 번 호출되었는지 검증
+            // - bookId와 memberId 파라미터로 호출되었는지 확인
+            verify(myBookRepository).findByIdAndMemberId(bookId, memberId);
+            // 2. deleteByIdAndMemberId 메소드가 정확히 한 번 호출되었는지 검증
+            // - bookId와 memberId 파라미터로 호출되었는지 확인
+            verify(myBookRepository).deleteByIdAndMemberId(bookId, memberId);
+            
+            // 참고: verify()로 할 수 있는 다른 검증들
+//            verify(myBookRepository, times(1)).findByIdAndMemberId(bookId, memberId);  // 정확히 1번 호출
+//            verify(myBookRepository, never()).otherMethod();  // 이 메소드는 절대 호출되지 않았어야 함 otherMethod는 예시
+//            verify(myBookRepository, atLeastOnce()).findByIdAndMemberId(bookId, memberId);  // 최소 1번 이상 호출
+            // 호출 순서도 검증 가능
+            //InOrder inOrder = inOrder(myBookRepository);
+            //inOrder.verify(myBookRepository).findByIdAndMemberId(bookId, memberId);
+            //inOrder.verify(myBookRepository).deleteByIdAndMemberId(bookId, memberId);
+        }
+        
+        @Test
+        @DisplayName("존재하지 않는 책 삭제 시도시 실패")
+        void deleteMyBookFail_NotFound() {
+            // given
+            Long memberId = 1L;
+            Long invalidBookId = 999L;
+            
+            when(myBookRepository.findByIdAndMemberId(invalidBookId, memberId))
+                    .thenReturn(Optional.empty());
+            
+            // when & then
+            assertThatThrownBy(() -> myBookService.deleteMyBook(memberId, invalidBookId))
+                    .isInstanceOf(BookNotFoundException.class)
+                    .hasMessageContaining("해당 기록된 책을 찾을 수 없습니다.");
+            
+            verify(myBookRepository).findByIdAndMemberId(invalidBookId, memberId);
+            verify(myBookRepository, never()).deleteByIdAndMemberId(any(), any());
+        }
+        
+        @Test
+        @DisplayName("다른 사용자의 책 삭제 시도시 실패")
+        void deleteMyBookFail_WrongUser() {
+            // given
+            Long memberId = 1L;
+            Long wrongMemberId = 2L;
+            Long bookId = 1L;
+            
+            when(myBookRepository.findByIdAndMemberId(bookId, wrongMemberId))
+                    .thenReturn(Optional.empty());
+            
+            // when & then
+            assertThatThrownBy(() -> myBookService.deleteMyBook(wrongMemberId, bookId))
+                    .isInstanceOf(BookNotFoundException.class)
+                    .hasMessageContaining("해당 기록된 책을 찾을 수 없습니다.");
+            
+            verify(myBookRepository).findByIdAndMemberId(bookId, wrongMemberId);
+            verify(myBookRepository, never()).deleteByIdAndMemberId(any(), any());
         }
     }
 }

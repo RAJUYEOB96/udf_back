@@ -83,8 +83,8 @@ public class MyBookServiceImpl implements MyBookService {
     }
     
     @Override
-    public void updateBookStatus(Long memberId, Long bookId, BookStatusRequestDTO requestDTO) {
-        MyBook findMyBook = myBookRepository.findByMemberIdAndId(memberId, bookId)
+    public void updateMyBookStatus(Long memberId, Long bookId, BookStatusRequestDTO requestDTO) {
+        MyBook findMyBook = myBookRepository.findByIdAndMemberId(bookId, memberId)
                 .orElseThrow(() -> new BookException(
                         String.format(BOOK_NOT_FOUND, memberId, bookId)));
         
@@ -143,6 +143,21 @@ public class MyBookServiceImpl implements MyBookService {
         Integer count = calendarStampRepository.countByMemberIdAndMyBookId(memberId, findBook.getId());
         
         return MyBookResponseDTO.from(findBook, count);
+    }
+    
+    @Override
+    public void deleteMyBook(Long memberId, Long bookId) {
+        // 1. 삭제 전에 책이 존재하는지 확인
+        myBookRepository.findByIdAndMemberId(bookId, memberId)
+                .orElseThrow(() -> new BookNotFoundException(
+                        String.format(BOOK_NOT_FOUND, memberId, bookId)
+                ));
+        
+        // 2. 연관된 CalendarStamp 먼저 삭제, 안하면 연결 되어있기에 myBook 삭제가 안됨
+        calendarStampRepository.deleteAllByMyBookId(bookId);
+        
+        // 3. 존재하면 삭제 실행
+        myBookRepository.deleteByIdAndMemberId(bookId, memberId);
     }
     
     private void saveBookAndCalenarStampByStatus(
