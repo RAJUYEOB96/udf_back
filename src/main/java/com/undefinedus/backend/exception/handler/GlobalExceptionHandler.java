@@ -6,6 +6,7 @@ import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
 import com.undefinedus.backend.exception.dto.ErrorResponse;
 import com.undefinedus.backend.exception.member.MemberException;
+import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.util.CustomJWTException;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -68,6 +69,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MemberException.class)
     protected ResponseEntity<ErrorResponse> handleMemberException(MemberException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(e.getMessage()));
+    }
+    
+    @ExceptionHandler(MemberNotFoundException.class)
+    protected ResponseEntity<ErrorResponse> handleMemberNotFoundException(MemberNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(e.getMessage()));
     }
     

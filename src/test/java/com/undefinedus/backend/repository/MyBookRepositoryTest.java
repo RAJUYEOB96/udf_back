@@ -2,8 +2,6 @@ package com.undefinedus.backend.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.domain.entity.Member;
@@ -16,8 +14,6 @@ import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
-import org.hibernate.proxy.HibernateProxy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

@@ -84,7 +84,7 @@ public class MyBookController {
     }
     
     @GetMapping("/{bookId}")
-    public ResponseEntity<ApiResponseDTO<MyBookResponseDTO>> getBookDetail(
+    public ResponseEntity<ApiResponseDTO<MyBookResponseDTO>> getMyBookDetail(
             @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
             @PathVariable("bookId") Long bookId) {
         

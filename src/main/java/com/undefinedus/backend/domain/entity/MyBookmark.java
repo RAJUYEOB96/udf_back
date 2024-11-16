@@ -25,13 +25,6 @@ public class MyBookmark extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    // === 내용 === //
-    @Column(length = 200, nullable = false)
-    private String phrase;  // 구절 내용
-    
-    @Column
-    private int pageNumber;  // 구절이 있는 페이지
-    
     // === 연관 관계 === //
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aladin_book_id", nullable = false)
@@ -41,4 +34,13 @@ public class MyBookmark extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;  // 구절을 저장한 회원
     
+    
+    // === 내용 === //
+    @Column(length = 200, nullable = false)
+    private String phrase;  // 구절 내용
+    
+    @Column
+    private int pageNumber;  // 구절이 있는 페이지
+    
+
 }
