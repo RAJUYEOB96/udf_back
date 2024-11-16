@@ -2,6 +2,7 @@ package com.undefinedus.backend.exception.handler;
 
 import com.undefinedus.backend.exception.book.BookException;
 import com.undefinedus.backend.exception.book.BookExistsException;
+import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
 import com.undefinedus.backend.exception.dto.ErrorResponse;
 import com.undefinedus.backend.exception.member.MemberException;
@@ -38,6 +39,7 @@ public class GlobalExceptionHandler {
     }
     
     // 새로 추가된 커스텀 예외 처리
+    // Book 관련
     @ExceptionHandler(BookException.class)
     protected ResponseEntity<ErrorResponse> handleBookException(BookException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -50,9 +52,9 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(e.getMessage()));
     }
     
-    @ExceptionHandler(MemberException.class)
-    protected ResponseEntity<ErrorResponse> handleMemberException(MemberException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(BookNotFoundException.class)
+    protected ResponseEntity<ErrorResponse> handleBookNotFoundException(BookNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(e.getMessage()));
     }
     
@@ -62,10 +64,17 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(e.getMessage()));
     }
     
+    // member 관련
+    @ExceptionHandler(MemberException.class)
+    protected ResponseEntity<ErrorResponse> handleMemberException(MemberException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(e.getMessage()));
+    }
+    
     // 기타 예외 처리
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ErrorResponse> handleException(Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("서버 내부 오류가 발생했습니다."));
+                .body(new ErrorResponse("서버 내부 오류가 발생했습니다. : " + e.getMessage()));
     }
 }

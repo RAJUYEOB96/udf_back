@@ -31,17 +31,14 @@ public class AladinBookServiceImpl implements AladinBookService{
         AladinBook aladinBook = AladinBook.builder()
             .isbn13(requestDTO.getIsbn13())
             .title(requestDTO.getTitle())
-            .subTitle(requestDTO.getSubTitle())
             .author(requestDTO.getAuthor())
-            .summary(requestDTO.getSummary())
             .link(requestDTO.getLink())
             .cover(requestDTO.getCover())
-            .description(requestDTO.getDescription())
+            .fullDescription(requestDTO.getFullDescription())
             .publisher(requestDTO.getPublisher())
-            .category(requestDTO.getCategory())
+            .categoryName(requestDTO.getCategoryName())
             .customerReviewRank(requestDTO.getCustomerReviewRank())
-            .isAdult(requestDTO.isAdult())
-            .pagesCount(requestDTO.getPagesCount())
+            .itemPage(requestDTO.getItemPage())
             .build();
 
         return aladinBookRepository.save(aladinBook);

@@ -24,6 +24,7 @@ public class RegisterRequestDTO {
     
     private String gender;
     
+    @Builder.Default
     private List<String> preferences = new ArrayList<>();
 
 }
