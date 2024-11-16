@@ -20,6 +20,7 @@ import com.undefinedus.backend.dto.request.BookScrollRequestDTO;
 import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
+import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
 import com.undefinedus.backend.repository.CalendarStampRepository;
 import com.undefinedus.backend.repository.MemberRepository;
@@ -593,6 +594,56 @@ class MyBookServiceImplTest {
                     .isbn13(aladinBook.getIsbn13())
                     .status(BookStatus.READING)
                     .build();
+        }
+    }
+    
+    @Nested
+    @DisplayName("내 책 단건 조회 테스트")
+    class GetMyBookTest {
+        
+        @Test
+        @DisplayName("내 책 정상 조회시 DTO로 변환하여 반환")
+        void getMyBookSuccess() {
+            // given
+            //"실제 DB 조회 없이 Optional.of(testMyBook)을 반환해라" 라고 지정하는 것입니다.
+            when(myBookRepository.findByIdAndMemberIdWithAladinBook(1L, 1L))
+                    .thenReturn(Optional.of(testMyBook));
+            // 마찬가지
+            when(calendarStampRepository.countByMemberIdAndMyBookId(1L, 1L))
+                    .thenReturn(5);
+            
+            // when
+            MyBookResponseDTO result = myBookService.getMyBook(1L, 1L);
+            
+            // then
+            assertThat(result)
+                    .extracting(
+                            "isbn13",
+                            "title",
+                            "author",
+                            "status",
+                            "readDateCount"  // 도장 개수
+                    )
+                    .containsExactly(
+                            "9788956746425",
+                            "테스트 책",
+                            "테스트 작가",
+                            BookStatus.WISH.name(), // dto에는 String 값으로 저장되어 있기 때문에
+                            5
+                    );
+        }
+        
+        @Test
+        @DisplayName("존재하지 않는 책 조회시 예외 발생")
+        void getMyBookFail() {
+            // given
+            when(myBookRepository.findByIdAndMemberIdWithAladinBook(anyLong(), anyLong()))
+                    .thenReturn(Optional.empty());
+            
+            // when & then
+            assertThatThrownBy(() -> myBookService.getMyBook(1L, 999L))
+                    .isInstanceOf(BookNotFoundException.class)
+                    .hasMessageContaining("해당 기록된 책을 찾을 수 없습니다.");
         }
     }
 }

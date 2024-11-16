@@ -13,6 +13,7 @@ import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import org.hibernate.proxy.HibernateProxy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -269,4 +270,55 @@ class MyBookRepositoryTest {
         }
     }
     
+    
+    @Nested
+    @DisplayName("도서 Lazy Loading 테스트")
+    class BookLazyLoadingTest {
+        
+        @Test
+        @DisplayName("기본 조회시 AladinBook은 프록시로 조회됨")
+        void lazyLoadingTest() {
+            // given
+            MyBook myBook = myBookRepository.findById(1L).orElseThrow();
+            
+            // when & then
+            assertThat(myBook.getAladinBook()).isInstanceOf(HibernateProxy.class);
+        }
+        
+        @Test
+        @DisplayName("fetch join 사용시 AladinBook이 즉시 로딩됨")
+        void fetchJoinTest() {
+            
+            Long bookId = 1L;       // 실제 initData로 만들어서 들어있는 bookId
+            Long memberId = 2L;     // 실제 initData로 만들어서 bookId가 가지고 있는 memberId // 다를시 null이 나와야함
+            
+            // given
+            MyBook myBook = myBookRepository.findByIdAndMemberIdWithAladinBook(bookId, memberId).orElseThrow();
+            
+            // when & then
+            assertThat(myBook.getAladinBook()).isNotInstanceOf(HibernateProxy.class);
+            assertThat(myBook.getAladinBook()).isInstanceOf(AladinBook.class);
+            
+            assertThat(myBook.getAladinBook())
+                    .extracting(    // 필드들 이름이 있는지 추출
+                            "isbn13",
+                            "title",
+                            "author",
+                            "link",
+                            "cover",
+                            "publisher",
+                            "categoryName"
+                    )
+                    .containsExactly(   // 안의 내용이 있는지 확인 (DB에 실제 저장된 것들) 정확히 일치 필요 // 필요시 변경
+                            "9791165341909",  // isbn13
+                            "달러구트 꿈 백화점",      // title
+                            "이미예",         // author (1번째는 이작가)
+                            "https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=247270655", // link
+                            "https://image.aladin.co.kr/product/24727/6/cover/k582730586_1.jpg", // cover
+                            "팩토리나인",    // publisher
+                            "국내도서>소설"       // categoryName
+                    );
+        }
+        
+    }
 }

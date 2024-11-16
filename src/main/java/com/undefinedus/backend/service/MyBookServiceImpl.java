@@ -10,6 +10,7 @@ import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
 import com.undefinedus.backend.exception.book.BookException;
+import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
 import com.undefinedus.backend.exception.member.MemberException;
 import com.undefinedus.backend.repository.CalendarStampRepository;
@@ -131,6 +132,17 @@ public class MyBookServiceImpl implements MyBookService {
                 .lastId(lastId) // 조회된 목록의 마지막 항목의 ID ? INDEX ?
                 .numberOfElements(dtoList.size())
                 .build();
+    }
+    
+    @Override
+    public MyBookResponseDTO getMyBook(Long memberId, Long bookId) {
+        
+        MyBook findBook = myBookRepository.findByIdAndMemberIdWithAladinBook(bookId, memberId)
+                .orElseThrow(() -> new BookNotFoundException(String.format(BOOK_NOT_FOUND, memberId, bookId)));
+        
+        Integer count = calendarStampRepository.countByMemberIdAndMyBookId(memberId, findBook.getId());
+        
+        return MyBookResponseDTO.from(findBook, count);
     }
     
     private void saveBookAndCalenarStampByStatus(

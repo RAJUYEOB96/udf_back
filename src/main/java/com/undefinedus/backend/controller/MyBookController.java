@@ -87,6 +87,18 @@ public class MyBookController {
         return ResponseEntity.ok(ApiResponseDTO.success(response)); // GET 요청에서는 body를 사용하지 않는 것이 HTTP 표준
     }
     
+    @GetMapping("/{bookId}")
+    public ResponseEntity<ApiResponseDTO<MyBookResponseDTO>> getBookDetail(
+            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+            @PathVariable("bookId") Long bookId) {
+        
+        Long memberId = memberSecurityDTO.getId();
+        
+        MyBookResponseDTO findBook = myBookService.getMyBook(memberId, bookId);
+        
+        return ResponseEntity.ok(ApiResponseDTO.success(findBook));
+    }
+    
     @PatchMapping("/{bookId}")
     public ResponseEntity<ApiResponseDTO<Void>> updateBookStatus(
             @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO, // 인증된 사용자 정보를 주입받습니다.

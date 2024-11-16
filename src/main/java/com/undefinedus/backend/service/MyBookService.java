@@ -17,4 +17,6 @@ public interface MyBookService {
     void updateBookStatus(Long memberId, Long bookId, BookStatusRequestDTO requestDTO);
     
     ScrollResponseDTO<MyBookResponseDTO> getMyBookList(Long memberId, BookScrollRequestDTO requestDTO);
+    
+    MyBookResponseDTO getMyBook(Long memberId, Long bookId);
 }

@@ -27,7 +27,7 @@ public class MyBookResponseDTO {
     private LocalDate endDate;
     
     @Builder.Default
-    private Integer readDateCount = 0; // 따로 넣어줄 예정 CalendarStamp에서 계산해서  (읽은 횟수 카운트)
+    private Integer readDateCount = 0; // 따로 넣어줄 예정 CalendarStamp에서 계산해서 (기록 횟수 카운트)
     
     // 책 정보 (AladinBook에서 뽑아올 예정)
     
