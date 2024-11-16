@@ -24,44 +24,44 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(e.getMessage()));
     }
-    
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
                 .body(new ErrorResponse(e.getMessage()));
     }
-    
+
     @ExceptionHandler(CustomJWTException.class)
     protected ResponseEntity<?> handleJWTException(CustomJWTException e) {
         return ResponseEntity.ok()
                 .body(Map.of("error", e.getMessage()));
     }
-    
+
     // 새로 추가된 커스텀 예외 처리
     @ExceptionHandler(BookException.class)
     protected ResponseEntity<ErrorResponse> handleBookException(BookException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(e.getMessage()));
     }
-    
+
     @ExceptionHandler(BookExistsException.class)
     protected ResponseEntity<ErrorResponse> handleBookExistsException(BookExistsException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(e.getMessage()));
     }
-    
+
     @ExceptionHandler(MemberException.class)
     protected ResponseEntity<ErrorResponse> handleMemberException(MemberException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(e.getMessage()));
     }
-    
+
     @ExceptionHandler(InvalidStatusException.class)
     protected ResponseEntity<ErrorResponse> handleInvalidStatusException(InvalidStatusException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(e.getMessage()));
     }
-    
+
     // 기타 예외 처리
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ErrorResponse> handleException(Exception e) {

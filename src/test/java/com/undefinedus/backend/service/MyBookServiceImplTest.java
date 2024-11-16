@@ -67,7 +67,7 @@ class MyBookServiceImplTest {
         testAladinBook = AladinBook.builder()
                 .id(1L)
                 .isbn13("9788956746425")
-                .pagesCount(300)
+                .itemPage(300)
                 .cover("test-cover-url")
                 .build();
         
@@ -149,7 +149,7 @@ class MyBookServiceImplTest {
                 .status(BookStatus.COMPLETED.name())
                 .myRating(4.5)
                 .oneLineReview("좋은 책이었습니다.")
-                .currentPage(testAladinBook.getPagesCount())
+                .currentPage(testAladinBook.getItemPage())
                 .startDate(LocalDate.now().minusDays(7))
                 .endDate(LocalDate.now())
                 .build();
@@ -163,7 +163,7 @@ class MyBookServiceImplTest {
             return myBook.getStatus() == BookStatus.COMPLETED &&
                     myBook.getMyRating() == 4.5 &&
                     myBook.getOneLineReview().equals("좋은 책이었습니다.") &&
-                    myBook.getCurrentPage() == testAladinBook.getPagesCount() &&
+                    myBook.getCurrentPage() == testAladinBook.getItemPage() &&
                     myBook.getStartDate() != null &&
                     myBook.getEndDate() != null;
         }));
@@ -293,7 +293,7 @@ class MyBookServiceImplTest {
                 .status(BookStatus.COMPLETED.name())
                 .myRating(4.5)                               // 별점 추가
                 .oneLineReview("완독했습니다!")               // 한줄평 추가
-                .currentPage(testAladinBook.getPagesCount()) // 전체 페이지로 설정
+                .currentPage(testAladinBook.getItemPage()) // 전체 페이지로 설정
                 .startDate(LocalDate.now().minusDays(7))     // 일주일 전 시작
                 .endDate(LocalDate.now())                    // 오늘 완료
                 .build();

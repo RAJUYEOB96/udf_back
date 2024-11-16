@@ -30,7 +30,7 @@ public enum PreferencesType {
         this.categoryId = categoryCode;
     }
 
-    public int getCategoryId() {
+    public Integer getCategoryId() {
         return categoryId;
     }
 }
