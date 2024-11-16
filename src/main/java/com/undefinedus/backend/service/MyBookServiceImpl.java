@@ -5,8 +5,12 @@ import com.undefinedus.backend.domain.entity.CalendarStamp;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.enums.BookStatus;
+import com.undefinedus.backend.dto.request.BookScrollRequestDTO;
 import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
+import com.undefinedus.backend.dto.response.ScrollResponseDTO;
+import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
 import com.undefinedus.backend.exception.book.BookException;
+import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
 import com.undefinedus.backend.exception.member.MemberException;
 import com.undefinedus.backend.repository.CalendarStampRepository;
@@ -14,6 +18,8 @@ import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.MyBookRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -77,8 +83,8 @@ public class MyBookServiceImpl implements MyBookService {
     }
     
     @Override
-    public void updateBookStatus(Long memberId, Long bookId, BookStatusRequestDTO requestDTO) {
-        MyBook findMyBook = myBookRepository.findByMemberIdAndId(memberId, bookId)
+    public void updateMyBookStatus(Long memberId, Long bookId, BookStatusRequestDTO requestDTO) {
+        MyBook findMyBook = myBookRepository.findByIdAndMemberId(bookId, memberId)
                 .orElseThrow(() -> new BookException(
                         String.format(BOOK_NOT_FOUND, memberId, bookId)));
         
@@ -94,6 +100,64 @@ public class MyBookServiceImpl implements MyBookService {
                 .equals(requestDTO.getStatus())) {
             recordCalendarStamp(findMember, findMyBook);
         }
+    }
+    
+    @Override
+    public ScrollResponseDTO<MyBookResponseDTO> getMyBookList(Long memberId, BookScrollRequestDTO requestDTO) {
+        // findBooksWithScroll안에서 size + 1개 데이터 조회해서 가져옴 (size가 10이면 11개 가져옴)
+        
+        List<MyBook> myBooks = myBookRepository.findBooksWithScroll(memberId, requestDTO);
+        
+        boolean hasNext = false;
+        if (myBooks.size() > requestDTO.getSize()) { // 11 > 10 이면 있다는 뜻
+            hasNext = true;
+            myBooks.remove(myBooks.size() - 1); // 11개 가져온 걸 10개를 보내기 위해
+        }
+        
+        List<MyBookResponseDTO> dtoList = myBooks.stream()
+                .map(myBook -> {
+                    Integer count = calendarStampRepository.countByMemberIdAndMyBookId(memberId, myBook.getId());
+                    return MyBookResponseDTO.from(myBook, count);
+                })
+                .collect(Collectors.toList());
+        
+        // 마지막 항목의 ID 설정
+        Long lastId = myBooks.isEmpty() ?
+                requestDTO.getLastId() :    // 조회된 목록이 비어있는 경우를 대비해 삼항 연산자 사용
+                myBooks.get(myBooks.size() - 1).getId(); // lastId를 요청 DTO의 값이 아닌, 실제 조회된 마지막 항목의 ID로 설정
+        
+        return ScrollResponseDTO.<MyBookResponseDTO>withAll()
+                .content(dtoList)
+                .hasNext(hasNext)
+                .lastId(lastId) // 조회된 목록의 마지막 항목의 ID ? INDEX ?
+                .numberOfElements(dtoList.size())
+                .build();
+    }
+    
+    @Override
+    public MyBookResponseDTO getMyBook(Long memberId, Long bookId) {
+        
+        MyBook findBook = myBookRepository.findByIdAndMemberIdWithAladinBook(bookId, memberId)
+                .orElseThrow(() -> new BookNotFoundException(String.format(BOOK_NOT_FOUND, memberId, bookId)));
+        
+        Integer count = calendarStampRepository.countByMemberIdAndMyBookId(memberId, findBook.getId());
+        
+        return MyBookResponseDTO.from(findBook, count);
+    }
+    
+    @Override
+    public void deleteMyBook(Long memberId, Long bookId) {
+        // 1. 삭제 전에 책이 존재하는지 확인
+        myBookRepository.findByIdAndMemberId(bookId, memberId)
+                .orElseThrow(() -> new BookNotFoundException(
+                        String.format(BOOK_NOT_FOUND, memberId, bookId)
+                ));
+        
+        // 2. 연관된 CalendarStamp 먼저 삭제, 안하면 연결 되어있기에 myBook 삭제가 안됨
+        calendarStampRepository.deleteAllByMyBookId(bookId);
+        
+        // 3. 존재하면 삭제 실행
+        myBookRepository.deleteByIdAndMemberId(bookId, memberId);
     }
     
     private void saveBookAndCalenarStampByStatus(

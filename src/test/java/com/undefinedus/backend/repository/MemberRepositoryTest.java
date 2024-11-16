@@ -84,7 +84,7 @@ class MemberRepositoryTest {
         Member member = Member.builder()
                 .username(username)
                 .password(passwordEncoder.encode("1111"))
-                .nickname("deletedUser")
+                .nickname("deleted")
                 .isDeleted(true)
                 .build();
         memberRepository.save(member);

@@ -54,11 +54,10 @@ public class Discussion extends BaseEntity {
     private Member member;  // 작성자
     
     // === 토론 주제 === //
-    @Column(length = 200, nullable = false)
+    @Column(length = 100, nullable = false)
     private String title;    // 토론 제목
     
-    @Lob  // 긴 내용을 위해 BLOB으로 변경
-    @Column(columnDefinition = "LONGTEXT", nullable = false)
+    @Column(length = 1000, nullable = false)
     private String content;
     
     // === 토론 상태 === //

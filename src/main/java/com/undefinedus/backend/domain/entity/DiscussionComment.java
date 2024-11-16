@@ -66,7 +66,7 @@ public class DiscussionComment extends BaseEntity {
     @Column(nullable = false)
     private VoteType voteType;  // 찬성/반대 의견
     
-    @Column(length = 2000, nullable = false)
+    @Column(length = 300, nullable = false)
     private String content;  // 댓글 내용
     
     // === 좋아요/싫어요 === //
