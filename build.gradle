@@ -21,6 +21,13 @@ configurations {
 
 repositories {
     mavenCentral()
+    // chat gpt
+    maven { url 'https://repo.spring.io/milestone' }
+}
+
+// chat gpt
+ext {
+    set('springAiVersion', "1.0.0-M3")
 }
 
 dependencies {
@@ -67,6 +74,18 @@ dependencies {
     // entity -> DTO, DTO -> entity로 변환 할때 쓰는 디펜던시
     implementation 'org.modelmapper:modelmapper:3.2.1'
 
+    // chat gpt
+    implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
+
+    // Quartz 스케줄러
+    implementation 'org.quartz-scheduler:quartz:2.3.2'
+}
+
+// chat gpt
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
 }
 
 tasks.named('test') {
