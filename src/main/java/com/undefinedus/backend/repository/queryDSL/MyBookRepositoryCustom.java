@@ -6,5 +6,4 @@ import java.util.List;
 
 public interface MyBookRepositoryCustom {
     List<MyBook> findBooksWithScroll(Long memberId, BookScrollRequestDTO requestDTO);
-    
 }
