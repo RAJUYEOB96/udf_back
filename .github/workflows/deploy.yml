@@ -54,17 +54,23 @@ jobs:
             
             echo "7. Gradle 권한 설정 및 빌드 시작"
             chmod +x ./gradlew
-            timeout 300s ./gradlew clean build
+            export GRADLE_OPTS="-Xmx512m -XX:MaxMetaspaceSize=256m"
             
-            if [ $? -eq 0 ]; then
-              echo "Gradle 빌드 성공"
-            else
+            # 빌드 시도 및 실패 시 로그 출력
+            if ! timeout 600s ./gradlew clean build --info; then
               echo "Gradle 빌드 실패"
+              echo "테스트 리포트:"
+              cat ./build/reports/tests/test/index.html 2>/dev/null || true
+              echo "빌드 로그:"
+              cat ./build/reports/tests/test/test/classes/*.html 2>/dev/null || true
               exit 1
             fi
             
+            echo "Gradle 빌드 성공"
+            
+            # 애플리케이션 실행 부분에도 메모리 설정 추가
             echo "8. 애플리케이션 실행"
-            nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &
+            nohup java -Xmx512m -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &
             
             echo "9. 배포 상태 확인 중... (10초 대기)"
             sleep 10
