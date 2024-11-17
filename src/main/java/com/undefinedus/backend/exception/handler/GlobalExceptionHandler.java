@@ -67,14 +67,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(e.getMessage()));
     }
-    
+
     // member 관련
     @ExceptionHandler(MemberException.class)
     protected ResponseEntity<ErrorResponse> handleMemberException(MemberException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(e.getMessage()));
     }
-    
+
     @ExceptionHandler(MemberNotFoundException.class)
     protected ResponseEntity<ErrorResponse> handleMemberNotFoundException(MemberNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
