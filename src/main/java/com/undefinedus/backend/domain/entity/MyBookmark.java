@@ -1,5 +1,6 @@
 package com.undefinedus.backend.domain.entity;
 
+import com.undefinedus.backend.dto.request.bookmark.MyBookmarkUpdateRequestDTO;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -42,5 +43,13 @@ public class MyBookmark extends BaseEntity {
     @Column
     private int pageNumber;  // 구절이 있는 페이지
     
-
+    
+    public void updateMyBookmark(MyBookmarkUpdateRequestDTO requestDTO) {
+        if (requestDTO.getPhrase() != null) {
+            this.phrase = requestDTO.getPhrase();
+        }
+        if (requestDTO.getPageNumber() != null) {
+            this.pageNumber = requestDTO.getPageNumber();
+        }
+    }
 }

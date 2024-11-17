@@ -3,6 +3,7 @@ package com.undefinedus.backend.controller;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.bookmark.BookmarkRequestDTO;
+import com.undefinedus.backend.dto.request.bookmark.MyBookmarkUpdateRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
@@ -17,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -74,4 +77,17 @@ public class MyBookmarkController {
     
         return ResponseEntity.ok(ApiResponseDTO.success((response)));
     }
+    
+    @PatchMapping("/{bookmarkId}")
+    public ResponseEntity<ApiResponseDTO<Void>> updateMyBookmark(
+            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+            @PathVariable("bookmarkId") Long bookmarkId,
+            @RequestBody @Valid MyBookmarkUpdateRequestDTO requestDTO) {
+        
+        myBookmarkService.updateMyBookmark(memberSecurityDTO.getId(), bookmarkId, requestDTO);
+        
+        return ResponseEntity.ok().body(ApiResponseDTO.success(null));
+    }
+    
+    
 }

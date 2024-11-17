@@ -9,6 +9,8 @@ import lombok.Data;
 @Builder
 public class MyBookmarkResponseDTO {
     
+    private Long id;                  // ID
+    
     private String title;               // 도서 제목
     
     private Integer pageNumber;       // 구절이 기록된 페이지
@@ -23,6 +25,7 @@ public class MyBookmarkResponseDTO {
     
     public static MyBookmarkResponseDTO from(MyBookmark myBookmark) {
         return MyBookmarkResponseDTO.builder()
+                .id(myBookmark.getId())
                 .title(myBookmark.getAladinBook().getTitle())
                 .pageNumber(myBookmark.getPageNumber())
                 .phrase(myBookmark.getPhrase())

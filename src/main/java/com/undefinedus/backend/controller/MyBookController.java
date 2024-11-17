@@ -101,22 +101,11 @@ public class MyBookController {
             @PathVariable("bookId") Long bookId,
             @RequestBody @Valid BookStatusRequestDTO requestDTO) {
         
-        try {
-            // 해당 사용자의 책장에서 지정된 책의 상태를 업데이트합니다.
-            myBookService.updateMyBookStatus(memberSecurityDTO.getId(), bookId, requestDTO);
-        } catch (BookNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponseDTO.error(e.getMessage()));
-        } catch (Exception e) {
-            log.error("도서 상태를 업데이트하지 못했습니다.", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponseDTO.error("책 상태 업데이트에 실패했습니다."));
-        }
-        
-        
+        // 해당 사용자의 책장에서 지정된 책의 상태를 업데이트합니다.
+        myBookService.updateMyBookStatus(memberSecurityDTO.getId(), bookId, requestDTO);
+   
         // 성공적으로 처리되었음을 나타내는 응답을 반환합니다.
-        return ResponseEntity.ok()
-                .body(ApiResponseDTO.success(null));
+        return ResponseEntity.ok().body(ApiResponseDTO.success(null));
     }
     
     @DeleteMapping("/{bookId}")

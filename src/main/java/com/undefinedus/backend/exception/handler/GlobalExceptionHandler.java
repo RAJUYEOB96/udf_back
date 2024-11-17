@@ -1,9 +1,11 @@
 package com.undefinedus.backend.exception.handler;
 
+import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.exception.book.BookException;
 import com.undefinedus.backend.exception.book.BookExistsException;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
+import com.undefinedus.backend.exception.bookmark.BookmarkNotFoundException;
 import com.undefinedus.backend.exception.dto.ErrorResponse;
 import com.undefinedus.backend.exception.member.MemberException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
@@ -26,7 +28,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(e.getMessage()));
     }
-
+    
+    // @Valid 에서 에러난 후 처리
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
@@ -78,10 +81,18 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(e.getMessage()));
     }
     
+    // bookmark 관련
+    @ExceptionHandler(BookmarkNotFoundException.class)
+    protected ResponseEntity<ErrorResponse> handleBookmarkNotFoundException(BookmarkNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(e.getMessage()));
+    }
+    
     // 기타 예외 처리
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ErrorResponse> handleException(Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponse("서버 내부 오류가 발생했습니다. : " + e.getMessage()));
     }
+    
 }

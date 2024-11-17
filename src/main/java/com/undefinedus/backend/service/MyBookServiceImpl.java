@@ -13,6 +13,7 @@ import com.undefinedus.backend.exception.book.BookException;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
 import com.undefinedus.backend.exception.member.MemberException;
+import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.CalendarStampRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.MyBookRepository;
@@ -85,11 +86,11 @@ public class MyBookServiceImpl implements MyBookService {
     @Override
     public void updateMyBookStatus(Long memberId, Long bookId, BookStatusRequestDTO requestDTO) {
         MyBook findMyBook = myBookRepository.findByIdAndMemberId(bookId, memberId)
-                .orElseThrow(() -> new BookException(
+                .orElseThrow(() -> new BookNotFoundException(
                         String.format(BOOK_NOT_FOUND, memberId, bookId)));
         
         Member findMember = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberException(String.format(USER_NOT_FOUND, memberId)));
+                .orElseThrow(() -> new MemberNotFoundException(String.format(USER_NOT_FOUND, memberId)));
         
         // 직접 엔티티의 값을 변경
         // 더티 체킹으로 자동 업데이트

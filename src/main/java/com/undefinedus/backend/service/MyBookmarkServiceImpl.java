@@ -5,10 +5,11 @@ import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBookmark;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.bookmark.BookmarkRequestDTO;
+import com.undefinedus.backend.dto.request.bookmark.MyBookmarkUpdateRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
-import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
 import com.undefinedus.backend.dto.response.bookmark.MyBookmarkResponseDTO;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
+import com.undefinedus.backend.exception.bookmark.BookmarkNotFoundException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.AladinBookRepository;
 import com.undefinedus.backend.repository.MemberRepository;
@@ -26,10 +27,12 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class MyBookmarkServiceImpl implements MyBookmarkService{
     
+    // === 에러 메시지 상수 === //
     private static final String AladinBook_NOT_FOUND = "해당 책을 찾을 수 없습니다. : %s";
     private static final String USER_NOT_FOUND = "해당 유저를 찾을 수 없습니다. : %d";
+    private static final String BOOKMARK_NOT_FOUND = "해당 기록된 북마크를 찾을 수 없습니다. : 멤버 id - %d, 책갈피 id - %d";
     
-    
+    // === Repository 주입 === //
     private final MyBookmarkRepository myBookmarkRepository;
     private final AladinBookRepository aladinBookRepository;
     private final MemberRepository memberRepository;
@@ -48,7 +51,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService{
                 .aladinBook(findAladinBook)
                 .member(findMember)
                 .phrase(requestDTO.getPhrase())
-                .pageNumber(requestDTO.getBookmarkPage())
+                .pageNumber(requestDTO.getPageNumber())
                 .build();
         
         myBookmarkRepository.save(myBookmark);
@@ -83,5 +86,15 @@ public class MyBookmarkServiceImpl implements MyBookmarkService{
                 .lastId(lastId)
                 .numberOfElements(dtoList.size())
                 .build();
+    }
+    
+    @Override
+    public void updateMyBookmark(Long memberId, Long bookmarkId, MyBookmarkUpdateRequestDTO requestDTO) {
+    
+        MyBookmark findMyBookmark = myBookmarkRepository.findByIdAndMemberId(bookmarkId, memberId)
+                .orElseThrow(() -> new BookmarkNotFoundException(String.format(BOOKMARK_NOT_FOUND, memberId, bookmarkId)));
+        
+        findMyBookmark.updateMyBookmark(requestDTO);
+    
     }
 }

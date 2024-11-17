@@ -12,9 +12,11 @@ import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBookmark;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.bookmark.BookmarkRequestDTO;
+import com.undefinedus.backend.dto.request.bookmark.MyBookmarkUpdateRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.bookmark.MyBookmarkResponseDTO;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
+import com.undefinedus.backend.exception.bookmark.BookmarkNotFoundException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.AladinBookRepository;
 import com.undefinedus.backend.repository.MemberRepository;
@@ -32,6 +34,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 @ExtendWith(MockitoExtension.class)  // JUnit5에서 Mockito를 사용하기 위한 설정
 class MyBookmarkServiceImplTest {
@@ -76,7 +79,7 @@ class MyBookmarkServiceImplTest {
         mockRequestDTO = BookmarkRequestDTO.builder()
                 .title("테스트 책")
                 .phrase("테스트 문구")
-                .bookmarkPage(100)
+                .pageNumber(100)
                 .build();
     }
     
@@ -284,6 +287,94 @@ class MyBookmarkServiceImplTest {
             assertThat(result.getContent().get(0).getPhrase()).contains("테스트");
             assertThat(result.getLastId()).isEqualTo(2L);
             assertThat(result.getNumberOfElements()).isEqualTo(1);
+        }
+    }
+    
+    @Nested
+    @DisplayName("북마크 수정 테스트")
+    class UpdateMyBookmarkTest {
+        
+        private MyBookmarkUpdateRequestDTO updateRequestDTO;
+        private MyBookmark mockBookmark;
+        
+        @BeforeEach
+        void setUp() {
+            // 업데이트 요청 DTO 설정
+            updateRequestDTO = MyBookmarkUpdateRequestDTO.builder()
+                    .phrase("수정된 문구")
+                    .pageNumber(200)
+                    .build();
+            
+            // 수정할 북마크 객체 설정
+            mockBookmark = MyBookmark.builder()
+                    .id(1L)
+                    .member(mockMember)
+                    .aladinBook(mockAladinBook)
+                    .phrase("원본 문구")
+                    .pageNumber(100)
+                    .build();
+        }
+        
+        @Test
+        @DisplayName("북마크 수정 성공")
+        void updateMyBookmark_Success() {
+            // given
+            given(myBookmarkRepository.findByIdAndMemberId(1L, 1L))
+                    .willReturn(Optional.of(mockBookmark));
+            
+            // when
+            myBookmarkService.updateMyBookmark(1L, 1L, updateRequestDTO);
+            
+            // then
+            assertThat(mockBookmark.getPhrase()).isEqualTo("수정된 문구");
+            assertThat(mockBookmark.getPageNumber()).isEqualTo(200);
+        }
+        
+        @Test
+        @DisplayName("존재하지 않는 북마크 수정 시도 시 실패")
+        void updateMyBookmark_BookmarkNotFound() {
+            // given
+            given(myBookmarkRepository.findByIdAndMemberId(999L, 1L))
+                    .willReturn(Optional.empty());
+            
+            // when & then
+            assertThatThrownBy(() ->
+                    myBookmarkService.updateMyBookmark(1L, 999L, updateRequestDTO))
+                    .isInstanceOf(BookmarkNotFoundException.class)
+                    .hasMessageContaining("해당 기록된 북마크를 찾을 수 없습니다.");
+        }
+        
+        @Test
+        @DisplayName("다른 사용자의 북마크 수정 시도 시 실패")
+        void updateMyBookmark_WrongMember() {
+            // given
+            given(myBookmarkRepository.findByIdAndMemberId(1L, 999L))
+                    .willReturn(Optional.empty());
+            
+            // when & then
+            assertThatThrownBy(() ->
+                    myBookmarkService.updateMyBookmark(999L, 1L, updateRequestDTO))
+                    .isInstanceOf(BookmarkNotFoundException.class)
+                    .hasMessageContaining("해당 기록된 북마크를 찾을 수 없습니다.");
+        }
+        
+        @Test
+        @DisplayName("북마크 수정 시 변경 필드만 업데이트")
+        void updateMyBookmark_PartialUpdate() {
+            // given
+            given(myBookmarkRepository.findByIdAndMemberId(1L, 1L))
+                    .willReturn(Optional.of(mockBookmark));
+            
+            MyBookmarkUpdateRequestDTO partialUpdateDTO = MyBookmarkUpdateRequestDTO.builder()
+                    .phrase("수정된 문구")  // 페이지 번호는 null
+                    .build();
+            
+            // when
+            myBookmarkService.updateMyBookmark(1L, 1L, partialUpdateDTO);
+            
+            // then
+            assertThat(mockBookmark.getPhrase()).isEqualTo("수정된 문구");
+            assertThat(mockBookmark.getPageNumber()).isEqualTo(100);  // 기존 값 유지
         }
     }
 }

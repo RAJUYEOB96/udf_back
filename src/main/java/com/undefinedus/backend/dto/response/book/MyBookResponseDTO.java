@@ -11,6 +11,8 @@ import lombok.Data;
 @Builder
 public class MyBookResponseDTO {
     
+    private Long id;
+    
     // 책 상태 정보
     private String status;
     
@@ -54,6 +56,7 @@ public class MyBookResponseDTO {
     
     public static MyBookResponseDTO from(MyBook myBook, Integer count) {
         return MyBookResponseDTO.builder()
+                .id(myBook.getId())
                 .status(myBook.getStatus().name())
                 .myRating(myBook.getMyRating())
                 .oneLineReview(myBook.getOneLineReview())
