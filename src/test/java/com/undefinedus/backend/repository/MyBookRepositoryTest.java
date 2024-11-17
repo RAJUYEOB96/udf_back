@@ -1,19 +1,19 @@
 package com.undefinedus.backend.repository;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.enums.BookStatus;
 import com.undefinedus.backend.domain.enums.MemberType;
-import com.undefinedus.backend.dto.request.BookScrollRequestDTO;
+import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
-import org.hibernate.proxy.HibernateProxy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -35,6 +35,8 @@ class MyBookRepositoryTest {
     private EntityManager em;
     
     private Member member;
+    @Autowired
+    private AladinBookRepository aladinBookRepository;
     
     /**
      * 각 테스트 전에 실행되어 테스트 데이터를 준비합니다.
@@ -104,7 +106,7 @@ class MyBookRepositoryTest {
         @DisplayName("기본 조회 - 첫 페이지, 내림차순")
         void findFirstPageDescTest() {
             // given
-            BookScrollRequestDTO requestDTO = BookScrollRequestDTO.builder()
+            ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
                     .size(3)         // 페이지당 3개씩
                     .sort("desc")    // 내림차순 정렬
                     .status(null)    // status 필터 제거 (null 이면 전체조회)
@@ -132,7 +134,7 @@ class MyBookRepositoryTest {
         void findSecondPageTest() {
             // given
             // 1. 첫 페이지 조회
-            BookScrollRequestDTO firstRequest = BookScrollRequestDTO.builder()
+            ScrollRequestDTO firstRequest = ScrollRequestDTO.builder()
                     .size(3)
                     .sort("desc")
                     .status(null)    // status 필터 제거 (null 이면 전체조회)
@@ -142,7 +144,7 @@ class MyBookRepositoryTest {
             Long lastId = firstPage.get(2).getId(); // 세 번째 항목의 ID
             
             // 2. 두 번째 페이지 조회
-            BookScrollRequestDTO secondRequest = BookScrollRequestDTO.builder()
+            ScrollRequestDTO secondRequest = ScrollRequestDTO.builder()
                     .lastId(lastId)
                     .size(3)
                     .sort("desc")
@@ -172,7 +174,7 @@ class MyBookRepositoryTest {
         void findLastPageTest() {
             // given
             // 1. 이전 페이지들 조회
-            BookScrollRequestDTO request = BookScrollRequestDTO.builder()
+            ScrollRequestDTO request = ScrollRequestDTO.builder()
                     .size(7)
                     .sort("desc")
                     .build();
@@ -181,7 +183,7 @@ class MyBookRepositoryTest {
             Long lastId = previousPage.get(previousPage.size() - 2).getId();
             
             // 2. 마지막 페이지 조회
-            BookScrollRequestDTO lastRequest = BookScrollRequestDTO.builder()
+            ScrollRequestDTO lastRequest = ScrollRequestDTO.builder()
                     .lastId(lastId)
                     .size(3)
                     .sort("desc")
@@ -201,7 +203,7 @@ class MyBookRepositoryTest {
         @DisplayName("상태(Status) 필터링 테스트")
         void findBooksWithStatusTest() {
             // given
-            BookScrollRequestDTO requestDTO = BookScrollRequestDTO.builder()
+            ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
                     .status("READING")
                     .size(10)
                     .build();
@@ -220,7 +222,7 @@ class MyBookRepositoryTest {
         @DisplayName("검색어 필터링 테스트")
         void findWithSearchTest() {
             // given
-            BookScrollRequestDTO request = BookScrollRequestDTO.builder()
+            ScrollRequestDTO request = ScrollRequestDTO.builder()
                     .size(3)
                     .sort("desc")
                     .search("테스트 책")
@@ -240,7 +242,7 @@ class MyBookRepositoryTest {
         @DisplayName("잘못된 상태값 입력 시 예외 발생")
         void invalidStatusTest() {
             // given
-            BookScrollRequestDTO requestDTO = BookScrollRequestDTO.builder()
+            ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
                     .status("INVALID_STATUS")
                     .size(10)
                     .build();
@@ -256,7 +258,7 @@ class MyBookRepositoryTest {
         @DisplayName("데이터가 없는 경우")
         void findWithNoDataTest() {
             // given
-            BookScrollRequestDTO request = BookScrollRequestDTO.builder()
+            ScrollRequestDTO request = ScrollRequestDTO.builder()
                     .size(3)
                     .sort("desc")
                     .search("존재하지않는데이터")
@@ -280,7 +282,7 @@ class MyBookRepositoryTest {
             // given
             MyBook firstBook = myBookRepository.findBooksWithScroll(
                     member.getId(),
-                    BookScrollRequestDTO.builder()
+                    ScrollRequestDTO.builder()
                             .size(1)
                             .sort("asc")
                             .status(null)  // status null로 명시
@@ -295,7 +297,7 @@ class MyBookRepositoryTest {
             // then
             List<MyBook> result = myBookRepository.findBooksWithScroll(
                     member.getId(),
-                    BookScrollRequestDTO.builder()
+                    ScrollRequestDTO.builder()
                             .size(10)
                             .status(null)  // status null로 명시
                             .build()
@@ -311,7 +313,7 @@ class MyBookRepositoryTest {
             // given
             MyBook firstBook = myBookRepository.findBooksWithScroll(
                     member.getId(),
-                    BookScrollRequestDTO.builder()
+                    ScrollRequestDTO.builder()
                             .size(1)
                             .sort("asc")
                             .status(null)  // status null로 명시
@@ -328,7 +330,7 @@ class MyBookRepositoryTest {
             // then
             List<MyBook> result = myBookRepository.findBooksWithScroll(
                     member.getId(),
-                    BookScrollRequestDTO.builder()
+                    ScrollRequestDTO.builder()
                             .size(10)
                             .status(null)  // status null로 명시
                             .build()

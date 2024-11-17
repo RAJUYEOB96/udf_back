@@ -6,7 +6,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.entity.QMyBook;
 import com.undefinedus.backend.domain.enums.BookStatus;
-import com.undefinedus.backend.dto.request.BookScrollRequestDTO;
+import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class MyBookRepositoryCustomImpl implements MyBookRepositoryCustom{
     private final JPAQueryFactory queryFactory;
     
     @Override
-    public List<MyBook> findBooksWithScroll(Long memberId, BookScrollRequestDTO requestDTO) {
+    public List<MyBook> findBooksWithScroll(Long memberId, ScrollRequestDTO requestDTO) {
         QMyBook myBook = QMyBook.myBook;
         
         // 기본 쿼리 생성
@@ -36,7 +36,7 @@ public class MyBookRepositoryCustomImpl implements MyBookRepositoryCustom{
         // 문자열이 null이 아니고, 길이가 0보다 크며, 공백이 아닌 문자를 하나 이상 포함하는지 확인합니다
         // str != null && str.trim().length() > 0와 같은 효과입니다
         // 읽기 상태(탭) 필터
-        if (StringUtils.hasText(requestDTO.getStatus())) {
+        if (StringUtils.hasText(requestDTO.getStatus())) {  // 여기서 status가 null 또는 빈값이면 전체 반환
             try {
                 builder.and(myBook.status.eq(BookStatus.valueOf(requestDTO.getStatus())));
             } catch (IllegalArgumentException e) {
@@ -47,6 +47,7 @@ public class MyBookRepositoryCustomImpl implements MyBookRepositoryCustom{
         
         // 검색어 처리 (작가와 제목 동시에 검색)
         if (StringUtils.hasText(requestDTO.getSearch())) {
+            // containsIgnoreCase는 문자열 포함 여부를 검사할 때 대소문자를 구분하지 않고 검사하는 메서드입니다.
             builder.and(myBook.aladinBook.title.containsIgnoreCase(requestDTO.getSearch())
                     .or(myBook.aladinBook.author.containsIgnoreCase(requestDTO.getSearch())));
         }

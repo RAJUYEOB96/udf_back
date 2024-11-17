@@ -7,9 +7,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -18,7 +16,7 @@ import com.undefinedus.backend.domain.entity.CalendarStamp;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.enums.BookStatus;
-import com.undefinedus.backend.dto.request.BookScrollRequestDTO;
+import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
@@ -465,7 +463,7 @@ class MyBookServiceImplTest {
         @DisplayName("첫 페이지 조회 시 size+1개 가져오는지 확인")
         void getMyBookList_FirstPage() {
             // given
-            BookScrollRequestDTO requestDTO = BookScrollRequestDTO.builder()
+            ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
                     .lastId(0L)
                     .size(3)
                     .build();
@@ -479,7 +477,8 @@ class MyBookServiceImplTest {
                     createMyBook(2L, "책2") // size + 1 개
             ));
 
-            when(myBookRepository.findBooksWithScroll(eq(1L), any(BookScrollRequestDTO.class)))
+            
+            when(myBookRepository.findBooksWithScroll(eq(1L), any(ScrollRequestDTO.class)))
                     .thenReturn(mockBooks);
 
             // when
@@ -490,14 +489,14 @@ class MyBookServiceImplTest {
             assertThat(result.isHasNext()).isTrue(); // 다음 페이지 존재
             assertThat(result.getLastId()).isEqualTo(3L); // 마지막으로 반환된 항목의 ID
             assertThat(result.getNumberOfElements()).isEqualTo(3);
-            verify(myBookRepository).findBooksWithScroll(eq(1L), any(BookScrollRequestDTO.class));
+            verify(myBookRepository).findBooksWithScroll(eq(1L), any(ScrollRequestDTO.class));
         }
 
         @Test
         @DisplayName("마지막 페이지 조회 시 남은 데이터만 반환")
         void getMyBookList_LastPage() {
             // given
-            BookScrollRequestDTO requestDTO = BookScrollRequestDTO.builder()
+            ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
                     .lastId(3L)
                     .size(3)
                     .build();
@@ -506,8 +505,8 @@ class MyBookServiceImplTest {
                     createMyBook(2L, "책2"),
                     createMyBook(1L, "책1")
             );
-
-            when(myBookRepository.findBooksWithScroll(eq(1L), any(BookScrollRequestDTO.class)))
+            
+            when(myBookRepository.findBooksWithScroll(eq(1L), any(ScrollRequestDTO.class)))
                     .thenReturn(mockBooks);
 
             // when
@@ -524,7 +523,7 @@ class MyBookServiceImplTest {
         @DisplayName("검색어와 함께 조회")
         void getMyBookList_WithSearch() {
             // given
-            BookScrollRequestDTO requestDTO = BookScrollRequestDTO.builder()
+            ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
                     .lastId(0L)
                     .size(3)
                     .search("특정")
@@ -535,8 +534,8 @@ class MyBookServiceImplTest {
                     createMyBook(2L, "특정 책2"),
                     createMyBook(1L, "특정 책1")
             );
-
-            when(myBookRepository.findBooksWithScroll(eq(1L), any(BookScrollRequestDTO.class)))
+            
+            when(myBookRepository.findBooksWithScroll(eq(1L), any(ScrollRequestDTO.class)))
                     .thenReturn(mockBooks);
 
             // when
@@ -554,13 +553,13 @@ class MyBookServiceImplTest {
         @DisplayName("빈 결과 조회")
         void getMyBookList_EmptyResult() {
             // given
-            BookScrollRequestDTO requestDTO = BookScrollRequestDTO.builder()
+            ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
                     .lastId(0L)
                     .size(3)
                     .search("존재하지않는책")
                     .build();
-
-            when(myBookRepository.findBooksWithScroll(eq(1L), any(BookScrollRequestDTO.class)))
+            
+            when(myBookRepository.findBooksWithScroll(eq(1L), any(ScrollRequestDTO.class)))
                     .thenReturn(Collections.emptyList());
 
             // when
