@@ -1,7 +1,7 @@
 package com.undefinedus.backend.service;
 
 import com.undefinedus.backend.domain.entity.AladinBook;
-import com.undefinedus.backend.dto.request.BookScrollRequestDTO;
+import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
@@ -16,7 +16,7 @@ public interface MyBookService {
     
     void updateMyBookStatus(Long memberId, Long bookId, BookStatusRequestDTO requestDTO);
     
-    ScrollResponseDTO<MyBookResponseDTO> getMyBookList(Long memberId, BookScrollRequestDTO requestDTO);
+    ScrollResponseDTO<MyBookResponseDTO> getMyBookList(Long memberId, ScrollRequestDTO requestDTO);
     
     MyBookResponseDTO getMyBook(Long memberId, Long bookId);
     

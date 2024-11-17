@@ -2,7 +2,7 @@ package com.undefinedus.backend.controller;
 
 import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
-import com.undefinedus.backend.dto.request.BookScrollRequestDTO;
+import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.book.BookRequestDTO;
 import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
@@ -73,7 +73,7 @@ public class MyBookController {
     @GetMapping
     public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<MyBookResponseDTO>>> getMyBookList(
             @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-            @ModelAttribute BookScrollRequestDTO requestDTO) {  // GET 요청에서는 @RequestBody 대신 @ModelAttribute 사용
+            @ModelAttribute ScrollRequestDTO requestDTO) {  // GET 요청에서는 @RequestBody 대신 @ModelAttribute 사용
         
         Long memberId = memberSecurityDTO.getId();
 
@@ -84,7 +84,7 @@ public class MyBookController {
     }
     
     @GetMapping("/{bookId}")
-    public ResponseEntity<ApiResponseDTO<MyBookResponseDTO>> getBookDetail(
+    public ResponseEntity<ApiResponseDTO<MyBookResponseDTO>> getMyBookDetail(
             @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
             @PathVariable("bookId") Long bookId) {
         
@@ -101,22 +101,11 @@ public class MyBookController {
             @PathVariable("bookId") Long bookId,
             @RequestBody @Valid BookStatusRequestDTO requestDTO) {
         
-        try {
-            // 해당 사용자의 책장에서 지정된 책의 상태를 업데이트합니다.
-            myBookService.updateMyBookStatus(memberSecurityDTO.getId(), bookId, requestDTO);
-        } catch (BookNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponseDTO.error(e.getMessage()));
-        } catch (Exception e) {
-            log.error("도서 상태를 업데이트하지 못했습니다.", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponseDTO.error("책 상태 업데이트에 실패했습니다."));
-        }
-        
-        
+        // 해당 사용자의 책장에서 지정된 책의 상태를 업데이트합니다.
+        myBookService.updateMyBookStatus(memberSecurityDTO.getId(), bookId, requestDTO);
+   
         // 성공적으로 처리되었음을 나타내는 응답을 반환합니다.
-        return ResponseEntity.ok()
-                .body(ApiResponseDTO.success(null));
+        return ResponseEntity.ok().body(ApiResponseDTO.success(null));
     }
     
     @DeleteMapping("/{bookId}")
@@ -124,20 +113,11 @@ public class MyBookController {
             @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
             @PathVariable("bookId") Long bookId) {
         
-        try {
-            myBookService.deleteMyBook(memberSecurityDTO.getId(), bookId);
-        } catch (BookNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                   .body(ApiResponseDTO.error(e.getMessage()));
-        } catch (Exception e) {
-            log.error("도서를 삭제하지 못했습니다.", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                   .body(ApiResponseDTO.error("도서 삭제에 실패했습니다."));
-        }
+        
+        myBookService.deleteMyBook(memberSecurityDTO.getId(), bookId);
         
         // 성공적으로 처리되었음을 나타내는 응답을 반환합니다.
-        return ResponseEntity.ok()
-                .body(ApiResponseDTO.success(null));
+        return ResponseEntity.ok().body(ApiResponseDTO.success(null));
     }
     
 }
