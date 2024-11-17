@@ -1,6 +1,12 @@
 package com.undefinedus.backend.repository;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.undefinedus.backend.domain.entity.Member;
 import jakarta.persistence.EntityManager;
@@ -19,11 +25,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Log4j2
 class MemberRepositoryTest {
-    
-    @Autowired private MemberRepository memberRepository;
-    @Autowired private PasswordEncoder passwordEncoder;
-    @Autowired private EntityManager em;
-    
+
+    @Autowired
+    private MemberRepository memberRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EntityManager em;
+
     @Test
     @DisplayName("memberRepository 연결 테스트")
     void testMemberRepository() {
@@ -73,7 +84,7 @@ class MemberRepositoryTest {
         Member member = Member.builder()
                 .username(username)
                 .password(passwordEncoder.encode("1111"))
-                .nickname("deletedUser")
+                .nickname("deleted")
                 .isDeleted(true)
                 .build();
         memberRepository.save(member);

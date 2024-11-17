@@ -35,7 +35,8 @@ public class JWTCheckFilter extends OncePerRequestFilter {
                 path.contains("/api/member/refresh") ||
                 path.contains("/api/member/email/send-verification") ||  // 이메일 인증 발송
                 path.contains("/api/member/email/verify") || // 이메일 인증 확인
-                path.contains("/api/book/**"); // 나중에 제거 필요
+                path.contains("/api/book/**") || // 나중에 제거 필요
+                path.contains("/scheduler/**"); // 나중에 제거 필요
     }
 
     @Override
@@ -53,8 +54,9 @@ public class JWTCheckFilter extends OncePerRequestFilter {
         try {
             String accessToken = authHeaderStr.substring(7);
             Map<String, Object> claims = JWTUtil.validateToken(accessToken);
-
+            
             String username = (String) claims.get("username");
+            Long id = ((Number) claims.get("id")).longValue();
             String nickname = (String) claims.get("nickname");
             List<String> roles = (List<String>) claims.get("roles");
             String socialProvider = (String) claims.get("socialProvider");
@@ -65,6 +67,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             MemberSecurityDTO memberSecurityDTO = new MemberSecurityDTO(
                     username,
                     "", // 빈 문자열 또는 임의의 값으로 설정 (실제로 사용되지 않음)
+                    id,
                     nickname,
                     roles,
                     socialProvider

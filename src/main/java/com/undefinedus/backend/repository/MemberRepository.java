@@ -13,10 +13,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
         + "left join fetch m.memberRoleList  mr "
         + "left join fetch m.preferences p "
         + "left join fetch m.socialLogin s "  // socialLogins fetch join 추가
-        + "where m.username = :username"
-        + " and m.isDeleted = false")
+        + "where m.username = :username "
+        + "and m.isDeleted = false")
     Optional<Member> getWithRoles(@Param("username") String username); // CustomUserDetailsService에서 사용중
-    
+
     Optional<Member> findByUsername(String username);
     
     Optional<Member> findByNickname(String nickname);

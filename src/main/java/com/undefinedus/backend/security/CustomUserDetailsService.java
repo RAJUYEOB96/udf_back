@@ -30,10 +30,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         MemberSecurityDTO memberSecurityDTO = new MemberSecurityDTO(
                 member.getUsername(),
                 member.getPassword(),
+                member.getId(),
                 member.getNickname(),
                 member.getMemberRoleList()
                         .stream()
-                        .map(memberType -> memberType.name()).collect(Collectors.toList()),
+                        .map(memberType -> memberType.name())
+                        .distinct() // 중복 제거, 왜 중복되어 들어간지 모르겠음, DB안에는 잘 들어가 있는데
+                        .collect(Collectors.toList()),
                 "일반"
         );
         

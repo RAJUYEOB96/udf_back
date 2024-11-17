@@ -9,6 +9,4 @@ public class BookRequestDTO {
 
     AladinBookRequestDTO aladinBookRequestDTO;
     BookStatusRequestDTO bookStatusRequestDTO;
-
-    private String tapCondition;
 }

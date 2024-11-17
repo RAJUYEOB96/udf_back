@@ -1,6 +1,8 @@
 package com.undefinedus.backend.domain.entity;
 
 import com.undefinedus.backend.domain.enums.BookStatus;
+import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
+import com.undefinedus.backend.exception.book.InvalidStatusException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -67,4 +69,34 @@ public class MyBook extends BaseEntity {
     @Column
     private LocalDate endDate;   // 완독한/멈춘 날짜
     
+    // === 메서드 === //
+    // === 상태 업데이트 === //
+    public void updateStatus(BookStatusRequestDTO requestDTO) {
+        // null 체크 추가
+        if (requestDTO.getStatus() == null) {
+            throw new InvalidStatusException("상태값은 필수 입력값입니다.");
+        }
+        
+        try {
+            this.status = BookStatus.valueOf(requestDTO.getStatus());
+            this.myRating = requestDTO.getMyRating();
+            this.oneLineReview = requestDTO.getOneLineReview();
+            this.currentPage = requestDTO.getCurrentPage();
+            this.updateCount = requestDTO.getUpdateCount();
+            this.startDate = requestDTO.getStartDate();
+            this.endDate = requestDTO.getEndDate();
+        } catch (IllegalArgumentException e) {
+            // IllegalArgumentException을 InvalidStatusException으로 변환
+            throw new InvalidStatusException(String.format("잘못된 상태값입니다: %s", requestDTO.getStatus()));
+        }
+        
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setStatus(BookStatus status) {
+        this.status = status;
+    }
 }

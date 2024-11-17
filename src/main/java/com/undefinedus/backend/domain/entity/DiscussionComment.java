@@ -34,7 +34,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Builder
 @SQLDelete(sql = "UPDATE discussion_comment SET is_deleted = true, deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("is_deleted = false")
-@ToString(exclude = {"discussion", "member", "parent", "children"})  // 순환참조 방지
+@ToString(exclude = {"discussion", "member"})  // 순환참조 방지
 public class DiscussionComment extends BaseEntity {
     
     // === ID === //
@@ -66,7 +66,7 @@ public class DiscussionComment extends BaseEntity {
     @Column(nullable = false)
     private VoteType voteType;  // 찬성/반대 의견
     
-    @Column(length = 2000, nullable = false)
+    @Column(length = 300, nullable = false)
     private String content;  // 댓글 내용
     
     // === 좋아요/싫어요 === //
