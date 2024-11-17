@@ -10,15 +10,23 @@ import static org.mockito.Mockito.verify;
 import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBookmark;
+import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.bookmark.BookmarkRequestDTO;
+import com.undefinedus.backend.dto.response.ScrollResponseDTO;
+import com.undefinedus.backend.dto.response.bookmark.MyBookmarkResponseDTO;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.AladinBookRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.MyBookmarkRepository;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -122,5 +130,160 @@ class MyBookmarkServiceImplTest {
         assertThatThrownBy(() -> myBookmarkService.insertBookMark(1L, mockRequestDTO))
                 .isInstanceOf(BookNotFoundException.class)
                 .hasMessageContaining("해당 책을 찾을 수 없습니다.");
+    }
+    
+    @Nested
+    @DisplayName("북마크 목록 조회 테스트")
+    class GetMyBookmarkListTest {
+        
+        @Test
+        @DisplayName("북마크 목록 조회 성공 - 다음 페이지 존재")
+        void getMyBookmarkList_WithNextPage() {
+            // given
+            ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
+                    .size(2)
+                    .lastId(0L)
+                    .sort("desc")
+                    .build();
+            
+            // ArrayList로 변경하여 수정 가능한 리스트 생성
+            List<MyBookmark> mockBookmarks = new ArrayList<>(Arrays.asList(
+                    MyBookmark.builder()
+                            .id(3L)
+                            .member(mockMember)
+                            .aladinBook(mockAladinBook)
+                            .phrase("첫 번째 구절")
+                            .createdDate(LocalDateTime.now())  // 생성일시 추가
+                            .build(),
+                    MyBookmark.builder()
+                            .id(2L)
+                            .member(mockMember)
+                            .aladinBook(mockAladinBook)
+                            .phrase("두 번째 구절")
+                            .createdDate(LocalDateTime.now().minusHours(1))  // 시간차를 두어 생성
+                            .build(),
+                    MyBookmark.builder()
+                            .id(1L)
+                            .member(mockMember)
+                            .aladinBook(mockAladinBook)
+                            .phrase("세 번째 구절")
+                            .createdDate(LocalDateTime.now().minusHours(2))  // 시간차를 두어 생성
+                            .build()
+            ));
+            
+            given(myBookmarkRepository.findBookmarksWithScroll(1L, requestDTO))
+                    .willReturn(mockBookmarks);
+            
+            // when
+            ScrollResponseDTO<MyBookmarkResponseDTO> result =
+                    myBookmarkService.getMyBookmarkList(1L, requestDTO);
+            
+            // then
+            assertThat(result.isHasNext()).isTrue();
+            assertThat(result.getContent()).hasSize(2);
+            assertThat(result.getLastId()).isEqualTo(2L);
+            assertThat(result.getNumberOfElements()).isEqualTo(2);
+        }
+        
+        @Test
+        @DisplayName("북마크 목록 조회 성공 - 다음 페이지 없음")
+        void getMyBookmarkList_WithoutNextPage() {
+            // given
+            ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
+                    .size(2)
+                    .lastId(0L)
+                    .sort("desc")
+                    .build();
+            
+            List<MyBookmark> mockBookmarks = List.of(
+                    MyBookmark.builder()
+                            .id(2L)
+                            .member(mockMember)
+                            .aladinBook(mockAladinBook)
+                            .phrase("첫 번째 구절")
+                            .createdDate(LocalDateTime.now())  // 생성일시 추가
+                            .build(),
+                    MyBookmark.builder()
+                            .id(1L)
+                            .member(mockMember)
+                            .aladinBook(mockAladinBook)
+                            .phrase("두 번째 구절")
+                            .createdDate(LocalDateTime.now().minusHours(1))  // 시간차를 두어 생성
+                            .build()
+            );
+            
+            given(myBookmarkRepository.findBookmarksWithScroll(1L, requestDTO))
+                    .willReturn(mockBookmarks);
+            
+            // when
+            ScrollResponseDTO<MyBookmarkResponseDTO> result =
+                    myBookmarkService.getMyBookmarkList(1L, requestDTO);
+            
+            // then
+            assertThat(result.isHasNext()).isFalse();
+            assertThat(result.getContent()).hasSize(2);
+            assertThat(result.getLastId()).isEqualTo(1L);
+            assertThat(result.getNumberOfElements()).isEqualTo(2);
+        }
+        
+        @Test
+        @DisplayName("북마크 목록 조회 - 빈 결과")
+        void getMyBookmarkList_EmptyResult() {
+            // given
+            ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
+                    .size(2)
+                    .lastId(0L)
+                    .sort("desc")
+                    .build();
+            
+            given(myBookmarkRepository.findBookmarksWithScroll(1L, requestDTO))
+                    .willReturn(List.of());
+            
+            // when
+            ScrollResponseDTO<MyBookmarkResponseDTO> result =
+                    myBookmarkService.getMyBookmarkList(1L, requestDTO);
+            
+            // then
+            assertThat(result.isHasNext()).isFalse();
+            assertThat(result.getContent()).isEmpty();
+            assertThat(result.getLastId()).isEqualTo(0L);
+            assertThat(result.getNumberOfElements()).isZero();
+        }
+        
+        @Test
+        @DisplayName("검색어가 있는 경우의 북마크 목록 조회")
+        void getMyBookmarkList_WithSearch() {
+            // given
+            ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
+                    .size(2)
+                    .lastId(0L)
+                    .sort("desc")
+                    .search("테스트")
+                    .build();
+            
+            List<MyBookmark> mockBookmarks = List.of(
+                    MyBookmark.builder()
+                            .id(2L)
+                            .member(mockMember)
+                            .aladinBook(mockAladinBook)
+                            .phrase("테스트 구절")
+                            .createdDate(LocalDateTime.now())  // 생성일시 추가
+                            .build()
+            );
+            
+            given(myBookmarkRepository.findBookmarksWithScroll(1L, requestDTO))
+                    .willReturn(mockBookmarks);
+            
+            // when
+            ScrollResponseDTO<MyBookmarkResponseDTO> result =
+                    myBookmarkService.getMyBookmarkList(1L, requestDTO);
+            
+            // then
+            assertThat(result.isHasNext()).isFalse();
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().get(0).getPhrase()).contains("테스트");
+            assertThat(result.getLastId()).isEqualTo(2L);
+            assertThat(result.getNumberOfElements()).isEqualTo(1);
+        }
     }
 }

@@ -2,7 +2,7 @@ package com.undefinedus.backend.controller;
 
 import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
-import com.undefinedus.backend.dto.request.BookScrollRequestDTO;
+import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.book.BookRequestDTO;
 import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
@@ -73,7 +73,7 @@ public class MyBookController {
     @GetMapping
     public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<MyBookResponseDTO>>> getMyBookList(
             @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-            @ModelAttribute BookScrollRequestDTO requestDTO) {  // GET 요청에서는 @RequestBody 대신 @ModelAttribute 사용
+            @ModelAttribute ScrollRequestDTO requestDTO) {  // GET 요청에서는 @RequestBody 대신 @ModelAttribute 사용
         
         Long memberId = memberSecurityDTO.getId();
 

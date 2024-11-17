@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookScrollRequestDTO {
+public class ScrollRequestDTO {
     
     // 검색의 searchType은  작가/책 제목 둘다 동시에 할 예정
     
@@ -23,6 +23,8 @@ public class BookScrollRequestDTO {
     private String sort = "desc"; // asc : 오름차순, desc : 내림차순
     
     private String search;    // 검색어
+    
+    // === 아래는 MyBook 관련 === //
     
     @Builder.Default
     private String status = "READING";   // 탭 구분 (예: COMPLETED, WISH, READING, STOPPED) // null 또는 빈값이면 전체 가져옴

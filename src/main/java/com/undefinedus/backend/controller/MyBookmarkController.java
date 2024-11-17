@@ -1,11 +1,12 @@
 package com.undefinedus.backend.controller;
 
 import com.undefinedus.backend.dto.MemberSecurityDTO;
-import com.undefinedus.backend.dto.request.BookScrollRequestDTO;
+import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.bookmark.BookmarkRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
+import com.undefinedus.backend.dto.response.bookmark.MyBookmarkResponseDTO;
 import com.undefinedus.backend.service.MyBookService;
 import com.undefinedus.backend.service.MyBookmarkService;
 import jakarta.validation.Valid;
@@ -25,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Log4j2
 @RequestMapping("/api/bookmark")
-public class MyBookMarkController {
+public class MyBookmarkController {
 
     private final MyBookmarkService myBookmarkService;
     private final MyBookService myBookService;
@@ -47,7 +48,7 @@ public class MyBookMarkController {
     @GetMapping("/addSearch")
     public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<MyBookResponseDTO>>> getSearchMyBook(
             @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-            @ModelAttribute BookScrollRequestDTO requestDTO) {  // requestDTO의 status가 null 또는 빈값이 들어와야함, 그래야 전체 가져옴
+            @ModelAttribute ScrollRequestDTO requestDTO) {  // requestDTO의 status가 null 또는 빈값이 들어와야함, 그래야 전체 가져옴
         
         Long memberId = memberSecurityDTO.getId();
         
@@ -59,5 +60,18 @@ public class MyBookMarkController {
         // 여기에서는 자신이 기록한 myBook 다 보여줄 예정
         return ResponseEntity.ok(ApiResponseDTO.success(response)); // GET 요청에서는 body를 사용하지 않는 것이 HTTP 표준
     }
-
+    
+    // 내 책장의 책갈피 탭을 했을때 사용하는 컨트롤러
+    @GetMapping
+    public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<MyBookmarkResponseDTO>>> getBookmarkList(
+            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+            @ModelAttribute ScrollRequestDTO requestDTO) {
+        
+        Long memberId = memberSecurityDTO.getId();
+        
+        // Service에서는 ScrollResponseDTO를 반환해야 함
+        ScrollResponseDTO<MyBookmarkResponseDTO> response = myBookmarkService.getMyBookmarkList(memberId,requestDTO);
+    
+        return ResponseEntity.ok(ApiResponseDTO.success((response)));
+    }
 }

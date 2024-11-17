@@ -3,13 +3,19 @@ package com.undefinedus.backend.service;
 import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBookmark;
+import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.bookmark.BookmarkRequestDTO;
+import com.undefinedus.backend.dto.response.ScrollResponseDTO;
+import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
+import com.undefinedus.backend.dto.response.bookmark.MyBookmarkResponseDTO;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.AladinBookRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.MyBookmarkRepository;
 import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -46,5 +52,36 @@ public class MyBookmarkServiceImpl implements MyBookmarkService{
                 .build();
         
         myBookmarkRepository.save(myBookmark);
+    }
+    
+    @Override
+    public ScrollResponseDTO<MyBookmarkResponseDTO> getMyBookmarkList(Long memberId, ScrollRequestDTO requestDTO) {
+        // findBooksWithScroll안에서 size + 1개 데이터 조회해서 가져옴 (size가 10이면 11개 가져옴)
+        
+        List<MyBookmark> myBookmarks = myBookmarkRepository.findBookmarksWithScroll(memberId, requestDTO);
+        
+        boolean hasNext = false;
+        if (myBookmarks.size() > requestDTO.getSize()) { // 11 > 10 이면 있다는 뜻
+            hasNext = true;
+            myBookmarks.remove(myBookmarks.size() - 1); // 11개 가져온 걸 10개를 보내기 위해
+        }
+        
+        List<MyBookmarkResponseDTO> dtoList = myBookmarks.stream()
+                .map(myBookmark -> {
+                    return MyBookmarkResponseDTO.from(myBookmark);
+                })
+                .collect(Collectors.toList());
+        
+        // 마지막 항목의 ID 설정
+        Long lastId = myBookmarks.isEmpty() ?
+                requestDTO.getLastId() :    // 조회된 목록이 비어있는 경우를 대비해 삼항 연산자 사용
+                myBookmarks.get(myBookmarks.size() - 1).getId(); // lastId를 요청 DTO의 값이 아닌, 실제 조회된 마지막 항목의 ID로 설정
+        
+        return ScrollResponseDTO.<MyBookmarkResponseDTO>withAll()
+                .content(dtoList)
+                .hasNext(hasNext)
+                .lastId(lastId)
+                .numberOfElements(dtoList.size())
+                .build();
     }
 }

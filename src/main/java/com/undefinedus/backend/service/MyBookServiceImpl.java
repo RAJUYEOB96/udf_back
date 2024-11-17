@@ -5,7 +5,7 @@ import com.undefinedus.backend.domain.entity.CalendarStamp;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.enums.BookStatus;
-import com.undefinedus.backend.dto.request.BookScrollRequestDTO;
+import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
@@ -103,7 +103,7 @@ public class MyBookServiceImpl implements MyBookService {
     }
     
     @Override
-    public ScrollResponseDTO<MyBookResponseDTO> getMyBookList(Long memberId, BookScrollRequestDTO requestDTO) {
+    public ScrollResponseDTO<MyBookResponseDTO> getMyBookList(Long memberId, ScrollRequestDTO requestDTO) {
         // findBooksWithScroll안에서 size + 1개 데이터 조회해서 가져옴 (size가 10이면 11개 가져옴)
         
         List<MyBook> myBooks = myBookRepository.findBooksWithScroll(memberId, requestDTO);
