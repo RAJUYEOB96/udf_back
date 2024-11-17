@@ -256,14 +256,20 @@ class MyBookmarkRepositoryTest {
         }
         
         @Test
-        @DisplayName("존재하지 않는 멤버 ID로 조회 시 null 반환")
+        @DisplayName("존재하지 않는 멤버 ID로 조회 시 빈 Optional 반환")
         void findWithNonExistingMemberReturnsNull() {
+            // given
+            Long nonExistingMemberId = 999L;
+            Long existingBookmarkId = savedBookmark.getId();
+            
             // when
-            Optional<MyBookmark> foundBookmark = myBookmarkRepository.findByIdAndMemberId(savedBookmark.getId(),
-                    999999L);
+            Optional<MyBookmark> result = myBookmarkRepository.findByIdAndMemberId(
+                    existingBookmarkId,
+                    nonExistingMemberId
+            );
             
             // then
-            assertThat(foundBookmark).isEmpty();
+            assertThat(result).isEmpty();
         }
         
         @Test
