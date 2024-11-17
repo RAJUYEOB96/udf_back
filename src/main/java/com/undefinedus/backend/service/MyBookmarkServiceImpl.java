@@ -97,4 +97,14 @@ public class MyBookmarkServiceImpl implements MyBookmarkService{
         findMyBookmark.updateMyBookmark(requestDTO);
     
     }
+    
+    @Override
+    public void deleteMyBookmark(Long memberId, Long bookmarkId) {
+        
+        myBookmarkRepository.findByIdAndMemberId(bookmarkId, memberId)
+                .orElseThrow(() -> new BookmarkNotFoundException(String.format(BOOKMARK_NOT_FOUND, memberId, bookmarkId)));
+        
+        
+        myBookmarkRepository.deleteById(bookmarkId);
+    }
 }

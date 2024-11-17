@@ -377,4 +377,64 @@ class MyBookmarkServiceImplTest {
             assertThat(mockBookmark.getPageNumber()).isEqualTo(100);  // 기존 값 유지
         }
     }
+    
+    @Nested
+    @DisplayName("북마크 삭제 테스트")
+    class DeleteMyBookmarkTest {
+        
+        private MyBookmark mockBookmark;
+        
+        @BeforeEach
+        void setUp() {
+            mockBookmark = MyBookmark.builder()
+                    .id(1L)
+                    .member(mockMember)
+                    .aladinBook(mockAladinBook)
+                    .phrase("삭제할 문구")
+                    .pageNumber(100)
+                    .build();
+        }
+        
+        @Test
+        @DisplayName("북마크 삭제 성공")
+        void deleteMyBookmark_Success() {
+            // given
+            given(myBookmarkRepository.findByIdAndMemberId(1L, 1L))
+                    .willReturn(Optional.of(mockBookmark));
+            
+            // when
+            myBookmarkService.deleteMyBookmark(1L, 1L);
+            
+            // then
+            verify(myBookmarkRepository).deleteById(1L);
+        }
+        
+        @Test
+        @DisplayName("존재하지 않는 북마크 삭제 시도 시 실패")
+        void deleteMyBookmark_BookmarkNotFound() {
+            // given
+            given(myBookmarkRepository.findByIdAndMemberId(999L, 1L))
+                    .willReturn(Optional.empty());
+            
+            // when & then
+            assertThatThrownBy(() ->
+                    myBookmarkService.deleteMyBookmark(1L, 999L))
+                    .isInstanceOf(BookmarkNotFoundException.class)
+                    .hasMessageContaining("해당 기록된 북마크를 찾을 수 없습니다.");
+        }
+        
+        @Test
+        @DisplayName("다른 사용자의 북마크 삭제 시도 시 실패")
+        void deleteMyBookmark_WrongMember() {
+            // given
+            given(myBookmarkRepository.findByIdAndMemberId(1L, 999L))
+                    .willReturn(Optional.empty());
+            
+            // when & then
+            assertThatThrownBy(() ->
+                    myBookmarkService.deleteMyBookmark(999L, 1L))
+                    .isInstanceOf(BookmarkNotFoundException.class)
+                    .hasMessageContaining("해당 기록된 북마크를 찾을 수 없습니다.");
+        }
+    }
 }

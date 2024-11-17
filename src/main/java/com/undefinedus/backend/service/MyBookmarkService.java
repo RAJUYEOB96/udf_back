@@ -14,4 +14,6 @@ public interface MyBookmarkService {
     ScrollResponseDTO<MyBookmarkResponseDTO> getMyBookmarkList(Long memberId, ScrollRequestDTO requestDTO);
     
     void updateMyBookmark(Long id, Long bookmarkId, @Valid MyBookmarkUpdateRequestDTO requestDTO);
+    
+    void deleteMyBookmark(Long memberId, Long bookmarkId);
 }

@@ -113,20 +113,11 @@ public class MyBookController {
             @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
             @PathVariable("bookId") Long bookId) {
         
-        try {
-            myBookService.deleteMyBook(memberSecurityDTO.getId(), bookId);
-        } catch (BookNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                   .body(ApiResponseDTO.error(e.getMessage()));
-        } catch (Exception e) {
-            log.error("도서를 삭제하지 못했습니다.", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                   .body(ApiResponseDTO.error("도서 삭제에 실패했습니다."));
-        }
+        
+        myBookService.deleteMyBook(memberSecurityDTO.getId(), bookId);
         
         // 성공적으로 처리되었음을 나타내는 응답을 반환합니다.
-        return ResponseEntity.ok()
-                .body(ApiResponseDTO.success(null));
+        return ResponseEntity.ok().body(ApiResponseDTO.success(null));
     }
     
 }
