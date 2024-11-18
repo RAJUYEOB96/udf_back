@@ -29,13 +29,18 @@ class AladinBookServiceImplTests {
 
         String keyword = "삼국지";
 
-        List<AladinApiResponseDTO> aladinApiResponseDTOS = aladinBookService.searchKeywordAladinAPI(
-            keyword);
+        int page = 1;
 
-        for (AladinApiResponseDTO aladinApiResponseDTO : aladinApiResponseDTOS) {
-            System.out.println("aladinApiResponseDTO = " + aladinApiResponseDTO);
-            System.out.println();
-        }
+        String sort = "Title";
+
+        Map<String, Object> aladinApiResponseDTOS = aladinBookService.searchKeywordAladinAPI(
+            page,
+            keyword,
+            sort);
+
+
+        // 결과를 반복하여 출력
+        System.out.println(aladinApiResponseDTOS);
     }
 
     @Test
