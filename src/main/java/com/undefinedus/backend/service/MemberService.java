@@ -3,6 +3,7 @@ package com.undefinedus.backend.service;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
+import com.undefinedus.backend.dto.response.social.MemberSocialInfoResponseDTO;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -45,4 +46,5 @@ public interface MemberService {
                 "일반"  // 일반 로그인 사용자
         );
     }
+    
 }
