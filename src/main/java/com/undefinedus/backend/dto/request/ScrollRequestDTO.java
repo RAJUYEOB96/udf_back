@@ -24,6 +24,10 @@ public class ScrollRequestDTO {
     
     private String search;    // 검색어
     
+    // == 아래는 social 관련 === //
+    // TODO : 여유가 될 때 파일 각각의 상황에 맞게 쪼개놓기
+    private String lastNickname;  // 마지막으로 본 닉네임 추가
+    
     // === 아래는 MyBook 관련 === //
     
     @Builder.Default

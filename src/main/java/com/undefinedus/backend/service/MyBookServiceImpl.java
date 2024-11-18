@@ -130,7 +130,7 @@ public class MyBookServiceImpl implements MyBookService {
         return ScrollResponseDTO.<MyBookResponseDTO>withAll()
                 .content(dtoList)
                 .hasNext(hasNext)
-                .lastId(lastId) // 조회된 목록의 마지막 항목의 ID ? INDEX ?
+                .lastId(lastId) // 조회된 목록의 마지막 항목의 ID
                 .numberOfElements(dtoList.size())
                 .build();
     }

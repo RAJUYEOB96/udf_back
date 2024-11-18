@@ -1,10 +1,13 @@
 package com.undefinedus.backend.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.undefinedus.backend.domain.entity.Follow;
 import com.undefinedus.backend.domain.entity.Member;
 import jakarta.persistence.EntityManager;
+import java.util.Set;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -162,5 +165,40 @@ class FollowRepositoryTest {
         
         // then
         assertThat(followersCount).isZero(); // member3는 팔로워가 없음
+    }
+    
+    @Test
+    @DisplayName("사용자가 팔로우하는 멤버들의 ID 목록 조회 테스트")
+    void findFollowingIds() {
+        // when
+        Set<Long> followingIds = followRepository.findFollowingIds(member1.getId());
+        
+        // then
+        assertAll(
+                () -> assertThat(followingIds).hasSize(2),  // member1은 2명을 팔로우
+                () -> assertThat(followingIds).contains(member2.getId(), member3.getId()),  // member2, member3를 팔로우
+                () -> assertThat(followingIds).doesNotContain(member4.getId())  // member4는 팔로우하지 않음
+        );
+    }
+    
+    @Test
+    @DisplayName("팔로잉이 없는 사용자의 팔로잉 ID 목록 조회 테스트")
+    void findFollowingIdsWithNoFollowings() {
+        // given
+        Member newMember = Member.builder()
+                .username("nofollow@test.com")
+                .password("password")
+                .nickname("NoFollow")
+                .isPublic(true)
+                .build();
+        em.persist(newMember);
+        em.flush();
+        em.clear();
+        
+        // when
+        Set<Long> followingIds = followRepository.findFollowingIds(newMember.getId());
+        
+        // then
+        assertThat(followingIds).isEmpty();  // 팔로잉이 없으므로 빈 Set 반환
     }
 }

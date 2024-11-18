@@ -5,6 +5,7 @@ import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.social.MemberSocialInfoResponseDTO;
+import com.undefinedus.backend.dto.response.social.OtherMemberInfoResponseDTO;
 import com.undefinedus.backend.service.MemberService;
 import com.undefinedus.backend.service.SocialService;
 import lombok.RequiredArgsConstructor;
@@ -36,5 +37,17 @@ public class SocialController {
         return ResponseEntity.ok(ApiResponseDTO.success(response));
     }
     
+    // 소셜 메인 (MAIN_0004)에서 닉네임으로 검색했을 때 가져오는 리스트 (팔로잉, 팔로우 전부)
+    @GetMapping("/main/search")
+    public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<OtherMemberInfoResponseDTO>>> getOtherMemberList(
+            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+            @ModelAttribute ScrollRequestDTO requestDTO) {
+        
+        Long memberId = memberSecurityDTO.getId();
+        
+        ScrollResponseDTO<OtherMemberInfoResponseDTO> response = socialService.getOtherMembers(memberId, requestDTO);
+        
+        return ResponseEntity.ok(ApiResponseDTO.success(response));
+    }
     
 }
