@@ -127,4 +127,13 @@ public class Discussion extends BaseEntity {
             this.views += count;
         }
     }
+
+    public void setStatus(DiscussionStatus status) {
+        this.status = status;
+    }
+
+    public void setParticipants(
+        List<DiscussionParticipant> participants) {
+        this.participants = participants;
+    }
 }

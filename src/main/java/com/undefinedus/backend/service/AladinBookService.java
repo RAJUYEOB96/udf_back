@@ -13,7 +13,8 @@ public interface AladinBookService {
 
     AladinBook insertAladinBook(AladinBookRequestDTO requestDTO);
 
-    List<AladinApiResponseDTO> searchKeywordAladinAPI(String search);
+    Map<String, Object> searchKeywordAladinAPI(Integer page,
+        String search, String sort);
 
     List<AladinApiResponseDTO> searchBestsellerAladinAPIList();
 
