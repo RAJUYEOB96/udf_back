@@ -48,6 +48,8 @@ public class SocialServiceImpl implements SocialService{
     @Override
     public ScrollResponseDTO<OtherMemberInfoResponseDTO> getOtherMembers(Long memberId, ScrollRequestDTO requestDTO) {
         
+        Long totalElements = memberRepository.countAllWithoutMemberId(memberId, requestDTO);
+        
         List<Member> otherMembers = memberRepository.findAllWithoutMemberId(memberId, requestDTO);
         
         boolean hasNext = false;
@@ -79,11 +81,14 @@ public class SocialServiceImpl implements SocialService{
                 .lastId(lastId)
                 .lastNickname(lastNickname)  // lastNickname 필드도 추가
                 .numberOfElements(dtoList.size())
+                .totalElements(totalElements)
                 .build();
     }
     
     @Override
     public ScrollResponseDTO<OtherMemberInfoResponseDTO> getFollowMembers(Long memberId, ScrollRequestDTO requestDTO) {
+        
+        Long totalElements = memberRepository.countAllFollowMembersByTabCondition(memberId, requestDTO);
         
         List<Member> followMembers = memberRepository.findFollowMembersByTabCondition(memberId, requestDTO);
         
@@ -116,6 +121,7 @@ public class SocialServiceImpl implements SocialService{
                 .lastId(lastId)
                 .lastNickname(lastNickname)  // lastNickname 필드도 추가
                 .numberOfElements(dtoList.size())
+                .totalElements(totalElements)
                 .build();
     }
     

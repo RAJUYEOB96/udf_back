@@ -73,6 +73,28 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
     }
     
     @Override
+    public Long countAllWithoutMemberId(Long memberId, ScrollRequestDTO requestDTO) {
+        QMember member = QMember.member;
+        
+        BooleanBuilder builder = new BooleanBuilder();
+        
+        // memberId 와 일치 하지 않는 것만 들고 오기 위해 ne (not equal)
+        builder.and(member.id.ne(memberId));
+        
+        // 검색어 처리 (닉네임 검색)
+        if (StringUtils.hasText(requestDTO.getSearch())) {
+            // 검색어로 시작하는 닉네임들만 가져오기
+            builder.and(member.nickname.startsWith(requestDTO.getSearch()));
+        }
+        
+        return queryFactory
+                .select(member.count())
+                .from(member)
+                .where(builder)
+                .fetchOne();
+    }
+    
+    @Override
     public List<Member> findFollowMembersByTabCondition(Long memberId, ScrollRequestDTO requestDTO) {
         QFollow follow = QFollow.follow;
         
@@ -150,4 +172,42 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
             throw new TabConditionNotEqualException("해당 TabCondition이 일치하지 않습니다. : " + requestDTO.getTabCondition());
         }
     }
+    
+    @Override
+    public Long countAllFollowMembersByTabCondition(Long memberId, ScrollRequestDTO requestDTO) {
+        QFollow follow = QFollow.follow;
+        
+        BooleanBuilder builder = new BooleanBuilder();
+        
+        if ("팔로워".equals(requestDTO.getTabCondition())) {
+            // 나를 팔로우하는 사람들 조회 (팔로워)
+            builder.and(follow.following.id.eq(memberId));
+            
+            // 검색어 처리 (팔로워 닉네임 검색)
+            if (StringUtils.hasText(requestDTO.getSearch())) {
+                builder.and(follow.follower.nickname.startsWith(requestDTO.getSearch()));
+            }
+         
+            return queryFactory
+                    .select(follow.count())
+                    .from(follow)
+                    .where(builder)
+                    .fetchOne();
+        } else if ("팔로잉".equals(requestDTO.getTabCondition())) {
+            // 내가 팔로우하는 사람들 조회 (팔로잉)
+            builder.and(follow.follower.id.eq(memberId));
+            
+            // 검색어 처리 (팔로잉 닉네임 검색)
+            if (StringUtils.hasText(requestDTO.getSearch())) {
+                builder.and(follow.following.nickname.startsWith(requestDTO.getSearch()));
+            }
+            
+            return queryFactory
+                    .select(follow.count())
+                    .from(follow)
+                    .where(builder)
+                    .fetchOne();
+        } else {
+            throw new TabConditionNotEqualException("해당 TabCondition이 일치하지 않습니다. : " + requestDTO.getTabCondition());
+        }    }
 }

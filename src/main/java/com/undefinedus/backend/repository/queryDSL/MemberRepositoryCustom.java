@@ -8,5 +8,9 @@ public interface MemberRepositoryCustom {
     
     List<Member> findAllWithoutMemberId(Long memberId, ScrollRequestDTO requestDTO);
     
+    Long countAllWithoutMemberId(Long memberId, ScrollRequestDTO requestDTO);
+    
     List<Member> findFollowMembersByTabCondition(Long memberId, ScrollRequestDTO requestDTO);
+    
+    Long countAllFollowMembersByTabCondition(Long memberId, ScrollRequestDTO requestDTO);
 }

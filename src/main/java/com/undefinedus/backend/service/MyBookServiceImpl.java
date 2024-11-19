@@ -105,8 +105,11 @@ public class MyBookServiceImpl implements MyBookService {
     
     @Override
     public ScrollResponseDTO<MyBookResponseDTO> getMyBookList(Long memberId, ScrollRequestDTO requestDTO) {
-        // findBooksWithScroll안에서 size + 1개 데이터 조회해서 가져옴 (size가 10이면 11개 가져옴)
         
+        // 해당 status에 따른 전체 기록된 책 수
+        Long totalElements = myBookRepository.countByMemberIdAndStatus(memberId, requestDTO);
+        
+        // findBooksWithScroll안에서 size + 1개 데이터 조회해서 가져옴 (size가 10이면 11개 가져옴)
         List<MyBook> myBooks = myBookRepository.findBooksWithScroll(memberId, requestDTO);
         
         boolean hasNext = false;
@@ -132,6 +135,7 @@ public class MyBookServiceImpl implements MyBookService {
                 .hasNext(hasNext)
                 .lastId(lastId) // 조회된 목록의 마지막 항목의 ID
                 .numberOfElements(dtoList.size())
+                .totalElements(totalElements)
                 .build();
     }
     
