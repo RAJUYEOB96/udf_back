@@ -9,6 +9,7 @@ import com.undefinedus.backend.exception.bookmark.BookmarkNotFoundException;
 import com.undefinedus.backend.exception.dto.ErrorResponse;
 import com.undefinedus.backend.exception.member.MemberException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
+import com.undefinedus.backend.exception.social.TabConditionNotEqualException;
 import com.undefinedus.backend.util.CustomJWTException;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -85,6 +86,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BookmarkNotFoundException.class)
     protected ResponseEntity<ErrorResponse> handleBookmarkNotFoundException(BookmarkNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(e.getMessage()));
+    }
+    
+    // social 관련
+    @ExceptionHandler(TabConditionNotEqualException.class)
+    protected ResponseEntity<ErrorResponse> handleTabConditionNotEqualException(TabConditionNotEqualException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(e.getMessage()));
     }
     

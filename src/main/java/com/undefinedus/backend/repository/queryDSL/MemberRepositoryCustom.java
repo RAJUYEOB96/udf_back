@@ -7,4 +7,6 @@ import java.util.List;
 public interface MemberRepositoryCustom {
     
     List<Member> findAllWithoutMemberId(Long memberId, ScrollRequestDTO requestDTO);
+    
+    List<Member> findFollowMembersByTabCondition(Long memberId, ScrollRequestDTO requestDTO);
 }

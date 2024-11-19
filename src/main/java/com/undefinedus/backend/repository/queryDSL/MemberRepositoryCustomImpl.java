@@ -4,8 +4,10 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.undefinedus.backend.domain.entity.Member;
+import com.undefinedus.backend.domain.entity.QFollow;
 import com.undefinedus.backend.domain.entity.QMember;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
+import com.undefinedus.backend.exception.social.TabConditionNotEqualException;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -68,5 +70,84 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
                 )
                 .limit(requestDTO.getSize() + 1) // 다음 페이지 존재 여부 확인을 위해 1개 더 조회
                 .fetch();
+    }
+    
+    @Override
+    public List<Member> findFollowMembersByTabCondition(Long memberId, ScrollRequestDTO requestDTO) {
+        QFollow follow = QFollow.follow;
+        
+        BooleanBuilder builder = new BooleanBuilder();
+        
+        if ("팔로워".equals(requestDTO.getTabCondition())) {
+            // 나를 팔로우하는 사람들 조회 (팔로워)
+            builder.and(follow.following.id.eq(memberId));
+            
+            // 검색어 처리 (팔로워 닉네임 검색)
+            if (StringUtils.hasText(requestDTO.getSearch())) {
+                builder.and(follow.follower.nickname.startsWith(requestDTO.getSearch()));
+            }
+            
+            // Cursor 조건 추가
+            if (requestDTO.getLastId() > 0) {
+                Member lastMember = em.find(Member.class, requestDTO.getLastId());
+                
+                if (lastMember != null) {
+                    builder.and(
+                            follow.follower.nickname.gt(lastMember.getNickname())
+                                    .or(
+                                            follow.follower.nickname.eq(lastMember.getNickname())
+                                                    .and(follow.follower.id.gt(lastMember.getId()))
+                                    )
+                    );
+                }
+            }
+            
+            return queryFactory
+                    .select(follow.follower)
+                    .from(follow)
+                    .where(builder)
+                    .orderBy(
+                            follow.follower.nickname.asc(),
+                            follow.follower.id.asc()
+                    )
+                    .limit(requestDTO.getSize() + 1)
+                    .fetch();
+        } else if ("팔로잉".equals(requestDTO.getTabCondition())) {
+            // 내가 팔로우하는 사람들 조회 (팔로잉)
+            builder.and(follow.follower.id.eq(memberId));
+            
+            // 검색어 처리 (팔로잉 닉네임 검색)
+            if (StringUtils.hasText(requestDTO.getSearch())) {
+                builder.and(follow.following.nickname.startsWith(requestDTO.getSearch()));
+            }
+            
+            // Cursor 조건 추가
+            if (requestDTO.getLastId() > 0) {
+                Member lastMember = em.find(Member.class, requestDTO.getLastId());
+                
+                if (lastMember != null) {
+                    builder.and(
+                            follow.following.nickname.gt(lastMember.getNickname())
+                                    .or(
+                                            follow.following.nickname.eq(lastMember.getNickname())
+                                                    .and(follow.following.id.gt(lastMember.getId()))
+                                    )
+                    );
+                }
+            }
+            
+            return queryFactory
+                    .select(follow.following)
+                    .from(follow)
+                    .where(builder)
+                    .orderBy(
+                            follow.following.nickname.asc(),    // 여기서 정렬해서 가져옴
+                            follow.following.id.asc()
+                    )
+                    .limit(requestDTO.getSize() + 1)
+                    .fetch();
+        } else {
+            throw new TabConditionNotEqualException("해당 TabCondition이 일치하지 않습니다. : " + requestDTO.getTabCondition());
+        }
     }
 }

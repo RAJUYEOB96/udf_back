@@ -50,4 +50,18 @@ public class SocialController {
         return ResponseEntity.ok(ApiResponseDTO.success(response));
     }
     
+    // 팔로우 (SOCIAL_0001) 에서 닉네임으로 검색했을 때 가져오는 리스트 (각각)
+    @GetMapping("/follow/search")
+    public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<OtherMemberInfoResponseDTO>>> getFollowMemberList(
+            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+            @ModelAttribute ScrollRequestDTO requestDTO) {  // tabCondition에 의해 팔로워 팔로잉 리스트 구분되서 가져옴 (없으면 에러)
+                                                            // search 가 비어있으면 전체 검색 (tabCondition에 따른)
+                                                            // 보낼때 lastId(필요 없지만), lastNickname 둘다 보내기
+        Long memberId = memberSecurityDTO.getId();
+        
+        ScrollResponseDTO<OtherMemberInfoResponseDTO> response = socialService.getFollowMembers(memberId, requestDTO);
+        
+        return ResponseEntity.ok(ApiResponseDTO.success(response));
+    }
+    
 }

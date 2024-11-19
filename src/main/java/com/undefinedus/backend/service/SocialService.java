@@ -10,4 +10,6 @@ public interface SocialService {
     MemberSocialInfoResponseDTO getMemberSocialSimpleInfo(Long memberId);
     
     ScrollResponseDTO<OtherMemberInfoResponseDTO> getOtherMembers(Long memberId, ScrollRequestDTO requestDTO);
+    
+    ScrollResponseDTO<OtherMemberInfoResponseDTO> getFollowMembers(Long memberId, ScrollRequestDTO requestDTO);
 }
