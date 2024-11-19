@@ -9,6 +9,7 @@ import com.undefinedus.backend.exception.bookmark.BookmarkNotFoundException;
 import com.undefinedus.backend.exception.dto.ErrorResponse;
 import com.undefinedus.backend.exception.member.MemberException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
+import com.undefinedus.backend.exception.social.InvalidFollowException;
 import com.undefinedus.backend.exception.social.TabConditionNotEqualException;
 import com.undefinedus.backend.util.CustomJWTException;
 import java.util.Map;
@@ -92,6 +93,12 @@ public class GlobalExceptionHandler {
     // social 관련
     @ExceptionHandler(TabConditionNotEqualException.class)
     protected ResponseEntity<ErrorResponse> handleTabConditionNotEqualException(TabConditionNotEqualException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(e.getMessage()));
+    }
+    
+    @ExceptionHandler(InvalidFollowException.class)
+    protected ResponseEntity<ErrorResponse> handleInvalidFollowException(InvalidFollowException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(e.getMessage()));
     }

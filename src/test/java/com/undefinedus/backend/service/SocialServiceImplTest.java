@@ -2,10 +2,13 @@ package com.undefinedus.backend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.undefinedus.backend.domain.entity.Follow;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.enums.PreferencesType;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
@@ -13,6 +16,7 @@ import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.social.MemberSocialInfoResponseDTO;
 import com.undefinedus.backend.dto.response.social.OtherMemberInfoResponseDTO;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
+import com.undefinedus.backend.exception.social.InvalidFollowException;
 import com.undefinedus.backend.repository.FollowRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import java.util.ArrayList;
@@ -397,5 +401,146 @@ class SocialServiceImplTest {
                     .build());
         }
         return members;
+    }
+    
+    @Test
+    @DisplayName("팔로우 토글 - 팔로우 성공")
+    void toggleFollowStatus_Follow() {
+        // given
+        Long myMemberId = 1L;
+        Long targetMemberId = 2L;
+        
+        Member follower = Member.builder()
+                .id(myMemberId)
+                .username("user1@test.com")
+                .nickname("User1")
+                .build();
+        
+        Member following = Member.builder()
+                .id(targetMemberId)
+                .username("user2@test.com")
+                .nickname("User2")
+                .build();
+        
+        given(memberRepository.findById(myMemberId))
+                .willReturn(Optional.of(follower));
+        given(memberRepository.findById(targetMemberId))
+                .willReturn(Optional.of(following));
+        given(followRepository.findByFollowerAndFollowing(follower, following))
+                .willReturn(Optional.empty());
+        
+        // when
+        socialService.toggleFollowStatus(myMemberId, targetMemberId);
+        
+        // then
+        verify(memberRepository).findById(myMemberId);
+        verify(memberRepository).findById(targetMemberId);
+        verify(followRepository).findByFollowerAndFollowing(follower, following);
+        verify(followRepository).save(any(Follow.class));
+    }
+    
+    @Test
+    @DisplayName("팔로우 토글 - 언팔로우 성공")
+    void toggleFollowStatus_Unfollow() {
+        // given
+        Long myMemberId = 1L;
+        Long targetMemberId = 2L;
+        
+        Member follower = Member.builder()
+                .id(myMemberId)
+                .username("user1@test.com")
+                .nickname("User1")
+                .build();
+        
+        Member following = Member.builder()
+                .id(targetMemberId)
+                .username("user2@test.com")
+                .nickname("User2")
+                .build();
+        
+        Follow existingFollow = Follow.builder()
+                .follower(follower)
+                .following(following)
+                .build();
+        
+        given(memberRepository.findById(myMemberId))
+                .willReturn(Optional.of(follower));
+        given(memberRepository.findById(targetMemberId))
+                .willReturn(Optional.of(following));
+        given(followRepository.findByFollowerAndFollowing(follower, following))
+                .willReturn(Optional.of(existingFollow));
+        
+        // when
+        socialService.toggleFollowStatus(myMemberId, targetMemberId);
+        
+        // then
+        verify(memberRepository).findById(myMemberId);
+        verify(memberRepository).findById(targetMemberId);
+        verify(followRepository).findByFollowerAndFollowing(follower, following);
+        verify(followRepository).delete(existingFollow);
+    }
+    
+    @Test
+    @DisplayName("팔로우 토글 - 자기 자신을 팔로우 시도")
+    void toggleFollowStatus_SelfFollow() {
+        // given
+        Long memberId = 1L;
+        
+        // when & then
+        InvalidFollowException exception = assertThrows(
+                InvalidFollowException.class,
+                () -> socialService.toggleFollowStatus(memberId, memberId)
+        );
+        
+        assertThat(exception.getMessage()).isEqualTo("자신과 동일한 아이디를 팔로우 할 수 없습니다.");
+        verify(memberRepository, never()).findById(anyLong());
+    }
+    
+    @Test
+    @DisplayName("팔로우 토글 - 팔로워가 존재하지 않는 경우")
+    void toggleFollowStatus_FollowerNotFound() {
+        // given
+        Long nonExistentMemberId = 999L;
+        Long targetMemberId = 2L;
+        
+        given(memberRepository.findById(nonExistentMemberId))
+                .willReturn(Optional.empty());
+        
+        // when & then
+        MemberNotFoundException exception = assertThrows(
+                MemberNotFoundException.class,
+                () -> socialService.toggleFollowStatus(nonExistentMemberId, targetMemberId)
+        );
+        
+        assertThat(exception.getMessage())
+                .contains(String.format("해당 유저를 찾을 수 없습니다. : %d", nonExistentMemberId));
+    }
+    
+    @Test
+    @DisplayName("팔로우 토글 - 팔로잉 대상이 존재하지 않는 경우")
+    void toggleFollowStatus_FollowingNotFound() {
+        // given
+        Long myMemberId = 1L;
+        Long nonExistentTargetId = 999L;
+        
+        Member follower = Member.builder()
+                .id(myMemberId)
+                .username("user1@test.com")
+                .nickname("User1")
+                .build();
+        
+        given(memberRepository.findById(myMemberId))
+                .willReturn(Optional.of(follower));
+        given(memberRepository.findById(nonExistentTargetId))
+                .willReturn(Optional.empty());
+        
+        // when & then
+        MemberNotFoundException exception = assertThrows(
+                MemberNotFoundException.class,
+                () -> socialService.toggleFollowStatus(myMemberId, nonExistentTargetId)
+        );
+        
+        assertThat(exception.getMessage())
+                .contains(String.format("해당 유저를 찾을 수 없습니다. : %d", nonExistentTargetId));
     }
 }

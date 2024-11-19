@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.undefinedus.backend.domain.entity.Follow;
 import com.undefinedus.backend.domain.entity.Member;
 import jakarta.persistence.EntityManager;
+import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -200,5 +201,70 @@ class FollowRepositoryTest {
         
         // then
         assertThat(followingIds).isEmpty();  // 팔로잉이 없으므로 빈 Set 반환
+    }
+    
+    @Test
+    @DisplayName("팔로우 관계가 있는 경우 조회 테스트")
+    void findByFollowerAndFollowing_WhenFollowExists() {
+        // when
+        Optional<Follow> follow = followRepository.findByFollowerAndFollowing(member1, member2);
+        
+        // then
+        assertAll(
+                () -> assertThat(follow).isPresent(),
+                () -> assertThat(follow.get().getFollower().getId()).isEqualTo(member1.getId()),
+                () -> assertThat(follow.get().getFollowing().getId()).isEqualTo(member2.getId())
+        );
+    }
+    
+    @Test
+    @DisplayName("팔로우 관계가 없는 경우 조회 테스트")
+    void findByFollowerAndFollowing_WhenFollowDoesNotExist() {
+        // when
+        Optional<Follow> follow = followRepository.findByFollowerAndFollowing(member1, member4);
+        
+        // then
+        assertThat(follow).isEmpty();
+    }
+    
+    @Test
+    @DisplayName("역방향 팔로우 관계 조회 테스트")
+    void findByFollowerAndFollowing_ReverseDirection() {
+        // when
+        Optional<Follow> follow = followRepository.findByFollowerAndFollowing(member2, member1);
+        
+        // then
+        assertAll(
+                () -> assertThat(follow).isPresent(),
+                () -> assertThat(follow.get().getFollower().getId()).isEqualTo(member2.getId()),
+                () -> assertThat(follow.get().getFollowing().getId()).isEqualTo(member1.getId())
+        );
+    }
+    
+    @Test
+    @DisplayName("동일 사용자 간의 팔로우 관계 조회 테스트")
+    void findByFollowerAndFollowing_SameMember() {
+        // when
+        Optional<Follow> follow = followRepository.findByFollowerAndFollowing(member1, member1);
+        
+        // then
+        assertThat(follow).isEmpty();
+    }
+    
+    @Test
+    @DisplayName("삭제된 팔로우 관계 조회 테스트")
+    void findByFollowerAndFollowing_AfterDelete() {
+        // given
+        Follow follow = followRepository.findByFollowerAndFollowing(member1, member2)
+                .orElseThrow(() -> new AssertionError("Follow should exist"));
+        followRepository.delete(follow);
+        em.flush();
+        em.clear();
+        
+        // when
+        Optional<Follow> deletedFollow = followRepository.findByFollowerAndFollowing(member1, member2);
+        
+        // then
+        assertThat(deletedFollow).isEmpty();
     }
 }

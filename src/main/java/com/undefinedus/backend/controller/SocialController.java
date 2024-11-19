@@ -6,7 +6,6 @@ import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.social.MemberSocialInfoResponseDTO;
 import com.undefinedus.backend.dto.response.social.OtherMemberInfoResponseDTO;
-import com.undefinedus.backend.service.MemberService;
 import com.undefinedus.backend.service.SocialService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -14,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -64,4 +65,15 @@ public class SocialController {
         return ResponseEntity.ok(ApiResponseDTO.success(response));
     }
     
+    @PatchMapping("/follow/{targetMemberId}") // 내가 팔로우 상태를 변경시킬 상대의 memberId
+    public ResponseEntity<ApiResponseDTO<Void>> toggleFollowStatus(
+            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+            @PathVariable("targetMemberId") Long targetMemberId) {
+        
+        Long myMemberId = memberSecurityDTO.getId();
+        
+        socialService.toggleFollowStatus(myMemberId, targetMemberId);
+        
+        return ResponseEntity.ok(ApiResponseDTO.success(null));
+    }
 }

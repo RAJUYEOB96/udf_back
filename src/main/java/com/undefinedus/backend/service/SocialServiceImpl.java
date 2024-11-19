@@ -1,14 +1,17 @@
 package com.undefinedus.backend.service;
 
+import com.undefinedus.backend.domain.entity.Follow;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.social.MemberSocialInfoResponseDTO;
 import com.undefinedus.backend.dto.response.social.OtherMemberInfoResponseDTO;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
+import com.undefinedus.backend.exception.social.InvalidFollowException;
 import com.undefinedus.backend.repository.FollowRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -114,6 +117,37 @@ public class SocialServiceImpl implements SocialService{
                 .lastNickname(lastNickname)  // lastNickname 필드도 추가
                 .numberOfElements(dtoList.size())
                 .build();
+    }
+    
+    @Override
+    public void toggleFollowStatus(Long myMemberId, Long targetMemberId) {
+        
+        // 1. 자기 자신을 팔로우하는 경우 예외 처리
+        if (myMemberId.equals(targetMemberId)) {
+            throw new InvalidFollowException("자신과 동일한 아이디를 팔로우 할 수 없습니다.");
+        }
+        
+        // 2. 팔로우할 대상 회원과 자신의 정보를 조회
+        Member follower = memberRepository.findById(myMemberId)
+                .orElseThrow(() -> new MemberNotFoundException(String.format(USER_NOT_FOUND, myMemberId)));
+        Member following = memberRepository.findById(targetMemberId)
+                .orElseThrow(() -> new MemberNotFoundException(String.format(USER_NOT_FOUND, targetMemberId)));
+        
+        // 3. 이미 팔로우 관계가 있는지 확인
+        Optional<Follow> existingFollow = followRepository.findByFollowerAndFollowing(follower, following);
+        
+        if (existingFollow.isPresent()) {
+            // 4-1. 팔로우 관계가 있으면 언팔로우
+            followRepository.delete(existingFollow.get());  // 이건 Follow에 있던거 지우는 것
+        } else {
+            // 4-2 팔로우 관계가 없으면 팔로우 생성
+            Follow newFollow = Follow.builder()
+                    .follower(follower)
+                    .following(following)
+                    .build();
+            
+            followRepository.save(newFollow);           // Follow에 새로운 관계 추가
+        }
     }
     
     

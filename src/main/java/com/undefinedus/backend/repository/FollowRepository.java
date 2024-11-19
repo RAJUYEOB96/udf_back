@@ -1,6 +1,8 @@
 package com.undefinedus.backend.repository;
 
 import com.undefinedus.backend.domain.entity.Follow;
+import com.undefinedus.backend.domain.entity.Member;
+import java.util.Optional;
 import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,4 +21,6 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     @Query("SELECT f.following.id FROM "
             + "Follow f WHERE f.follower.id = :memberId")
     Set<Long> findFollowingIds(@Param("memberId") Long memberId);
+    
+    Optional<Follow> findByFollowerAndFollowing(Member follower, Member following);
 }
