@@ -77,4 +77,43 @@ public class MyBookRepositoryCustomImpl implements MyBookRepositoryCustom{
                 .limit(requestDTO.getSize() + 1) // 다음 페이지 존재 여부 확인을 위해 1개 더 조회
                 .fetch();
     }
+    
+    @Override
+    public Long countByMemberIdAndStatus(Long memberId, ScrollRequestDTO requestDTO) {
+        QMyBook myBook = QMyBook.myBook;
+        
+        // 기본 쿼리 생성
+        // BooleanBuilder이란 QueryDSL에서 동적 쿼리를 생성할 때 사용하는 클래스입니다
+        // 여러 조건들을 and()나 or()로 연결할 수 있게 해주는 빌더 패턴 구현체입니다
+        BooleanBuilder builder = new BooleanBuilder();
+        
+        // Member 필터링 - 필수 조건
+        builder.and(myBook.member.id.eq(memberId));
+        
+        // StringUtils이란 Spring Framework에서 제공하는 유틸리티 메서드입니다
+        // 문자열이 null이 아니고, 길이가 0보다 크며, 공백이 아닌 문자를 하나 이상 포함하는지 확인합니다
+        // str != null && str.trim().length() > 0와 같은 효과입니다
+        // 읽기 상태(탭) 필터
+        if (StringUtils.hasText(requestDTO.getStatus())) {  // 여기서 status가 null 또는 빈값이면 전체 반환
+            try {
+                builder.and(myBook.status.eq(BookStatus.valueOf(requestDTO.getStatus())));
+            } catch (IllegalArgumentException e) {
+                log.error("Invalid status value: {}", requestDTO.getStatus());
+                throw new InvalidStatusException("유효하지 않은 도서 상태입니다: " + requestDTO.getStatus());
+            }
+        }
+        
+        // 검색어 처리 (작가와 제목 동시에 검색)
+        if (StringUtils.hasText(requestDTO.getSearch())) {
+            // containsIgnoreCase는 문자열 포함 여부를 검사할 때 대소문자를 구분하지 않고 검사하는 메서드입니다.
+            builder.and(myBook.aladinBook.title.containsIgnoreCase(requestDTO.getSearch())
+                    .or(myBook.aladinBook.author.containsIgnoreCase(requestDTO.getSearch())));
+        }
+        
+        return queryFactory
+                .select(myBook.count())
+                .from(myBook)
+                .where(builder)
+                .fetchOne();
+    }
 }

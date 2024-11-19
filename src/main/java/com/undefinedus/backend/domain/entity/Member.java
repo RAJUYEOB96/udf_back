@@ -101,11 +101,11 @@ public class Member extends BaseEntity {
     // === 팔로우 관계 === //
     @OneToMany(mappedBy = "follower", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @Builder.Default
-    private Set<Follow> followings = new HashSet<>(); // 내가 팔로우하는 관계들
+    private Set<Follow> followings = new HashSet<>(); // 내가 팔로우하는 관계들 (내가 따라가는)
     
     @OneToMany(mappedBy = "following", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @Builder.Default
-    private Set<Follow> followers = new HashSet<>(); // 나를 팔로우하는 관계들
+    private Set<Follow> followers = new HashSet<>(); // 나를 팔로우하는 관계들 (나를 따라오는)
     
     // === 설정 정보 === //
     @Column(nullable = false)

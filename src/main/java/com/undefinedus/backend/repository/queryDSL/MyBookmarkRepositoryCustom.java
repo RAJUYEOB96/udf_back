@@ -7,4 +7,6 @@ import java.util.List;
 public interface MyBookmarkRepositoryCustom {
     
     List<MyBookmark> findBookmarksWithScroll(Long memberId, ScrollRequestDTO requestDTO);
+    
+    Long countByMemberIdAndStatus(Long memberId, ScrollRequestDTO requestDTO);
 }
