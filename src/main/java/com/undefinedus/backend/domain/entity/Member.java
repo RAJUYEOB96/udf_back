@@ -16,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -55,7 +56,8 @@ public class Member extends BaseEntity {
     @Column(length = 100, nullable = false) // 암호화해서 길이 늘어남
     private String password;   // 비밀번호
     
-    @Column(length = 30, unique = true, nullable = false)
+    @Column(length = 10, unique = true, nullable = false)
+    @Size(min = 2, max = 10)
     private String nickname;    // 일반, 소셜 둘다 회원 가입시 임의 작성
     
     // === 프로필 정보 === //
@@ -99,11 +101,11 @@ public class Member extends BaseEntity {
     // === 팔로우 관계 === //
     @OneToMany(mappedBy = "follower", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @Builder.Default
-    private Set<Follow> followings = new HashSet<>(); // 내가 팔로우하는 관계들
+    private Set<Follow> followings = new HashSet<>(); // 내가 팔로우하는 관계들 (내가 따라가는)
     
     @OneToMany(mappedBy = "following", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @Builder.Default
-    private Set<Follow> followers = new HashSet<>(); // 나를 팔로우하는 관계들
+    private Set<Follow> followers = new HashSet<>(); // 나를 팔로우하는 관계들 (나를 따라오는)
     
     // === 설정 정보 === //
     @Column(nullable = false)

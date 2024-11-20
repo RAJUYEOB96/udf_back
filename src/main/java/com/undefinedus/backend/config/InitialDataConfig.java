@@ -2,6 +2,7 @@ package com.undefinedus.backend.config;
 
 
 import com.undefinedus.backend.domain.entity.AladinBook;
+import com.undefinedus.backend.domain.entity.CalendarStamp;
 import com.undefinedus.backend.domain.entity.Follow;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
@@ -10,6 +11,7 @@ import com.undefinedus.backend.domain.enums.BookStatus;
 import com.undefinedus.backend.domain.enums.MemberType;
 import com.undefinedus.backend.domain.enums.PreferencesType;
 import com.undefinedus.backend.repository.AladinBookRepository;
+import com.undefinedus.backend.repository.CalendarStampRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.MyBookRepository;
 import jakarta.annotation.PostConstruct;
@@ -33,6 +35,7 @@ public class InitialDataConfig {
     private final PasswordEncoder passwordEncoder;
     private final AladinBookRepository aladinBookRepository;
     private final MyBookRepository myBookRepository;
+    private final CalendarStampRepository calendarStampRepository;
 
     @PostConstruct
     public void initData() {
@@ -43,6 +46,7 @@ public class InitialDataConfig {
         settingMembers();
         settingAladinBooks();
         settingMyBooks();
+        settingCalendarStamp();
     }
 
     @Transactional
@@ -410,6 +414,7 @@ public class InitialDataConfig {
         }
 
         List<MyBook> myBooks = new ArrayList<>();
+        List<CalendarStamp> stamps = new ArrayList<>(); // calendarStamp 용
 
         // 1. reader1의 완독한 책 (달러구트 꿈 백화점)
         myBooks.add(MyBook.builder()
@@ -536,5 +541,47 @@ public class InitialDataConfig {
         // 모든 MyBook 저장
         myBookRepository.saveAll(myBooks);
         log.info("Saved {} test myBooks", myBooks.size());
+        
+    }
+    
+    public void settingCalendarStamp(){
+        // MyBook 생성 후에 CalendarStamp 생성
+        if (calendarStampRepository.count() > 0) {
+            log.info("Test CalendarStamp data already exists. Skipping CalendarStamp initialization.");
+            return;
+        }
+        
+        List<CalendarStamp> stamps = new ArrayList<>();
+
+        // READING, COMPLETED 상태의 MyBook들 가져오기
+        myBookRepository.findAll().stream()
+                .filter(myBook -> myBook.getStatus() == BookStatus.READING ||
+                        myBook.getStatus() == BookStatus.COMPLETED)
+                .forEach(myBook -> {
+                    // 시작일이 있는 경우 스탬프 생성
+                    if (myBook.getStartDate() != null) {
+                        stamps.add(CalendarStamp.builder()
+                                .member(myBook.getMember())
+                                .myBook(myBook)
+                                .bookCoverUrl("test")   // .findAll()이 aladinBook을 안가져와서 (Lazy) 이렇게함
+                                .recordedAt(myBook.getStartDate())
+                                .status(myBook.getStatus())
+                                .build());
+                    }
+
+                    // COMPLETED이고 종료일이 있는 경우 추가 스탬프 생성
+                    if (myBook.getStatus() == BookStatus.COMPLETED && myBook.getEndDate() != null) {
+                        stamps.add(CalendarStamp.builder()
+                                .member(myBook.getMember())
+                                .myBook(myBook)
+                                .bookCoverUrl("test")
+                                .recordedAt(myBook.getEndDate())
+                                .status(myBook.getStatus())
+                                .build());
+                    }
+                });
+
+        calendarStampRepository.saveAll(stamps);
+        log.info("Saved {} calendar stamps", stamps.size());
     }
 }
