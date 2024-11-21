@@ -223,7 +223,7 @@ class SocialServiceImplTest {
     
     @Test
     @DisplayName("팔로워 목록 조회 테스트 - 기본 케이스")
-    void getFollowMembers_FollowerSuccess() {
+    void getMemberFollows_FollowerSuccess() {
         // given
         Long memberId = 1L;
         ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
@@ -240,7 +240,7 @@ class SocialServiceImplTest {
                 .willReturn(mockFollowingIds);
         
         // when
-        ScrollResponseDTO<OtherMemberInfoResponseDTO> result = socialService.getFollowMembers(memberId, requestDTO);
+        ScrollResponseDTO<OtherMemberInfoResponseDTO> result = socialService.getMemberFollows(memberId, requestDTO);
         
         // then
         assertThat(result).isNotNull();
@@ -265,7 +265,7 @@ class SocialServiceImplTest {
     
     @Test
     @DisplayName("팔로잉 목록 조회 테스트 - 기본 케이스")
-    void getFollowMembers_FollowingSuccess() {
+    void getMemberFollows_FollowingSuccess() {
         // given
         Long memberId = 1L;
         ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
@@ -282,7 +282,7 @@ class SocialServiceImplTest {
                 .willReturn(mockFollowingIds);
         
         // when
-        ScrollResponseDTO<OtherMemberInfoResponseDTO> result = socialService.getFollowMembers(memberId, requestDTO);
+        ScrollResponseDTO<OtherMemberInfoResponseDTO> result = socialService.getMemberFollows(memberId, requestDTO);
         
         // then
         assertThat(result).isNotNull();
@@ -300,7 +300,7 @@ class SocialServiceImplTest {
     
     @Test
     @DisplayName("팔로우 목록 조회 테스트 - 다음 페이지가 있는 경우")
-    void getFollowMembers_WithNextPage() {
+    void getMemberFollows_WithNextPage() {
         // given
         Long memberId = 1L;
         ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
@@ -317,7 +317,7 @@ class SocialServiceImplTest {
                 .willReturn(mockFollowingIds);
         
         // when
-        ScrollResponseDTO<OtherMemberInfoResponseDTO> result = socialService.getFollowMembers(memberId, requestDTO);
+        ScrollResponseDTO<OtherMemberInfoResponseDTO> result = socialService.getMemberFollows(memberId, requestDTO);
         
         // then
         assertThat(result).isNotNull();
@@ -330,7 +330,7 @@ class SocialServiceImplTest {
     
     @Test
     @DisplayName("팔로우 목록 조회 테스트 - 검색 조건 포함")
-    void getFollowMembers_WithSearch() {
+    void getMemberFollows_WithSearch() {
         // given
         Long memberId = 1L;
         ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
@@ -348,7 +348,7 @@ class SocialServiceImplTest {
                 .willReturn(mockFollowingIds);
         
         // when
-        ScrollResponseDTO<OtherMemberInfoResponseDTO> result = socialService.getFollowMembers(memberId, requestDTO);
+        ScrollResponseDTO<OtherMemberInfoResponseDTO> result = socialService.getMemberFollows(memberId, requestDTO);
         
         // then
         assertThat(result).isNotNull();
@@ -361,7 +361,7 @@ class SocialServiceImplTest {
     
     @Test
     @DisplayName("팔로우 목록 조회 테스트 - 빈 결과")
-    void getFollowMembers_EmptyResult() {
+    void getMemberFollows_EmptyResult() {
         // given
         Long memberId = 1L;
         ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
@@ -377,7 +377,7 @@ class SocialServiceImplTest {
                 .willReturn(Collections.emptySet());
         
         // when
-        ScrollResponseDTO<OtherMemberInfoResponseDTO> result = socialService.getFollowMembers(memberId, requestDTO);
+        ScrollResponseDTO<OtherMemberInfoResponseDTO> result = socialService.getMemberFollows(memberId, requestDTO);
         
         // then
         assertThat(result).isNotNull();
@@ -700,5 +700,161 @@ class SocialServiceImplTest {
         
         verify(memberRepository).findById(myMemberId);
         verify(memberRepository).findById(nonExistentTargetId);
+    }
+    
+    @Test
+    @DisplayName("다른 회원의 팔로우 목록 조회 테스트 - 기본 케이스")
+    void getOtherMemberFollows_Success() {
+        // given
+        Long loginMemberId = 1L;
+        Long targetMemberId = 2L;
+        ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
+                .tabCondition("팔로워")
+                .size(10)
+                .build();
+        
+        List<Member> mockMembers = createMockMembers(5); // 테스트용 팔로워 5명 생성
+        Set<Long> mockFollowingIds = Set.of(3L, 4L); // loginMemberId가 3,4번 멤버를 팔로우
+        Long totalElements = 5L;
+        
+        given(memberRepository.countAllFollowMembersByTabCondition(targetMemberId, requestDTO))
+                .willReturn(totalElements);
+        given(memberRepository.findFollowMembersByTabCondition(targetMemberId, requestDTO))
+                .willReturn(mockMembers);
+        given(followRepository.findFollowingIds(loginMemberId))
+                .willReturn(mockFollowingIds);
+        
+        // when
+        ScrollResponseDTO<OtherMemberInfoResponseDTO> result = socialService.getOtherMemberFollows(loginMemberId, targetMemberId, requestDTO);
+        
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(5);
+        assertThat(result.isHasNext()).isFalse();
+        assertThat(result.getLastId()).isEqualTo(mockMembers.get(4).getId());
+        assertThat(result.getLastNickname()).isEqualTo(mockMembers.get(4).getNickname());
+        assertThat(result.getNumberOfElements()).isEqualTo(5);
+        assertThat(result.getTotalElements()).isEqualTo(totalElements);
+        
+        // 팔로우 상태 검증
+        result.getContent().forEach(dto -> {
+            if (mockFollowingIds.contains(dto.getId())) {
+                assertThat(dto.isFollowing()).isTrue();
+            } else {
+                assertThat(dto.isFollowing()).isFalse();
+            }
+        });
+        
+        verify(memberRepository).countAllFollowMembersByTabCondition(targetMemberId, requestDTO);
+        verify(memberRepository).findFollowMembersByTabCondition(targetMemberId, requestDTO);
+        verify(followRepository).findFollowingIds(loginMemberId);
+    }
+    
+    @Test
+    @DisplayName("다른 회원의 팔로우 목록 조회 테스트 - 다음 페이지가 있는 경우")
+    void getOtherMemberFollows_WithNextPage() {
+        // given
+        Long loginMemberId = 1L;
+        Long targetMemberId = 2L;
+        ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
+                .tabCondition("팔로워")
+                .size(10)
+                .build();
+        
+        List<Member> mockMembers = createMockMembers(11); // size + 1 개의 멤버 생성
+        Set<Long> mockFollowingIds = Set.of(3L, 4L);
+        Long totalElements = 15L;
+        
+        given(memberRepository.countAllFollowMembersByTabCondition(targetMemberId, requestDTO))
+                .willReturn(totalElements);
+        given(memberRepository.findFollowMembersByTabCondition(targetMemberId, requestDTO))
+                .willReturn(mockMembers);
+        given(followRepository.findFollowingIds(loginMemberId))
+                .willReturn(mockFollowingIds);
+        
+        // when
+        ScrollResponseDTO<OtherMemberInfoResponseDTO> result = socialService.getOtherMemberFollows(loginMemberId, targetMemberId, requestDTO);
+        
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(10); // 마지막 항목이 제거되어 10개만 반환
+        assertThat(result.isHasNext()).isTrue();
+        assertThat(result.getLastId()).isEqualTo(mockMembers.get(9).getId());
+        assertThat(result.getLastNickname()).isEqualTo(mockMembers.get(9).getNickname());
+        assertThat(result.getNumberOfElements()).isEqualTo(10);
+        assertThat(result.getTotalElements()).isEqualTo(totalElements);
+    }
+    
+    @Test
+    @DisplayName("다른 회원의 팔로우 목록 조회 테스트 - 검색 조건 포함")
+    void getOtherMemberFollows_WithSearch() {
+        // given
+        Long loginMemberId = 1L;
+        Long targetMemberId = 2L;
+        ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
+                .tabCondition("팔로워")
+                .search("Test")
+                .size(10)
+                .build();
+        
+        List<Member> mockMembers = createMockMembers(3); // 검색 조건에 맞는 멤버 3명
+        Set<Long> mockFollowingIds = Set.of(3L);
+        Long totalElements = 3L;
+        
+        given(memberRepository.countAllFollowMembersByTabCondition(targetMemberId, requestDTO))
+                .willReturn(totalElements);
+        given(memberRepository.findFollowMembersByTabCondition(targetMemberId, requestDTO))
+                .willReturn(mockMembers);
+        given(followRepository.findFollowingIds(loginMemberId))
+                .willReturn(mockFollowingIds);
+        
+        // when
+        ScrollResponseDTO<OtherMemberInfoResponseDTO> result = socialService.getOtherMemberFollows(loginMemberId, targetMemberId, requestDTO);
+        
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(3);
+        assertThat(result.isHasNext()).isFalse();
+        assertThat(result.getLastId()).isEqualTo(mockMembers.get(2).getId());
+        assertThat(result.getLastNickname()).isEqualTo(mockMembers.get(2).getNickname());
+        assertThat(result.getNumberOfElements()).isEqualTo(3);
+        assertThat(result.getTotalElements()).isEqualTo(totalElements);
+    }
+    
+    @Test
+    @DisplayName("다른 회원의 팔로우 목록 조회 테스트 - 빈 결과")
+    void getOtherMemberFollows_EmptyResult() {
+        // given
+        Long loginMemberId = 1L;
+        Long targetMemberId = 2L;
+        ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
+                .tabCondition("팔로워")
+                .lastId(100L)
+                .lastNickname("LastNickname")
+                .size(10)
+                .build();
+        
+        given(memberRepository.countAllFollowMembersByTabCondition(targetMemberId, requestDTO))
+                .willReturn(0L);
+        given(memberRepository.findFollowMembersByTabCondition(targetMemberId, requestDTO))
+                .willReturn(Collections.emptyList());
+        given(followRepository.findFollowingIds(loginMemberId))
+                .willReturn(Collections.emptySet());
+        
+        // when
+        ScrollResponseDTO<OtherMemberInfoResponseDTO> result = socialService.getOtherMemberFollows(loginMemberId, targetMemberId, requestDTO);
+        
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.isHasNext()).isFalse();
+        assertThat(result.getLastId()).isEqualTo(requestDTO.getLastId());
+        assertThat(result.getLastNickname()).isEqualTo(requestDTO.getLastNickname());
+        assertThat(result.getNumberOfElements()).isZero();
+        assertThat(result.getTotalElements()).isZero();
+        
+        verify(memberRepository).countAllFollowMembersByTabCondition(targetMemberId, requestDTO);
+        verify(memberRepository).findFollowMembersByTabCondition(targetMemberId, requestDTO);
+        verify(followRepository).findFollowingIds(loginMemberId);
     }
 }
