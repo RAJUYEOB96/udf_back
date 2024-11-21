@@ -18,10 +18,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
@@ -90,13 +92,5 @@ public class MyBook extends BaseEntity {
             throw new InvalidStatusException(String.format("잘못된 상태값입니다: %s", requestDTO.getStatus()));
         }
         
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setStatus(BookStatus status) {
-        this.status = status;
     }
 }
