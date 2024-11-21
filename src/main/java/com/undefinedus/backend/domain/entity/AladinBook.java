@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 @Entity
@@ -59,4 +60,16 @@ public class AladinBook {
 
     @Column                             // 페이지 정보가 없는 책도 있음
     private Integer itemPage;         // 총 페이지 수
+
+    public void setIsbn13(String isbn13) {
+        this.isbn13 = isbn13;
+    }
+
+    public void setCover(String cover) {
+        this.cover = cover;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
 }

@@ -35,7 +35,6 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
@@ -143,5 +142,14 @@ public class Member extends BaseEntity {
     
     public void setSocialLogin(SocialLogin socialLogin) {
         this.socialLogin = socialLogin;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setNickname(
+        @Size(min = 2, max = 10) String nickname) {
+        this.nickname = nickname;
     }
 }
