@@ -76,4 +76,17 @@ public class SocialController {
         
         return ResponseEntity.ok(ApiResponseDTO.success(null));
     }
+    
+    // 소셜 메인 (SOCIAL_0003), 팔로잉 팔로워(SOCIAL_0001) 목록에서 타겟 멤버의 정보 가져가기
+    @GetMapping("/otherInfo/{targetMemberId}")
+    public ResponseEntity<ApiResponseDTO<MemberSocialInfoResponseDTO>> getOtherMemberInfo(
+            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+            @PathVariable("targetMemberId") Long targetMemberId) {
+        
+        Long myMemberId = memberSecurityDTO.getId();
+        
+        MemberSocialInfoResponseDTO response = socialService.getOtherMemberSocialSimpleInfo(myMemberId, targetMemberId);
+        
+        return ResponseEntity.ok(ApiResponseDTO.success(response));
+    }
 }

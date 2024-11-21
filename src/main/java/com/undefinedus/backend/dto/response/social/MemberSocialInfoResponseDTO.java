@@ -37,9 +37,4 @@ public class MemberSocialInfoResponseDTO {
                 .isFollowing(isFollowing)
                 .build();
     }
-    
-    // 내가 남의 socialInfo를 볼때 넣어주기 위한
-    public void updateIsFollowing(boolean isFollowing) {
-        this.isFollowing = isFollowing;
-    }
 }

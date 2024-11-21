@@ -543,4 +543,162 @@ class SocialServiceImplTest {
         assertThat(exception.getMessage())
                 .contains(String.format("해당 유저를 찾을 수 없습니다. : %d", nonExistentTargetId));
     }
+    
+    @Test
+    @DisplayName("다른 회원의 소셜 정보 조회 성공 - 팔로우하지 않은 경우")
+    void getOtherMemberSocialSimpleInfo_NotFollowing_Success() {
+        // given
+        Long myMemberId = 1L;
+        Long targetMemberId = 2L;
+        
+        Member myMember = Member.builder()
+                .id(myMemberId)
+                .username("my@example.com")
+                .nickname("My User")
+                .isPublic(true)
+                .build();
+        
+        Member targetMember = Member.builder()
+                .id(targetMemberId)
+                .username("target@example.com")
+                .nickname("Target User")
+                .isPublic(true)
+                .build();
+        
+        given(memberRepository.findById(myMemberId))
+                .willReturn(Optional.of(myMember));
+        given(memberRepository.findById(targetMemberId))
+                .willReturn(Optional.of(targetMember));
+        given(followRepository.findByFollowerAndFollowing(myMember, targetMember))
+                .willReturn(Optional.empty());
+        given(followRepository.countFollowingsByMemberId(targetMemberId))
+                .willReturn(5);
+        given(followRepository.countFollowersByMemberId(targetMemberId))
+                .willReturn(3);
+        
+        // when
+        MemberSocialInfoResponseDTO result = socialService.getOtherMemberSocialSimpleInfo(myMemberId, targetMemberId);
+        
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getNickname()).isEqualTo(targetMember.getNickname());
+        assertThat(result.getFollowingCount()).isEqualTo(5);
+        assertThat(result.getFollowerCount()).isEqualTo(3);
+        assertThat(result.getIsFollowing()).isFalse();
+        
+        verify(memberRepository).findById(myMemberId);
+        verify(memberRepository).findById(targetMemberId);
+        verify(followRepository).findByFollowerAndFollowing(myMember, targetMember);
+        verify(followRepository).countFollowingsByMemberId(targetMemberId);
+        verify(followRepository).countFollowersByMemberId(targetMemberId);
+    }
+    
+    @Test
+    @DisplayName("다른 회원의 소셜 정보 조회 성공 - 팔로우한 경우")
+    void getOtherMemberSocialSimpleInfo_Following_Success() {
+        // given
+        Long myMemberId = 1L;
+        Long targetMemberId = 2L;
+        
+        Member myMember = Member.builder()
+                .id(myMemberId)
+                .username("my@example.com")
+                .nickname("My User")
+                .isPublic(true)
+                .build();
+        
+        Member targetMember = Member.builder()
+                .id(targetMemberId)
+                .username("target@example.com")
+                .nickname("Target User")
+                .isPublic(true)
+                .build();
+        
+        Follow follow = Follow.builder()
+                .follower(myMember)
+                .following(targetMember)
+                .build();
+        
+        given(memberRepository.findById(myMemberId))
+                .willReturn(Optional.of(myMember));
+        given(memberRepository.findById(targetMemberId))
+                .willReturn(Optional.of(targetMember));
+        given(followRepository.findByFollowerAndFollowing(myMember, targetMember))
+                .willReturn(Optional.of(follow));
+        given(followRepository.countFollowingsByMemberId(targetMemberId))
+                .willReturn(5);
+        given(followRepository.countFollowersByMemberId(targetMemberId))
+                .willReturn(3);
+        
+        // when
+        MemberSocialInfoResponseDTO result = socialService.getOtherMemberSocialSimpleInfo(myMemberId, targetMemberId);
+        
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getNickname()).isEqualTo(targetMember.getNickname());
+        assertThat(result.getFollowingCount()).isEqualTo(5);
+        assertThat(result.getFollowerCount()).isEqualTo(3);
+        assertThat(result.getIsFollowing()).isTrue();
+        
+        verify(memberRepository).findById(myMemberId);
+        verify(memberRepository).findById(targetMemberId);
+        verify(followRepository).findByFollowerAndFollowing(myMember, targetMember);
+        verify(followRepository).countFollowingsByMemberId(targetMemberId);
+        verify(followRepository).countFollowersByMemberId(targetMemberId);
+    }
+    
+    @Test
+    @DisplayName("다른 회원의 소셜 정보 조회 - 조회하는 회원이 존재하지 않는 경우")
+    void getOtherMemberSocialSimpleInfo_MyMemberNotFound() {
+        // given
+        Long nonExistentMemberId = 999L;
+        Long targetMemberId = 2L;
+        
+        given(memberRepository.findById(nonExistentMemberId))
+                .willReturn(Optional.empty());
+        
+        // when & then
+        MemberNotFoundException exception = assertThrows(
+                MemberNotFoundException.class,
+                () -> socialService.getOtherMemberSocialSimpleInfo(nonExistentMemberId, targetMemberId)
+        );
+        
+        assertThat(exception.getMessage())
+                .contains(String.format("해당 유저를 찾을 수 없습니다. : %d", nonExistentMemberId));
+        
+        verify(memberRepository).findById(nonExistentMemberId);
+        verify(memberRepository, never()).findById(targetMemberId);
+    }
+    
+    @Test
+    @DisplayName("다른 회원의 소셜 정보 조회 - 대상 회원이 존재하지 않는 경우")
+    void getOtherMemberSocialSimpleInfo_TargetMemberNotFound() {
+        // given
+        Long myMemberId = 1L;
+        Long nonExistentTargetId = 999L;
+        
+        Member myMember = Member.builder()
+                .id(myMemberId)
+                .username("my@example.com")
+                .nickname("My User")
+                .isPublic(true)
+                .build();
+        
+        given(memberRepository.findById(myMemberId))
+                .willReturn(Optional.of(myMember));
+        given(memberRepository.findById(nonExistentTargetId))
+                .willReturn(Optional.empty());
+        
+        // when & then
+        MemberNotFoundException exception = assertThrows(
+                MemberNotFoundException.class,
+                () -> socialService.getOtherMemberSocialSimpleInfo(myMemberId, nonExistentTargetId)
+        );
+        
+        assertThat(exception.getMessage())
+                .contains(String.format("해당 유저를 찾을 수 없습니다. : %d", nonExistentTargetId));
+        
+        verify(memberRepository).findById(myMemberId);
+        verify(memberRepository).findById(nonExistentTargetId);
+    }
 }

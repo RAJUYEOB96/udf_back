@@ -156,5 +156,30 @@ public class SocialServiceImpl implements SocialService{
         }
     }
     
+    @Override
+    public MemberSocialInfoResponseDTO getOtherMemberSocialSimpleInfo(Long myMemberId, Long targetMemberId) {
+        
+        Member findMyMember = memberRepository.findById(myMemberId)
+                .orElseThrow(() -> new MemberNotFoundException(String.format(USER_NOT_FOUND, myMemberId)));
+        
+        Member findTargetMember = memberRepository.findById(targetMemberId)
+                .orElseThrow(() -> new MemberNotFoundException(String.format(USER_NOT_FOUND, targetMemberId)));
+        
+        
+        // 이미 팔로우 관계가 있는지 확인
+        Optional<Follow> existingFollow = followRepository.findByFollowerAndFollowing(findMyMember, findTargetMember);
+        Boolean isFollow = false;
+        
+        if (existingFollow.isPresent()) {
+            isFollow = true;
+        }
+        
+        // count를 셀때 N+1 문제가 발생할 수 있기 때문에 따로 찾아온거 넣어주기
+        int followingCount = followRepository.countFollowingsByMemberId(targetMemberId);
+        int followerCount = followRepository.countFollowersByMemberId(targetMemberId);
+        
+        return MemberSocialInfoResponseDTO.from(findTargetMember, followingCount, followerCount, isFollow);
+    }
+    
     
 }

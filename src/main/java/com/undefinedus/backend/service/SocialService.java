@@ -14,4 +14,6 @@ public interface SocialService {
     ScrollResponseDTO<OtherMemberInfoResponseDTO> getFollowMembers(Long memberId, ScrollRequestDTO requestDTO);
     
     void toggleFollowStatus(Long myMemberId, Long targetMemberId);
+    
+    MemberSocialInfoResponseDTO getOtherMemberSocialSimpleInfo(Long myMemberId, Long targetMemberId);
 }
