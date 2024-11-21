@@ -29,8 +29,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -725,6 +727,125 @@ class MyBookServiceImplTest {
 
             verify(myBookRepository).findByIdAndMemberId(bookId, wrongMemberId);
             verify(myBookRepository, never()).deleteByIdAndMemberId(any(), any());
+        }
+    }
+    
+    @Nested
+    @DisplayName("다른 회원의 도서 목록 무한 스크롤 조회 테스트")
+    class GetOtherMemberBookListTest {
+        
+        @Test
+        @DisplayName("로그인한 회원이 동일한 책을 가지고 있는 경우")
+        void getOtherMemberBookList_WithLoginMemberHavingSameBook() {
+            // given
+            Long loginMemberId = 1L;
+            Long targetMemberId = 2L;
+            ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
+                    .lastId(0L)
+                    .size(3)
+                    .build();
+            
+            // 다른 회원의 책 목록 생성
+            List<MyBook> otherMemberBooks = new ArrayList<>(Arrays.asList(
+                    createMyBook(5L, "책5", "12345", BookStatus.READING),  // COMPLETED -> READING으로 변경 (다른 회원의 상태)
+                    createMyBook(4L, "책4", "12344", BookStatus.READING),  // null -> READING으로 변경 (status는 null이 될 수 없음)
+                    createMyBook(3L, "책3", "12343", BookStatus.READING)   // null -> READING으로 변경 (status는 null이 될 수 없음)
+            ));
+            
+            // 로그인한 회원이 가진 책 생성 (isbn13이 "12345"인 책을 가지고 있음)
+            MyBook loginMemberBook = createMyBook(6L, "책5", "12345", BookStatus.COMPLETED);
+            Set<MyBook> loginMemberBooks = new HashSet<>(Collections.singletonList(loginMemberBook));
+            
+            when(myBookRepository.findBooksWithScroll(eq(targetMemberId), any(ScrollRequestDTO.class)))
+                    .thenReturn(otherMemberBooks);
+            when(myBookRepository.findByMemberId(loginMemberId))
+                    .thenReturn(loginMemberBooks);
+            when(calendarStampRepository.countByMemberIdAndMyBookId(eq(targetMemberId), anyLong()))
+                    .thenReturn(3);
+            
+            // when
+            ScrollResponseDTO<MyBookResponseDTO> result = myBookService.getOtherMemberBookList(loginMemberId, targetMemberId, requestDTO);
+            
+            // then
+            assertThat(result.getContent()).hasSize(3);
+            assertThat(result.isHasNext()).isFalse();
+            
+            // 첫 번째 책(isbn13: "12345")은 타겟 회원의 상태값을 가져야 함
+            MyBookResponseDTO firstBook = result.getContent().get(0);
+            assertThat(firstBook.getStatus()).isEqualTo(BookStatus.READING.name());
+            
+            // 나머지 책들은 다른 회원의 상태값(READING)이어야 함
+            assertThat(result.getContent().get(1).getStatus()).isEqualTo(BookStatus.READING.name());  // null -> READING으로 변경
+            assertThat(result.getContent().get(2).getStatus()).isEqualTo(BookStatus.READING.name());  // null -> READING으로 변경
+        }
+        
+        @Test
+        @DisplayName("로그인한 회원이 동일한 책을 가지고 있지 않은 경우")
+        void getOtherMemberBookList_WithoutLoginMemberHavingSameBook() {
+            // given
+            Long loginMemberId = 1L;
+            Long targetMemberId = 2L;
+            ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
+                    .lastId(0L)
+                    .size(3)
+                    .build();
+            
+            List<MyBook> otherMemberBooks = new ArrayList<>(Arrays.asList(
+                    createMyBook(5L, "책5", "12345", BookStatus.READING),  // null -> READING으로 변경
+                    createMyBook(4L, "책4", "12344", BookStatus.READING),  // null -> READING으로 변경
+                    createMyBook(3L, "책3", "12343", BookStatus.READING)   // null -> READING으로 변경
+            ));
+            
+            // 로그인한 회원은 다른 책을 가지고 있음
+            MyBook loginMemberBook = createMyBook(6L, "다른책", "99999");
+            Set<MyBook> loginMemberBooks = new HashSet<>(Collections.singletonList(loginMemberBook));
+            
+            when(myBookRepository.findBooksWithScroll(eq(targetMemberId), any(ScrollRequestDTO.class)))
+                    .thenReturn(otherMemberBooks);
+            when(myBookRepository.findByMemberId(loginMemberId))
+                    .thenReturn(loginMemberBooks);
+            when(calendarStampRepository.countByMemberIdAndMyBookId(eq(targetMemberId), anyLong()))
+                    .thenReturn(3);
+            
+            // when
+            ScrollResponseDTO<MyBookResponseDTO> result = myBookService.getOtherMemberBookList(loginMemberId, targetMemberId, requestDTO);
+            
+            // then
+            assertThat(result.getContent()).hasSize(3);
+            assertThat(result.isHasNext()).isFalse();
+            
+            // 모든 책에 다른 회원의 상태값(READING)이 있어야 함
+            assertThat(result.getContent())
+                    .extracting(MyBookResponseDTO::getStatus)
+                    .containsOnly(BookStatus.READING.name());  // containsOnlyNulls()
+        }
+        
+        // ISBN을 지정할 수 있도록 createMyBook 메서드 수정
+        private MyBook createMyBook(Long id, String title, String isbn13) {
+            return createMyBook(id, title, isbn13, BookStatus.READING);  // null -> BookStatus.READING으로 변경
+        }
+        private MyBook createMyBook(Long id, String title, String isbn13, BookStatus bookStatus) {
+            AladinBook aladinBook = AladinBook.builder()
+                    .id(id)
+                    .isbn13(isbn13)
+                    .title(title)
+                    .author("테스트 작가")
+                    .itemPage(300)
+                    .cover("test-cover-url")
+                    .link("test-link")
+                    .fullDescription("테스트 설명")
+                    .publisher("테스트 출판사")
+                    .categoryName("IT/컴퓨터")
+                    .customerReviewRank(4.5)
+                    .build();
+            
+            return MyBook.builder()
+                    .id(id)
+                    .member(testMember)
+                    .aladinBook(aladinBook)
+                    .isbn13(isbn13)
+                    .status(bookStatus)
+                    .build();
         }
     }
 }

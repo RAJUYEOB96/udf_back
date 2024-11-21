@@ -20,6 +20,7 @@ import com.undefinedus.backend.repository.MyBookRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -163,6 +164,53 @@ public class MyBookServiceImpl implements MyBookService {
         
         // 3. 존재하면 삭제 실행
         myBookRepository.deleteByIdAndMemberId(bookId, memberId);
+    }
+    
+    @Override
+    public ScrollResponseDTO<MyBookResponseDTO> getOtherMemberBookList(Long loginMemberId, Long targetMemberId,
+            ScrollRequestDTO requestDTO) {
+        
+        // 해당 status에 따른 전체 기록된 책 수
+        Long totalElements = myBookRepository.countByMemberIdAndStatus(targetMemberId, requestDTO);
+        
+        // findBooksWithScroll안에서 size + 1개 데이터 조회해서 가져옴 (size가 10이면 11개 가져옴)
+        List<MyBook> otherMemberBooks = myBookRepository.findBooksWithScroll(targetMemberId, requestDTO);
+        
+        boolean hasNext = false;
+        if (otherMemberBooks.size() > requestDTO.getSize()) { // 11 > 10 이면 있다는 뜻
+            hasNext = true;
+            otherMemberBooks.remove(otherMemberBooks.size() - 1); // 11개 가져온 걸 10개를 보내기 위해
+        }
+        
+        Set<MyBook> loginMemberHavingBooks = myBookRepository.findByMemberId(loginMemberId);
+        
+        List<MyBookResponseDTO> dtoList = otherMemberBooks.stream()
+                .map(otherMemberBook -> {
+                    Integer count = calendarStampRepository.countByMemberIdAndMyBookId(targetMemberId, otherMemberBook.getId());
+                    
+                    MyBook loginMemberBook = loginMemberHavingBooks.stream()
+                            .filter(book -> book.getIsbn13().equals(otherMemberBook.getIsbn13()))
+                            .findFirst()
+                            .orElse(null);
+                    if (loginMemberBook != null) {
+                        return MyBookResponseDTO.from(otherMemberBook, count, loginMemberBook.getStatus().name());
+                    }
+                    return MyBookResponseDTO.from(otherMemberBook, count);
+                })
+                .collect(Collectors.toList());
+        
+        // 마지막 항목의 ID 설정
+        Long lastId = otherMemberBooks.isEmpty() ?
+                requestDTO.getLastId() :    // 조회된 목록이 비어있는 경우를 대비해 삼항 연산자 사용
+                otherMemberBooks.get(otherMemberBooks.size() - 1).getId(); // lastId를 요청 DTO의 값이 아닌, 실제 조회된 마지막 항목의 ID로 설정
+        
+        return ScrollResponseDTO.<MyBookResponseDTO>withAll()
+                .content(dtoList)
+                .hasNext(hasNext)
+                .lastId(lastId) // 조회된 목록의 마지막 항목의 ID
+                .numberOfElements(dtoList.size())
+                .totalElements(totalElements)
+                .build();
     }
     
     private void saveBookAndCalenarStampByStatus(
