@@ -93,7 +93,7 @@ public class SocialController {
         return ResponseEntity.ok(ApiResponseDTO.success(response));
     }
     
-    // 팔로우 (SOCIAL_0001) 에서 닉네임으로 검색했을 때 가져오는 리스트 (각각)
+    // 팔로우 (SOCIAL_0001) 에서 닉네임으로 검색했을 때 가져오는 Follow 멤버 리스트 (각각)
     @GetMapping("/follow/search/{targetMemberId}")
     public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<OtherMemberInfoResponseDTO>>> getOtherMemberFollowList(
             @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
@@ -109,7 +109,7 @@ public class SocialController {
         return ResponseEntity.ok(ApiResponseDTO.success(response));
     }
     
-    // 소셜 책장 메인(SOCIAL_0003) 에서 타겟멤버의 책장 가져오기
+    // 소셜 책장 메인(SOCIAL_0003) 에서 타겟멤버의 책장 리스트 가져오기
     // MyBookController getMyBookList 메서드 참고
     @GetMapping("/other/books/{targetMemberId}")
     public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<MyBookResponseDTO>>> getOtherMemberBookList(
@@ -123,5 +123,20 @@ public class SocialController {
                 targetMemberId, requestDTO);
         
         return ResponseEntity.ok(ApiResponseDTO.success(response));
+    }
+    
+    // 소셜 책 상세 (SOCIAL_0005,7,9,11) 에서 타겟 멤버 책 상세 가져오기
+    // MyBookController getMyBookDetail 메서드 참고
+    @GetMapping("/other/books/{targetMemberId}/{myBookId}")
+    public ResponseEntity<ApiResponseDTO<MyBookResponseDTO>> getOtherMemberBookDetail(
+            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+            @PathVariable("targetMemberId") Long targetMemberId,
+            @PathVariable("myBookId") Long myBookId) {
+        
+        Long loginMemberId = memberSecurityDTO.getId();
+        
+        MyBookResponseDTO findBook = myBookService.getOtherMemberBook(loginMemberId, targetMemberId, myBookId);
+        
+        return ResponseEntity.ok(ApiResponseDTO.success(findBook));
     }
 }

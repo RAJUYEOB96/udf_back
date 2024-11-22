@@ -20,6 +20,7 @@ import com.undefinedus.backend.repository.MyBookRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -211,6 +212,24 @@ public class MyBookServiceImpl implements MyBookService {
                 .numberOfElements(dtoList.size())
                 .totalElements(totalElements)
                 .build();
+    }
+    
+    @Override
+    public MyBookResponseDTO getOtherMemberBook(Long loginMemberId, Long targetMemberId, Long myBookId) {
+        MyBook findBook = myBookRepository.findByIdAndMemberIdWithAladinBook(myBookId, targetMemberId)
+                .orElseThrow(() -> new BookNotFoundException(String.format(BOOK_NOT_FOUND, targetMemberId, myBookId)));
+        
+        Integer stampCount = calendarStampRepository.countByMemberIdAndMyBookId(targetMemberId, findBook.getId());
+        
+        Optional<MyBook> loginMemberMyBook = myBookRepository.findByMemberIdAndIsbn13(loginMemberId,
+                findBook.getIsbn13());
+        
+        if (loginMemberMyBook.isPresent()) {
+            if (loginMemberMyBook.get().getIsbn13().equals(findBook.getIsbn13())){
+                return MyBookResponseDTO.from(findBook, stampCount, loginMemberMyBook.get().getStatus().name());
+            }
+        }
+        return MyBookResponseDTO.from(findBook, stampCount);
     }
     
     private void saveBookAndCalenarStampByStatus(
