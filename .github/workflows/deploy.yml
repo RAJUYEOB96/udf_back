@@ -11,19 +11,32 @@ on:
       - dev
 
 jobs:
-  deploy:
+  test:
+    if: github.ref == 'refs/heads/dev' || github.base_ref == 'dev'  # dev 브랜치 관련 작업
     runs-on: ubuntu-latest
     steps:
-      - name: SSH(원격접속)로 EC2에 접속하여 자동 배포하기
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+      - name: Run Tests
+        run: ./gradlew test
+
+  deploy-to-production:
+    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'  # main 브랜치 관련 작업만
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         env:
           APPLICATION_YML: ${{ secrets.APPLICATION_YML }}
-          GITHUB_REF: ${{ github.ref }}  # GitHub ref 환경변수 추가, 자동으로 제공되는 값
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          envs: APPLICATION_YML,GITHUB_REF  # GITHUB_REF 환경변수 전달 추가
+          envs: APPLICATION_YML
           script: |
             echo "===== 배포 시작 ====="
             
@@ -59,23 +72,10 @@ jobs:
             chmod +x ./gradlew
             export GRADLE_OPTS="-Xmx512m -XX:MaxMetaspaceSize=256m"
             
-            # 테스트를 제외하고 빌드만 실행(dev에서 다 통과하면 넘길 예정)
-            # main 브랜치일 경우 테스트 스킵
-            if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
-              if ! timeout 600s ./gradlew clean build -x test --info; then
-                echo "Gradle 빌드 실패"
-                exit 1
-              fi
-            else
-              # main 브랜치가 아닐 경우 테스트 포함
-              if ! timeout 600s ./gradlew clean build --info; then
-                echo "Gradle 빌드 실패"
-                echo "테스트 리포트:"
-                cat ./build/reports/tests/test/index.html 2>/dev/null || true
-                echo "빌드 로그:"
-                cat ./build/reports/tests/test/test/classes/*.html 2>/dev/null || true
-                exit 1
-              fi
+            # main 브랜치는 테스트 없이 빌드만 실행
+            if ! timeout 600s ./gradlew clean build -x test --info; then
+              echo "Gradle 빌드 실패"
+              exit 1
             fi
             
             echo "Gradle 빌드 성공"
