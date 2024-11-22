@@ -245,7 +245,7 @@ public class AladinBookServiceImpl implements AladinBookService {
             }
 
             // 카테고리 ID를 키로 책 리스트 저장
-            categorizedResults.put(preference.getCategoryId().toString(), booksForCategoryNotAdult);
+            categorizedResults.put(String.valueOf(preference), booksForCategoryNotAdult);
             log.info("알라딘 API 연결 성공 - 카테고리 ID: " + preference.getCategoryId());
         }
         return categorizedResults;
