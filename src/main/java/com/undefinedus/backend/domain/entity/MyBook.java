@@ -18,7 +18,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 @Entity
@@ -93,15 +92,15 @@ public class MyBook extends BaseEntity {
 
     }
 
-    public void setId(Long id) {
+    public void changeId(Long id) {
         this.id = id;
     }
 
-    public void setIsbn13(String isbn13) {
+    public void changeIsbn13(String isbn13) {
         this.isbn13 = isbn13;
     }
 
-    public void setMember(Member member) {
+    public void changeMember(Member member) {
         this.member = member;
     }
 }
