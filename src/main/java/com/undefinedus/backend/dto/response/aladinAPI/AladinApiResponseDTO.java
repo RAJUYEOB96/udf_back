@@ -22,6 +22,9 @@ public class AladinApiResponseDTO {
     private Boolean adult;
     private Double customerReviewRank;
     private String fullDescription;
+    private String bestRank;   // 베스트셀러 순위 정보
+
+
 
     private SubInfoDTO subInfo;
 

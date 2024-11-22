@@ -1,14 +1,10 @@
 package com.undefinedus.backend.service;
 
-import com.undefinedus.backend.domain.entity.Member;
-import com.undefinedus.backend.domain.entity.MyBook;
-import com.undefinedus.backend.domain.enums.PreferencesType;
 import com.undefinedus.backend.dto.response.aladinAPI.AladinApiResponseDTO;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.MyBookRepository;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
@@ -28,13 +24,22 @@ public class ChatGPTServiceImpl implements ChatGPTService {
 
     private final MemberRepository memberRepository;
 
+    @Value("classpath:/promptTemplates/questionDiscussionPromptTemplate.st")
+    Resource questionDiscussionPromptTemplate;
+
     @Value("classpath:/promptTemplates/questionPromptTemplate.st")
     Resource questionPromptTemplate;
 
+    @Value("classpath:/promptTemplates/testPromptTemplate.st")
+    Resource testPromptTemplate;
+
     @Override
-    public List<AladinApiResponseDTO> getGPTRecommendedBookLIst(Long memberId) {
+    public List<AladinApiResponseDTO> getGPTRecommendedBookList(Long memberId) {
         // GPT 추천 ISBN 목록 가져오기
-        List<String> isbnList = getGPTRecommendedBookIsbnLIst(memberId);
+        List<String> isbnList = getGPTRecommendedBookIsbn13List(memberId);
+
+        System.out.println("isbnList = " + isbnList);
+
         System.out.printf("개수: %s", isbnList.size());
         // ISBN 리스트에서 각 ISBN에 대해 Aladin API를 호출하여 결과를 합침
         List<AladinApiResponseDTO> allBooks = new ArrayList<>();
@@ -52,7 +57,7 @@ public class ChatGPTServiceImpl implements ChatGPTService {
         return allBooks; // 최종적으로 모든 책을 반환
     }
 
-    private List<String> getGPTRecommendedBookIsbnLIst(Long memberId) {
+    private List<String> getGPTRecommendedBookIsbn13List(Long memberId) {
 
         List<String> top5Isbn13ByMemberId = myBookRepository.findTop5Isbn13ByMemberId(memberId);
 
@@ -65,7 +70,7 @@ public class ChatGPTServiceImpl implements ChatGPTService {
         String answerText = chatClient.prompt()
             .user(
                 userSpec -> userSpec
-                    .text(questionPromptTemplate)
+                    .text(testPromptTemplate)
                     .param("isbn13", isbn13List))
             .call()
             .content();

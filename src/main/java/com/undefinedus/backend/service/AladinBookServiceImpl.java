@@ -274,7 +274,7 @@ public class AladinBookServiceImpl implements AladinBookService {
             .queryParam("ItemId", isbn13)
             .queryParam("output", "js")
             .queryParam("Version", "20131101")
-            .queryParam("OptResult", "fulldescription")
+            .queryParam("OptResult", "fulldescription,bestSellerRank")
             .build()
             .toUri();
 
