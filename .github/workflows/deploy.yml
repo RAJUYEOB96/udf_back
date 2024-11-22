@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - dev
   pull_request:
     branches:
       - main
+      - dev
 
 jobs:
   deploy:
@@ -16,11 +18,12 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         env:
           APPLICATION_YML: ${{ secrets.APPLICATION_YML }}
+          GITHUB_REF: ${{ github.ref }}  # GitHub ref 환경변수 추가, 자동으로 제공되는 값
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          envs: APPLICATION_YML
+          envs: APPLICATION_YML,GITHUB_REF  # GITHUB_REF 환경변수 전달 추가
           script: |
             echo "===== 배포 시작 ====="
             
@@ -56,14 +59,23 @@ jobs:
             chmod +x ./gradlew
             export GRADLE_OPTS="-Xmx512m -XX:MaxMetaspaceSize=256m"
             
-            # 빌드 시도 및 실패 시 로그 출력
-            if ! timeout 600s ./gradlew clean build --info; then
-              echo "Gradle 빌드 실패"
-              echo "테스트 리포트:"
-              cat ./build/reports/tests/test/index.html 2>/dev/null || true
-              echo "빌드 로그:"
-              cat ./build/reports/tests/test/test/classes/*.html 2>/dev/null || true
-              exit 1
+            # 테스트를 제외하고 빌드만 실행(dev에서 다 통과하면 넘길 예정)
+            # main 브랜치일 경우 테스트 스킵
+            if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
+              if ! timeout 600s ./gradlew clean build -x test --info; then
+                echo "Gradle 빌드 실패"
+                exit 1
+              fi
+            else
+              # main 브랜치가 아닐 경우 테스트 포함
+              if ! timeout 600s ./gradlew clean build --info; then
+                echo "Gradle 빌드 실패"
+                echo "테스트 리포트:"
+                cat ./build/reports/tests/test/index.html 2>/dev/null || true
+                echo "빌드 로그:"
+                cat ./build/reports/tests/test/test/classes/*.html 2>/dev/null || true
+                exit 1
+              fi
             fi
             
             echo "Gradle 빌드 성공"
