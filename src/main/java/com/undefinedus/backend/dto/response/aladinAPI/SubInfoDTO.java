@@ -13,4 +13,5 @@ import lombok.ToString;
 @ToString
 public class SubInfoDTO {
     private Integer itemPage;
+    private String bestSellerRank;   // 상품의 주간베스트셀러 순위 정보
 }
