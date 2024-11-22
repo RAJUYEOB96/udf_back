@@ -224,7 +224,7 @@ public class AladinBookServiceImpl implements AladinBookService {
                     response.getItem().stream()
                         .filter(item -> !item.getAdult())
                         .forEach(responseDTO -> {
-                            responseDTO.setCategoryId(preference.getCategoryId());
+                            responseDTO.setCategory(String.valueOf(preference));
                             finalBooksForCategoryNotAdult.add(responseDTO);
                         });
 
