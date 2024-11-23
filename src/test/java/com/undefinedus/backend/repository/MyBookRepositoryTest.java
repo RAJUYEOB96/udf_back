@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.hibernate.proxy.HibernateProxy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -342,6 +343,72 @@ class MyBookRepositoryTest {
             assertThat(result).hasSize(10);  // 삭제되지 않고 10개 그대로
             assertThat(result).extracting("id")
                     .contains(firstBook.getId());
+        }
+    }
+    
+    @Nested
+    @DisplayName("회원의 책 목록 조회 테스트")
+    class FindByMemberIdTest {
+        
+        @Test
+        @DisplayName("회원이 가진 모든 책 조회 성공")
+        void findByMemberIdSuccess() {
+            // given
+            // setUp()에서 이미 10개의 책이 생성되어 있음
+            
+            // when
+            Set<MyBook> myBooks = myBookRepository.findByMemberId(member.getId());
+            
+            // then
+            assertThat(myBooks).hasSize(10);  // 10개의 책이 모두 조회되는지 확인
+            assertThat(myBooks)
+                    .extracting("member.id")
+                    .containsOnly(member.getId());  // 모든 책이 해당 member의 것인지 확인
+        }
+        
+        @Test
+        @DisplayName("존재하지 않는 회원의 책 목록 조회")
+        void findByNonExistentMemberId() {
+            // given
+            Long nonExistentMemberId = 999999L;
+            
+            // when
+            Set<MyBook> myBooks = myBookRepository.findByMemberId(nonExistentMemberId);
+            
+            // then
+            assertThat(myBooks).isEmpty();  // 결과가 빈 Set인지 확인
+        }
+        
+        @Test
+        @DisplayName("조회된 책의 ISBN13 값 확인")
+        void checkMyBooksIsbn13() {
+            // given
+            String expectedFirstIsbn = "9788956740001";  // setUp()에서 생성된 첫 번째 책의 ISBN
+            
+            // when
+            Set<MyBook> myBooks = myBookRepository.findByMemberId(member.getId());
+            
+            // then
+            assertThat(myBooks)
+                    .extracting("isbn13")
+                    .contains(expectedFirstIsbn);
+        }
+        
+        @Test
+        @DisplayName("조회된 책에 AladinBook이 포함되어 있는지 확인")
+        void checkMyBooksContainsAladinBook() {
+            // when
+            Set<MyBook> myBooks = myBookRepository.findByMemberId(member.getId());
+            
+            // then
+            assertThat(myBooks)
+                    .extracting("aladinBook")
+                    .allMatch(aladinBook -> aladinBook != null);
+            
+            // AladinBook의 title이 예상대로 들어있는지 확인
+            assertThat(myBooks)
+                    .extracting("aladinBook.title")
+                    .contains("테스트 책 1", "테스트 책 2", "테스트 책 3");
         }
     }
 }

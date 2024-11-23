@@ -16,4 +16,6 @@ public interface MyBookmarkService {
     void updateMyBookmark(Long id, Long bookmarkId, @Valid MyBookmarkUpdateRequestDTO requestDTO);
     
     void deleteMyBookmark(Long memberId, Long bookmarkId);
+    
+    void insertOtherMemberBookmarkToMe(Long loginMemberId, Long targetBookmarkId);
 }

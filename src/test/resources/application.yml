@@ -1,0 +1,56 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+
+  # Security 설정
+  security:
+    user:
+      name: test
+      password: test
+
+  # Mail 설정 (테스트에서는 실제 발송되지 않도록)
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: test
+    password: test
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls.enable: false
+
+  # ChatGPT API (테스트용)
+  ai:
+    openai:
+      api-key: test-key
+      model: gpt-3.5-turbo  # 사용할 모델 지정
+      base-url: https://api.openai.com  # API 기본 URL
+      chat:
+        options:
+          temperature: 0.7
+    chat:
+      client:
+        enabled: true   # ChatGPT 클라이언트 활성화
+
+  # Quartz (메모리 모드)
+  quartz:
+    job-store-type: memory
+
+# 로깅 설정
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type: trace
