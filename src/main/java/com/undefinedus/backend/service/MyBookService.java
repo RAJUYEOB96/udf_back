@@ -25,4 +25,6 @@ public interface MyBookService {
     ScrollResponseDTO<MyBookResponseDTO> getOtherMemberBookList(Long loginMemberId, Long targetMemberId, ScrollRequestDTO requestDTO);
     
     MyBookResponseDTO getOtherMemberBook(Long loginMemberId, Long targetMemberId, Long myBookId);
+    
+    void insertNewBookByWish(Long loginMemberId, Long targetMyBookId);
 }

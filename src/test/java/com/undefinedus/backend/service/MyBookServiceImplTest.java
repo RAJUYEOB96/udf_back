@@ -20,8 +20,11 @@ import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
+import com.undefinedus.backend.exception.aladinBook.AladinBookNotFoundException;
+import com.undefinedus.backend.exception.book.BookDuplicateNotAllowException;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
+import com.undefinedus.backend.exception.member.MemberException;
 import com.undefinedus.backend.repository.CalendarStampRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.MyBookRepository;
@@ -972,5 +975,182 @@ class MyBookServiceImplTest {
                 .isbn13(isbn13)
                 .status(status)
                 .build();
+    }
+    
+    @Nested
+    @DisplayName("다른 회원의 책을 WISH 상태로 등록하는 테스트")
+    class InsertNewBookByWishTest {
+        
+        @Test
+        @DisplayName("다른 회원의 책을 정상적으로 WISH 상태로 등록")
+        void insertNewBookByWish_Success() {
+            // given
+            Long memberId = 1L;
+            Long targetMyBookId = 2L;
+            String isbn13 = "9788956746425";
+            
+            Member loginMember = Member.builder()
+                    .id(memberId)
+                    .username("test@test.com")
+                    .build();
+            
+            AladinBook aladinBook = AladinBook.builder()
+                    .id(1L)
+                    .isbn13(isbn13)
+                    .title("테스트 책")
+                    .author("테스트 작가")
+                    .itemPage(300)
+                    .cover("test-cover-url")
+                    .build();
+            
+            MyBook targetMyBook = MyBook.builder()
+                    .id(targetMyBookId)
+                    .member(Member.builder().id(2L).build())
+                    .aladinBook(aladinBook)
+                    .isbn13(isbn13)
+                    .status(BookStatus.READING)
+                    .build();
+            
+            when(myBookRepository.findById(targetMyBookId)).thenReturn(Optional.of(targetMyBook));
+            when(memberRepository.findById(memberId)).thenReturn(Optional.of(loginMember));
+            when(myBookRepository.findByMemberIdAndIsbn13(memberId, isbn13))
+                    .thenReturn(Optional.empty());
+            
+            // when
+            myBookService.insertNewBookByWish(memberId, targetMyBookId);
+            
+            // then
+            verify(myBookRepository).findById(targetMyBookId);
+            verify(memberRepository).findById(memberId);
+            verify(myBookRepository).findByMemberIdAndIsbn13(memberId, isbn13);
+            verify(myBookRepository).save(argThat(myBook ->
+                    myBook.getMember().getId().equals(memberId) &&
+                            myBook.getAladinBook().equals(aladinBook) &&
+                            myBook.getIsbn13().equals(isbn13) &&
+                            myBook.getStatus() == BookStatus.WISH
+            ));
+        }
+        
+        @Test
+        @DisplayName("이미 동일한 ISBN의 책을 가지고 있는 경우 예외 발생")
+        void insertNewBookByWish_DuplicateBook() {
+            // given
+            Long memberId = 1L;
+            Long targetMyBookId = 2L;
+            String isbn13 = "9788956746425";
+            
+            Member loginMember = Member.builder()
+                    .id(memberId)
+                    .username("test@test.com")
+                    .build();
+            
+            MyBook targetMyBook = MyBook.builder()
+                    .id(targetMyBookId)
+                    .aladinBook(testAladinBook)
+                    .isbn13(isbn13)
+                    .status(BookStatus.READING)
+                    .build();
+            
+            MyBook existingBook = MyBook.builder()
+                    .id(3L)  // 다른 ID지만 같은 ISBN
+                    .member(loginMember)
+                    .aladinBook(testAladinBook)
+                    .isbn13(isbn13)
+                    .status(BookStatus.WISH)
+                    .build();
+            
+            when(myBookRepository.findById(targetMyBookId)).thenReturn(Optional.of(targetMyBook));
+            when(memberRepository.findById(memberId)).thenReturn(Optional.of(loginMember)); // 이 부분 추가
+            when(myBookRepository.findByMemberIdAndIsbn13(memberId, isbn13))
+                    .thenReturn(Optional.of(existingBook));
+            
+            // when & then
+            assertThatThrownBy(() -> myBookService.insertNewBookByWish(memberId, targetMyBookId))
+                    .isInstanceOf(BookDuplicateNotAllowException.class)
+                    .hasMessageContaining("MyBook은 중복 저장할 수 없습니다.");
+            
+            verify(myBookRepository).findById(targetMyBookId);
+            verify(memberRepository).findById(memberId);  // 이 부분 추가
+            verify(myBookRepository).findByMemberIdAndIsbn13(memberId, isbn13);
+            verify(myBookRepository, never()).save(any(MyBook.class));
+        }
+        
+        @Test
+        @DisplayName("존재하지 않는 책 ID로 등록 시도할 경우 예외 발생")
+        void insertNewBookByWish_BookNotFound() {
+            // given
+            Long memberId = 1L;
+            Long invalidBookId = 999L;
+            
+            when(myBookRepository.findById(invalidBookId))
+                    .thenReturn(Optional.empty());
+            
+            // when & then
+            assertThatThrownBy(() -> myBookService.insertNewBookByWish(memberId, invalidBookId))
+                    .isInstanceOf(BookNotFoundException.class)
+                    .hasMessageContaining(String.format("해당 기록된 책을 찾을 수 없습니다.", invalidBookId));
+            
+            verify(myBookRepository).findById(invalidBookId);
+            verify(memberRepository, never()).findById(anyLong());
+            verify(myBookRepository, never()).findByMemberIdAndIsbn13(anyLong(), anyString());
+            verify(myBookRepository, never()).save(any(MyBook.class));
+        }
+        
+        @Test
+        @DisplayName("존재하지 않는 회원 ID로 등록 시도할 경우 예외 발생")
+        void insertNewBookByWish_MemberNotFound() {
+            // given
+            Long invalidMemberId = 999L;
+            Long targetMyBookId = 2L;
+            
+            MyBook targetMyBook = MyBook.builder()
+                    .id(targetMyBookId)
+                    .member(Member.builder().id(2L).build())
+                    .aladinBook(testAladinBook)
+                    .isbn13("9788956746425")
+                    .status(BookStatus.READING)
+                    .build();
+            
+            when(myBookRepository.findById(targetMyBookId)).thenReturn(Optional.of(targetMyBook));
+            when(memberRepository.findById(invalidMemberId)).thenReturn(Optional.empty());
+            
+            // when & then
+            assertThatThrownBy(() -> myBookService.insertNewBookByWish(invalidMemberId, targetMyBookId))
+                    .isInstanceOf(MemberException.class)
+                    .hasMessageContaining(String.format("해당 member를 찾을 수 없습니다.", invalidMemberId));
+            
+            verify(myBookRepository).findById(targetMyBookId);
+            verify(memberRepository).findById(invalidMemberId);
+            verify(myBookRepository, never()).findByMemberIdAndIsbn13(anyLong(), anyString());
+            verify(myBookRepository, never()).save(any(MyBook.class));
+        }
+        
+        @Test
+        @DisplayName("AladinBook이 null인 경우 예외 발생")
+        void insertNewBookByWish_AladinBookNotFound() {
+            // given
+            Long memberId = 1L;
+            Long targetMyBookId = 2L;
+            
+            MyBook targetMyBook = MyBook.builder()
+                    .id(targetMyBookId)
+                    .member(Member.builder().id(2L).build())
+                    .aladinBook(null)  // AladinBook을 null로 설정
+                    .isbn13("9788956746425")
+                    .status(BookStatus.READING)
+                    .build();
+            
+            when(myBookRepository.findById(targetMyBookId)).thenReturn(Optional.of(targetMyBook));
+            
+            // when & then
+            assertThatThrownBy(() -> myBookService.insertNewBookByWish(memberId, targetMyBookId))
+                    .isInstanceOf(AladinBookNotFoundException.class)
+                    .hasMessageContaining("해당 기록된 알라딘 책을 찾을 수 없습니다.");
+            
+            verify(myBookRepository).findById(targetMyBookId);
+            verify(memberRepository, never()).findById(anyLong());
+            verify(myBookRepository, never()).findByMemberIdAndIsbn13(anyLong(), anyString());
+            verify(myBookRepository, never()).save(any(MyBook.class));
+        }
     }
 }

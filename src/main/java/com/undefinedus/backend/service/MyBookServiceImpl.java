@@ -9,6 +9,8 @@ import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
+import com.undefinedus.backend.exception.aladinBook.AladinBookNotFoundException;
+import com.undefinedus.backend.exception.book.BookDuplicateNotAllowException;
 import com.undefinedus.backend.exception.book.BookException;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
@@ -35,7 +37,10 @@ public class MyBookServiceImpl implements MyBookService {
     
     // === 에러 메시지 상수 === //
     private static final String MEMBER_NOT_FOUND = "해당 member를 찾을 수 없습니다. : %d";
+    private static final String ALADIN_BOOK_NOT_FOUND = "해당 기록된 알라딘 책을 찾을 수 없습니다.";
     private static final String USER_NOT_FOUND = "해당 유저를 찾을 수 없습니다. : %d";
+    private static final String BOOK_NOT_FOUND_BY_ID = "해당 기록된 책을 찾을 수 없습니다. : 책 id - %d";
+    private static final String BOOK_CAN_NOT_DUPLICATE = "MyBook은 중복 저장할 수 없습니다.";
     private static final String BOOK_NOT_FOUND = "해당 기록된 책을 찾을 수 없습니다. : 멤버 id - %d, 책 id - %d";
     private static final String INVALID_STATUS = "알맞은 status값이 들어와야 합니다. : %s";
     private static final String USER_AUTH_FAILED = "사용자를 찾을 수 없어 책 등록에 실패했습니다.";
@@ -230,6 +235,39 @@ public class MyBookServiceImpl implements MyBookService {
             }
         }
         return MyBookResponseDTO.from(findBook, stampCount);
+    }
+    
+    @Override
+    public void insertNewBookByWish(Long memberId, Long targetMyBookId) {
+        
+        MyBook findTargetMyBook = myBookRepository.findById(targetMyBookId)
+                .orElseThrow(() -> new BookNotFoundException(String.format(BOOK_NOT_FOUND_BY_ID, targetMyBookId)));
+        
+        AladinBook findAladinBook = findTargetMyBook.getAladinBook();
+        
+        if (findAladinBook == null) {
+            throw new AladinBookNotFoundException(String.format(ALADIN_BOOK_NOT_FOUND));
+        }
+        
+        Member findLoginMember = memberRepository.findById(memberId)
+                .orElseThrow(() ->  new MemberException(String.format(MEMBER_NOT_FOUND, memberId)));
+        
+        Optional<MyBook> findRecordMyBook = myBookRepository.findByMemberIdAndIsbn13(memberId,
+                findTargetMyBook.getIsbn13());
+        
+        if (findRecordMyBook.isPresent()) {
+            throw new BookDuplicateNotAllowException(BOOK_CAN_NOT_DUPLICATE);
+        }
+        
+        
+        MyBook myBook = MyBook.builder()
+                .member(findLoginMember)
+                .aladinBook(findAladinBook)
+                .isbn13(findAladinBook.getIsbn13())
+                .status(BookStatus.WISH)
+                .build();
+        
+        myBookRepository.save(myBook);
     }
     
     private void saveBookAndCalenarStampByStatus(
