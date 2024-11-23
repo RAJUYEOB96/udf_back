@@ -48,7 +48,7 @@ public class SocialController {
         return ResponseEntity.ok(ApiResponseDTO.success(response));
     }
     
-    // 소셜 메인 (MAIN_0004)에서 닉네임으로 검색했을 때 가져오는 리스트 (팔로잉, 팔로우 전부)
+    // 소셜 메인 (MAIN_0004)에서 닉네임으로 검색했을 때 가져오는 리스트 (자신 제외, 모든 멤버 리스트)
     @GetMapping("/main/search")
     public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<OtherMemberInfoResponseDTO>>> getOtherMemberList(
             @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,

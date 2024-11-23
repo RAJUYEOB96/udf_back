@@ -298,6 +298,7 @@ public class MyBookServiceImpl implements MyBookService {
                 .currentPage(requestDTO.getCurrentPage())
                 .startDate(requestDTO.getStartDate())
                 .endDate(requestDTO.getEndDate())
+                .updateCount(requestDTO.getUpdateCount())
                 .build();
         
         myBookRepository.save(myBook);
@@ -317,6 +318,7 @@ public class MyBookServiceImpl implements MyBookService {
                 .myRating(requestDTO.getMyRating())
                 .currentPage(requestDTO.getCurrentPage())
                 .startDate(LocalDate.now())
+                .updateCount(requestDTO.getUpdateCount())
                 .build();
         
         return myBookRepository.save(myBook);
@@ -331,6 +333,7 @@ public class MyBookServiceImpl implements MyBookService {
                 .currentPage(findAladinBook.getItemPage()) // 다 읽었으니 100%로 만들기 위해
                 .startDate(requestDTO.getStartDate())
                 .endDate(requestDTO.getEndDate())
+                .updateCount(requestDTO.getUpdateCount())
                 .build();
         
         return myBookRepository.save(myBook);

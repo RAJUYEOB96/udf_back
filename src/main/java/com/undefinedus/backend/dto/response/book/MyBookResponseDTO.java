@@ -83,6 +83,7 @@ public class MyBookResponseDTO {
                 .fullDescription(myBook.getAladinBook().getFullDescription())
                 .publisher(myBook.getAladinBook().getPublisher())
                 .categoryName(myBook.getAladinBook().getCategoryName())
+                .customerReviewRank(myBook.getAladinBook().getCustomerReviewRank())
                 .itemPage(myBook.getAladinBook().getItemPage())
                 .existingStatus(existingStatus)
                 .build();
