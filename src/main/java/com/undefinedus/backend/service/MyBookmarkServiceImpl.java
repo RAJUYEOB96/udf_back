@@ -111,4 +111,5 @@ public class MyBookmarkServiceImpl implements MyBookmarkService{
         
         myBookmarkRepository.deleteById(bookmarkId);
     }
+    
 }

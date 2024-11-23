@@ -6,9 +6,11 @@ import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
+import com.undefinedus.backend.dto.response.bookmark.MyBookmarkResponseDTO;
 import com.undefinedus.backend.dto.response.social.MemberSocialInfoResponseDTO;
 import com.undefinedus.backend.dto.response.social.OtherMemberInfoResponseDTO;
 import com.undefinedus.backend.service.MyBookService;
+import com.undefinedus.backend.service.MyBookmarkService;
 import com.undefinedus.backend.service.SocialService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,7 @@ public class SocialController {
     // TODO: 프로필 이미지에 대한 것들은 나중에 추가하기
     private final SocialService socialService;
     private final MyBookService myBookService;
+    private final MyBookmarkService myBookmarkService;
     
     // 소셜 메인 (MAIN_0004), 팔로잉 팔로워(SOCIAL_0001) 목록에서 나의 정보 가져가기
     @GetMapping("/myInfo")
@@ -157,5 +160,20 @@ public class SocialController {
         
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponseDTO.success(null));
+    }
+    
+    // 소셜 책갈피 목록(SOCIAL_0013) 에서 타겟멤버의 책갈피 리스트 가져오는 부분
+    // 내 책장의 책갈피 탭을 했을때 사용하는 컨트롤러
+    // 모달이기도 하고 상세내용이 적어서 상세는 따로 안만들고 MyBookmarkResponseDTO에 다 담음
+    @GetMapping("/other/bookmarks/{targetMemberId}")
+    public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<MyBookmarkResponseDTO>>> getOtherMemberBookmarkList(
+            @PathVariable("targetMemberId") Long targetMemberId,
+            @ModelAttribute ScrollRequestDTO requestDTO) {
+        
+        // 이전에 만들어 두었던것 loginMemberId -> targetMemberId 만 변경하고 그대로 사용
+        ScrollResponseDTO<MyBookmarkResponseDTO> response =
+                myBookmarkService.getMyBookmarkList(targetMemberId, requestDTO);
+        
+        return ResponseEntity.ok(ApiResponseDTO.success((response)));
     }
 }

@@ -47,7 +47,7 @@ public class MyBookmarkController {
                 .body(ApiResponseDTO.success(null));
     }
     
-    // 책 추가에서 들어가 검색할 때 쓰는 컨트롤러 // MyBook에 자기가 기록한 것들만 들고옴
+    // +책갈피 누르고 들어가 검색할 때 쓰는 컨트롤러 // MyBook에서 자기가 기록한 것들만 들고옴
     // 공통으로 쓸건 쓰기 위해 반환을 MyBookResponseDTO 이걸로 함
     @GetMapping("/addSearch")
     public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<MyBookResponseDTO>>> getSearchMyBook(
@@ -66,6 +66,7 @@ public class MyBookmarkController {
     }
     
     // 내 책장의 책갈피 탭을 했을때 사용하는 컨트롤러
+    // 모달이기도 하고 상세내용이 적어서 상세는 따로 안만들고 MyBookmarkResponseDTO에 다 담음
     @GetMapping
     public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<MyBookmarkResponseDTO>>> getBookmarkList(
             @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
