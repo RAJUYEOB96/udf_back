@@ -9,6 +9,8 @@ import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
+import com.undefinedus.backend.exception.aladinBook.AladinBookNotFoundException;
+import com.undefinedus.backend.exception.book.BookDuplicateNotAllowException;
 import com.undefinedus.backend.exception.book.BookException;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
@@ -20,6 +22,8 @@ import com.undefinedus.backend.repository.MyBookRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -33,7 +37,10 @@ public class MyBookServiceImpl implements MyBookService {
     
     // === 에러 메시지 상수 === //
     private static final String MEMBER_NOT_FOUND = "해당 member를 찾을 수 없습니다. : %d";
+    private static final String ALADIN_BOOK_NOT_FOUND = "해당 기록된 알라딘 책을 찾을 수 없습니다.";
     private static final String USER_NOT_FOUND = "해당 유저를 찾을 수 없습니다. : %d";
+    private static final String BOOK_NOT_FOUND_BY_ID = "해당 기록된 책을 찾을 수 없습니다. : 책 id - %d";
+    private static final String BOOK_CAN_NOT_DUPLICATE = "MyBook은 중복 저장할 수 없습니다.";
     private static final String BOOK_NOT_FOUND = "해당 기록된 책을 찾을 수 없습니다. : 멤버 id - %d, 책 id - %d";
     private static final String INVALID_STATUS = "알맞은 status값이 들어와야 합니다. : %s";
     private static final String USER_AUTH_FAILED = "사용자를 찾을 수 없어 책 등록에 실패했습니다.";
@@ -165,6 +172,104 @@ public class MyBookServiceImpl implements MyBookService {
         myBookRepository.deleteByIdAndMemberId(bookId, memberId);
     }
     
+    @Override
+    public ScrollResponseDTO<MyBookResponseDTO> getOtherMemberBookList(Long loginMemberId, Long targetMemberId,
+            ScrollRequestDTO requestDTO) {
+        
+        // 해당 status에 따른 전체 기록된 책 수
+        Long totalElements = myBookRepository.countByMemberIdAndStatus(targetMemberId, requestDTO);
+        
+        // findBooksWithScroll안에서 size + 1개 데이터 조회해서 가져옴 (size가 10이면 11개 가져옴)
+        List<MyBook> otherMemberBooks = myBookRepository.findBooksWithScroll(targetMemberId, requestDTO);
+        
+        boolean hasNext = false;
+        if (otherMemberBooks.size() > requestDTO.getSize()) { // 11 > 10 이면 있다는 뜻
+            hasNext = true;
+            otherMemberBooks.remove(otherMemberBooks.size() - 1); // 11개 가져온 걸 10개를 보내기 위해
+        }
+        
+        Set<MyBook> loginMemberHavingBooks = myBookRepository.findByMemberId(loginMemberId);
+        
+        List<MyBookResponseDTO> dtoList = otherMemberBooks.stream()
+                .map(otherMemberBook -> {
+                    Integer count = calendarStampRepository.countByMemberIdAndMyBookId(targetMemberId, otherMemberBook.getId());
+                    
+                    MyBook loginMemberBook = loginMemberHavingBooks.stream()
+                            .filter(book -> book.getIsbn13().equals(otherMemberBook.getIsbn13()))
+                            .findFirst()
+                            .orElse(null);
+                    if (loginMemberBook != null) {
+                        return MyBookResponseDTO.from(otherMemberBook, count, loginMemberBook.getStatus().name());
+                    }
+                    return MyBookResponseDTO.from(otherMemberBook, count);
+                })
+                .collect(Collectors.toList());
+        
+        // 마지막 항목의 ID 설정
+        Long lastId = otherMemberBooks.isEmpty() ?
+                requestDTO.getLastId() :    // 조회된 목록이 비어있는 경우를 대비해 삼항 연산자 사용
+                otherMemberBooks.get(otherMemberBooks.size() - 1).getId(); // lastId를 요청 DTO의 값이 아닌, 실제 조회된 마지막 항목의 ID로 설정
+        
+        return ScrollResponseDTO.<MyBookResponseDTO>withAll()
+                .content(dtoList)
+                .hasNext(hasNext)
+                .lastId(lastId) // 조회된 목록의 마지막 항목의 ID
+                .numberOfElements(dtoList.size())
+                .totalElements(totalElements)
+                .build();
+    }
+    
+    @Override
+    public MyBookResponseDTO getOtherMemberBook(Long loginMemberId, Long targetMemberId, Long myBookId) {
+        MyBook findBook = myBookRepository.findByIdAndMemberIdWithAladinBook(myBookId, targetMemberId)
+                .orElseThrow(() -> new BookNotFoundException(String.format(BOOK_NOT_FOUND, targetMemberId, myBookId)));
+        
+        Integer stampCount = calendarStampRepository.countByMemberIdAndMyBookId(targetMemberId, findBook.getId());
+        
+        Optional<MyBook> loginMemberMyBook = myBookRepository.findByMemberIdAndIsbn13(loginMemberId,
+                findBook.getIsbn13());
+        
+        if (loginMemberMyBook.isPresent()) {
+            if (loginMemberMyBook.get().getIsbn13().equals(findBook.getIsbn13())){
+                return MyBookResponseDTO.from(findBook, stampCount, loginMemberMyBook.get().getStatus().name());
+            }
+        }
+        return MyBookResponseDTO.from(findBook, stampCount);
+    }
+    
+    @Override
+    public void insertNewBookByWish(Long memberId, Long targetMyBookId) {
+        
+        MyBook findTargetMyBook = myBookRepository.findById(targetMyBookId)
+                .orElseThrow(() -> new BookNotFoundException(String.format(BOOK_NOT_FOUND_BY_ID, targetMyBookId)));
+        
+        AladinBook findAladinBook = findTargetMyBook.getAladinBook();
+        
+        if (findAladinBook == null) {
+            throw new AladinBookNotFoundException(String.format(ALADIN_BOOK_NOT_FOUND));
+        }
+        
+        Member findLoginMember = memberRepository.findById(memberId)
+                .orElseThrow(() ->  new MemberException(String.format(MEMBER_NOT_FOUND, memberId)));
+        
+        Optional<MyBook> findRecordMyBook = myBookRepository.findByMemberIdAndIsbn13(memberId,
+                findTargetMyBook.getIsbn13());
+        
+        if (findRecordMyBook.isPresent()) {
+            throw new BookDuplicateNotAllowException(BOOK_CAN_NOT_DUPLICATE);
+        }
+        
+        
+        MyBook myBook = MyBook.builder()
+                .member(findLoginMember)
+                .aladinBook(findAladinBook)
+                .isbn13(findAladinBook.getIsbn13())
+                .status(BookStatus.WISH)
+                .build();
+        
+        myBookRepository.save(myBook);
+    }
+    
     private void saveBookAndCalenarStampByStatus(
             BookStatusRequestDTO requestDTO, MyBook myBook,
             AladinBook findAladinBook, Member findMember) {
@@ -193,6 +298,7 @@ public class MyBookServiceImpl implements MyBookService {
                 .currentPage(requestDTO.getCurrentPage())
                 .startDate(requestDTO.getStartDate())
                 .endDate(requestDTO.getEndDate())
+                .updateCount(requestDTO.getUpdateCount())
                 .build();
         
         myBookRepository.save(myBook);
@@ -212,6 +318,7 @@ public class MyBookServiceImpl implements MyBookService {
                 .myRating(requestDTO.getMyRating())
                 .currentPage(requestDTO.getCurrentPage())
                 .startDate(LocalDate.now())
+                .updateCount(requestDTO.getUpdateCount())
                 .build();
         
         return myBookRepository.save(myBook);
@@ -226,6 +333,7 @@ public class MyBookServiceImpl implements MyBookService {
                 .currentPage(findAladinBook.getItemPage()) // 다 읽었으니 100%로 만들기 위해
                 .startDate(requestDTO.getStartDate())
                 .endDate(requestDTO.getEndDate())
+                .updateCount(requestDTO.getUpdateCount())
                 .build();
         
         return myBookRepository.save(myBook);

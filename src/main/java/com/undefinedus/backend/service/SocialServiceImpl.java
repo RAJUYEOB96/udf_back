@@ -86,7 +86,7 @@ public class SocialServiceImpl implements SocialService{
     }
     
     @Override
-    public ScrollResponseDTO<OtherMemberInfoResponseDTO> getFollowMembers(Long memberId, ScrollRequestDTO requestDTO) {
+    public ScrollResponseDTO<OtherMemberInfoResponseDTO> getMemberFollows(Long memberId, ScrollRequestDTO requestDTO) {
         
         Long totalElements = memberRepository.countAllFollowMembersByTabCondition(memberId, requestDTO);
         
@@ -154,6 +154,72 @@ public class SocialServiceImpl implements SocialService{
             
             followRepository.save(newFollow);           // Follow에 새로운 관계 추가
         }
+    }
+    
+    @Override
+    public MemberSocialInfoResponseDTO getOtherMemberSocialSimpleInfo(Long myMemberId, Long targetMemberId) {
+        
+        Member findMyMember = memberRepository.findById(myMemberId)
+                .orElseThrow(() -> new MemberNotFoundException(String.format(USER_NOT_FOUND, myMemberId)));
+        
+        Member findTargetMember = memberRepository.findById(targetMemberId)
+                .orElseThrow(() -> new MemberNotFoundException(String.format(USER_NOT_FOUND, targetMemberId)));
+        
+        
+        // 이미 팔로우 관계가 있는지 확인
+        Optional<Follow> existingFollow = followRepository.findByFollowerAndFollowing(findMyMember, findTargetMember);
+        Boolean isFollow = false;
+        
+        if (existingFollow.isPresent()) {
+            isFollow = true;
+        }
+        
+        // count를 셀때 N+1 문제가 발생할 수 있기 때문에 따로 찾아온거 넣어주기
+        int followingCount = followRepository.countFollowingsByMemberId(targetMemberId);
+        int followerCount = followRepository.countFollowersByMemberId(targetMemberId);
+        
+        return MemberSocialInfoResponseDTO.from(findTargetMember, followingCount, followerCount, isFollow);
+    }
+    
+    @Override
+    public ScrollResponseDTO<OtherMemberInfoResponseDTO> getOtherMemberFollows(Long loginMemberId, Long targetMemberId,
+            ScrollRequestDTO requestDTO) {
+        
+        Long totalElements = memberRepository.countAllFollowMembersByTabCondition(targetMemberId, requestDTO);
+        
+        List<Member> followMembers = memberRepository.findFollowMembersByTabCondition(targetMemberId, requestDTO);
+        
+        boolean hasNext = false;
+        if (followMembers.size() > requestDTO.getSize()) { // 11 > 10 이면 있다는 뜻
+            hasNext = true;
+            followMembers.remove(followMembers.size() - 1); // 11개 가져온 걸 10개를 보내기 위해
+        }
+        
+        // 팔로우 정보 조회 (현재 로그인한 memberId가 팔로우 하는 모든 ID 목록)
+        // 내가 팔로잉 (내가 남을) 하고 있는 모든 memberId
+        Set<Long> followingIds = followRepository.findFollowingIds(loginMemberId);
+        
+        List<OtherMemberInfoResponseDTO> dtoList = followMembers.stream()
+                .map(followMember -> {
+                    return OtherMemberInfoResponseDTO.from(followMember, followingIds);
+                }).collect(Collectors.toList());
+        
+        // 마지막 항목의 ID 설정
+        Long lastId = followMembers.isEmpty() ?
+                requestDTO.getLastId() :    // 조회된 목록이 비어있는 경우를 대비해 삼항 연산자 사용
+                followMembers.get(followMembers.size() - 1).getId(); // lastId를 요청 DTO의 값이 아닌, 실제 조회된 마지막 항목의 ID로 설정
+        
+        String lastNickname = followMembers.isEmpty() ? requestDTO.getLastNickname() :
+                followMembers.get(followMembers.size() - 1).getNickname();
+        
+        return ScrollResponseDTO.<OtherMemberInfoResponseDTO>withAll()
+                .content(dtoList)
+                .hasNext(hasNext)
+                .lastId(lastId)
+                .lastNickname(lastNickname)  // lastNickname 필드도 추가
+                .numberOfElements(dtoList.size())
+                .totalElements(totalElements)
+                .build();
     }
     
     

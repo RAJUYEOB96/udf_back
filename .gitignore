@@ -280,12 +280,16 @@ gradle-app.setting
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows,intellij,visualstudiocode,react,java,gradle,maven
 
 # Application specific
-application.yml
-application.properties
-application-*.yml
-application-*.properties
+src/main/resources/application.yml
+src/main/resources/application.properties
+src/main/resources/application-*.yml
+src/main/resources/application-*.properties
 *.env
 .env.*
+
+# Allow test configuration
+!src/test/resources/application.yml
+!src/test/resources/application.properties
 
 # Coverage reports
 coverage/

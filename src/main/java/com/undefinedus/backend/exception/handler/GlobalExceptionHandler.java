@@ -1,6 +1,8 @@
 package com.undefinedus.backend.exception.handler;
 
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
+import com.undefinedus.backend.exception.aladinBook.AladinBookNotFoundException;
+import com.undefinedus.backend.exception.book.BookDuplicateNotAllowException;
 import com.undefinedus.backend.exception.book.BookException;
 import com.undefinedus.backend.exception.book.BookExistsException;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
@@ -69,6 +71,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(e.getMessage()));
     }
+    @ExceptionHandler(BookDuplicateNotAllowException.class)
+    protected ResponseEntity<ErrorResponse> handleBookDuplicateNotAllowException(BookDuplicateNotAllowException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(e.getMessage()));
+    }
 
     // member 관련
     @ExceptionHandler(MemberException.class)
@@ -100,6 +107,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidFollowException.class)
     protected ResponseEntity<ErrorResponse> handleInvalidFollowException(InvalidFollowException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(e.getMessage()));
+    }
+    
+    // aladinBook 관련
+    @ExceptionHandler(AladinBookNotFoundException.class)
+    protected ResponseEntity<ErrorResponse> handleAladinBookNotFoundException(AladinBookNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(e.getMessage()));
     }
     

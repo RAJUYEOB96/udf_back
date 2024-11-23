@@ -1,5 +1,11 @@
 package com.undefinedus.backend.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.enums.PreferencesType;
 import com.undefinedus.backend.dto.response.aladinAPI.AladinApiResponseDTO;
@@ -11,13 +17,21 @@ import java.util.Set;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Log4j2
 class ChatGPTServiceImplTests {
+    
+    @MockBean  // Spring Bean을 Mock으로 대체
+    private ChatClient chatClient;
 
     @Autowired
     private ChatGPTService chatGPTService;
@@ -43,18 +57,4 @@ class ChatGPTServiceImplTests {
             System.out.println(pt.getCategoryId());
         }
     }
-
-    @Test
-    @DisplayName("gpt 추천 도서 테스트")
-    public void getGPTRecommendedBookLIst() {
-
-        Long memberId = 2L;
-
-        List<AladinApiResponseDTO> booksByIsbn = chatGPTService.getGPTRecommendedBookLIst(
-            memberId);
-
-        System.out.println(booksByIsbn);
-        System.out.println(booksByIsbn.size());
-    }
-
 }
