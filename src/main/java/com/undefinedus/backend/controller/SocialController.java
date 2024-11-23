@@ -176,4 +176,18 @@ public class SocialController {
         
         return ResponseEntity.ok(ApiResponseDTO.success((response)));
     }
+    
+    // 소셜 책갈피 상세(SOCIAL_0014)의 책갈피 담기 기능
+    @PostMapping("/other/bookmarks/{targetBookmarkId}")
+    public ResponseEntity<ApiResponseDTO<Void>> insertOtherMemberBookmarkToMe(
+            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+            @PathVariable("targetBookmarkId") Long targetBookmarkId) {
+        
+        Long LoginMemberId = memberSecurityDTO.getId();
+        
+        myBookmarkService.insertOtherMemberBookmarkToMe(LoginMemberId, targetBookmarkId);
+        
+        return ResponseEntity.ok(ApiResponseDTO.success((null)));
+        
+    }
 }

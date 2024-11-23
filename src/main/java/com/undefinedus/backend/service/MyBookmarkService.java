@@ -17,4 +17,5 @@ public interface MyBookmarkService {
     
     void deleteMyBookmark(Long memberId, Long bookmarkId);
     
+    void insertOtherMemberBookmarkToMe(Long loginMemberId, Long targetBookmarkId);
 }
