@@ -89,14 +89,18 @@ public class MyBook extends BaseEntity {
             // IllegalArgumentException을 InvalidStatusException으로 변환
             throw new InvalidStatusException(String.format("잘못된 상태값입니다: %s", requestDTO.getStatus()));
         }
-        
+
     }
 
-    public void setId(Long id) {
+    public void changeId(Long id) {
         this.id = id;
     }
 
-    public void setStatus(BookStatus status) {
-        this.status = status;
+    public void changeIsbn13(String isbn13) {
+        this.isbn13 = isbn13;
+    }
+
+    public void changeMember(Member member) {
+        this.member = member;
     }
 }

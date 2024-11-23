@@ -1,6 +1,8 @@
 package com.undefinedus.backend.exception.handler;
 
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
+import com.undefinedus.backend.exception.aladinBook.AladinBookNotFoundException;
+import com.undefinedus.backend.exception.book.BookDuplicateNotAllowException;
 import com.undefinedus.backend.exception.book.BookException;
 import com.undefinedus.backend.exception.book.BookExistsException;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
@@ -9,6 +11,8 @@ import com.undefinedus.backend.exception.bookmark.BookmarkNotFoundException;
 import com.undefinedus.backend.exception.dto.ErrorResponse;
 import com.undefinedus.backend.exception.member.MemberException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
+import com.undefinedus.backend.exception.social.InvalidFollowException;
+import com.undefinedus.backend.exception.social.TabConditionNotEqualException;
 import com.undefinedus.backend.util.CustomJWTException;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -67,6 +71,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(e.getMessage()));
     }
+    @ExceptionHandler(BookDuplicateNotAllowException.class)
+    protected ResponseEntity<ErrorResponse> handleBookDuplicateNotAllowException(BookDuplicateNotAllowException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(e.getMessage()));
+    }
 
     // member 관련
     @ExceptionHandler(MemberException.class)
@@ -84,6 +93,26 @@ public class GlobalExceptionHandler {
     // bookmark 관련
     @ExceptionHandler(BookmarkNotFoundException.class)
     protected ResponseEntity<ErrorResponse> handleBookmarkNotFoundException(BookmarkNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(e.getMessage()));
+    }
+    
+    // social 관련
+    @ExceptionHandler(TabConditionNotEqualException.class)
+    protected ResponseEntity<ErrorResponse> handleTabConditionNotEqualException(TabConditionNotEqualException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(e.getMessage()));
+    }
+    
+    @ExceptionHandler(InvalidFollowException.class)
+    protected ResponseEntity<ErrorResponse> handleInvalidFollowException(InvalidFollowException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(e.getMessage()));
+    }
+    
+    // aladinBook 관련
+    @ExceptionHandler(AladinBookNotFoundException.class)
+    protected ResponseEntity<ErrorResponse> handleAladinBookNotFoundException(AladinBookNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(e.getMessage()));
     }

@@ -22,6 +22,9 @@ public class AladinApiResponseDTO {
     private Boolean adult;
     private Double customerReviewRank;
     private String fullDescription;
+    private String bestRank;   // 베스트셀러 순위 정보
+
+
 
     private SubInfoDTO subInfo;
 
@@ -30,5 +33,7 @@ public class AladinApiResponseDTO {
 
     // 카테고리가 너무 세분화 되어 있어 분류가 힘듬
     // 검색했을 때의 아이디 값으로 분류 할 수 있도록 하는 것
-    private Integer categoryId;
+//    private Integer categoryId;
+
+    private String category;
 }

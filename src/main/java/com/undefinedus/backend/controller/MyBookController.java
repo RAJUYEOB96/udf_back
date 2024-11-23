@@ -8,7 +8,6 @@ import com.undefinedus.backend.dto.request.book.BookStatusRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
-import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.service.AladinBookService;
 import com.undefinedus.backend.service.MyBookService;
 import jakarta.validation.Valid;

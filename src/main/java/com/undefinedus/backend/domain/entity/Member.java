@@ -27,6 +27,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
@@ -101,11 +102,11 @@ public class Member extends BaseEntity {
     // === 팔로우 관계 === //
     @OneToMany(mappedBy = "follower", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @Builder.Default
-    private Set<Follow> followings = new HashSet<>(); // 내가 팔로우하는 관계들
+    private Set<Follow> followings = new HashSet<>(); // 내가 팔로우하는 관계들 (내가 따라가는)
     
     @OneToMany(mappedBy = "following", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @Builder.Default
-    private Set<Follow> followers = new HashSet<>(); // 나를 팔로우하는 관계들
+    private Set<Follow> followers = new HashSet<>(); // 나를 팔로우하는 관계들 (나를 따라오는)
     
     // === 설정 정보 === //
     @Column(nullable = false)
@@ -115,7 +116,11 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private boolean isMessageToKakao = false;    // 책갈피 내용 카톡으로 보낼지 말지
-    
+
+    @Column(nullable = false)
+    @Builder.Default
+    private String honorific = "초보리더"; // 칭호 // version.1 에서는 기본 칭호를 유지할 예정
+
     // 알림 관련은 한달안에 알림 기능까지 넣기는 빡세다고 생각 다음 버전 만들시 추가 예정
     
     // === Soft Delete 관련 === //
@@ -137,5 +142,14 @@ public class Member extends BaseEntity {
     
     public void setSocialLogin(SocialLogin socialLogin) {
         this.socialLogin = socialLogin;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setNickname(
+        @Size(min = 2, max = 10) String nickname) {
+        this.nickname = nickname;
     }
 }

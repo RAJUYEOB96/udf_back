@@ -5,5 +5,5 @@ import java.util.List;
 
 public interface ChatGPTService {
 
-    List<AladinApiResponseDTO> getGPTRecommendedBookLIst(Long memberId);
+    List<AladinApiResponseDTO> getGPTRecommendedBookList(Long memberId);
 }

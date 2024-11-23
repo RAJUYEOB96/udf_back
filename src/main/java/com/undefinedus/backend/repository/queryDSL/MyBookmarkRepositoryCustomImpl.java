@@ -62,4 +62,29 @@ public class MyBookmarkRepositoryCustomImpl implements MyBookmarkRepositoryCusto
                 .limit(requestDTO.getSize() + 1) // 다음 페이지 존재 여부 확인을 위해 1개 더 조회
                 .fetch();
     }
+    
+    @Override
+    public Long countByMemberIdAndStatus(Long memberId, ScrollRequestDTO requestDTO) {
+        QMyBookmark myBookmark = QMyBookmark.myBookmark;
+        
+        // 기본 쿼리 생성
+        // BooleanBuilder이란 QueryDSL에서 동적 쿼리를 생성할 때 사용하는 클래스입니다
+        // 여러 조건들을 and()나 or()로 연결할 수 있게 해주는 빌더 패턴 구현체입니다
+        BooleanBuilder builder = new BooleanBuilder();
+        
+        // Member 필터링 - 필수 조건
+        builder.and(myBookmark.member.id.eq(memberId));
+        
+        // 검색어 처리 (책 제목과 구절 동시에 검색)
+        if (StringUtils.hasText(requestDTO.getSearch())) {
+            builder.and(myBookmark.aladinBook.title.containsIgnoreCase(requestDTO.getSearch())
+                    .or(myBookmark.phrase.containsIgnoreCase(requestDTO.getSearch())));
+        }
+        
+        return queryFactory
+                .select(myBookmark.count())
+                .from(myBookmark)
+                .where(builder)
+                .fetchOne();
+    }
 }

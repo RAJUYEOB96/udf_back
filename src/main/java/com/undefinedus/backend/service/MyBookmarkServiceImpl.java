@@ -31,6 +31,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService{
     private static final String AladinBook_NOT_FOUND = "해당 책을 찾을 수 없습니다. : %s";
     private static final String USER_NOT_FOUND = "해당 유저를 찾을 수 없습니다. : %d";
     private static final String BOOKMARK_NOT_FOUND = "해당 기록된 북마크를 찾을 수 없습니다. : 멤버 id - %d, 책갈피 id - %d";
+    private static final String BOOKMARK_NOT_FOUND_BY_ID = "해당 기록된 북마크를 찾을 수 없습니다. : 책갈피 id - %d";
     
     // === Repository 주입 === //
     private final MyBookmarkRepository myBookmarkRepository;
@@ -59,8 +60,11 @@ public class MyBookmarkServiceImpl implements MyBookmarkService{
     
     @Override
     public ScrollResponseDTO<MyBookmarkResponseDTO> getMyBookmarkList(Long memberId, ScrollRequestDTO requestDTO) {
-        // findBooksWithScroll안에서 size + 1개 데이터 조회해서 가져옴 (size가 10이면 11개 가져옴)
         
+        // 로그인한 아이디의 모든 bookmark의 갯수를 위한
+        Long totalElements = myBookmarkRepository.countByMemberIdAndStatus(memberId, requestDTO);
+        
+        // findBooksWithScroll안에서 size + 1개 데이터 조회해서 가져옴 (size가 10이면 11개 가져옴)
         List<MyBookmark> myBookmarks = myBookmarkRepository.findBookmarksWithScroll(memberId, requestDTO);
         
         boolean hasNext = false;
@@ -85,6 +89,7 @@ public class MyBookmarkServiceImpl implements MyBookmarkService{
                 .hasNext(hasNext)
                 .lastId(lastId)
                 .numberOfElements(dtoList.size())
+                .totalElements(totalElements)
                 .build();
     }
     
@@ -107,4 +112,24 @@ public class MyBookmarkServiceImpl implements MyBookmarkService{
         
         myBookmarkRepository.deleteById(bookmarkId);
     }
+    
+    @Override
+    public void insertOtherMemberBookmarkToMe(Long loginMemberId, Long targetBookmarkId) {
+        
+        MyBookmark findTargetBookmark = myBookmarkRepository.findById(targetBookmarkId)
+                .orElseThrow(() -> new BookmarkNotFoundException(String.format(BOOKMARK_NOT_FOUND_BY_ID, targetBookmarkId)));
+        
+        Member loginMember = memberRepository.findById(loginMemberId)
+                .orElseThrow(() -> new MemberNotFoundException(String.format(USER_NOT_FOUND, loginMemberId)));
+        
+        MyBookmark myBookmark = MyBookmark.builder()
+                .aladinBook(findTargetBookmark.getAladinBook())
+                .member(loginMember)
+                .phrase(findTargetBookmark.getPhrase())
+                .pageNumber(findTargetBookmark.getPageNumber())
+                .build();
+        
+        myBookmarkRepository.save(myBookmark);
+    }
+    
 }

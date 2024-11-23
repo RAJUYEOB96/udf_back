@@ -256,14 +256,20 @@ class MyBookmarkRepositoryTest {
         }
         
         @Test
-        @DisplayName("존재하지 않는 멤버 ID로 조회 시 null 반환")
+        @DisplayName("존재하지 않는 멤버 ID로 조회 시 빈 Optional 반환")
         void findWithNonExistingMemberReturnsNull() {
+            // given
+            Long nonExistingMemberId = 999L;
+            Long existingBookmarkId = savedBookmark.getId();
+            
             // when
-            Optional<MyBookmark> foundBookmark = myBookmarkRepository.findByIdAndMemberId(savedBookmark.getId(),
-                    999999L);
+            Optional<MyBookmark> result = myBookmarkRepository.findByIdAndMemberId(
+                    existingBookmarkId,
+                    nonExistingMemberId
+            );
             
             // then
-            assertThat(foundBookmark).isEmpty();
+            assertThat(result).isEmpty();
         }
         
         @Test
@@ -287,6 +293,107 @@ class MyBookmarkRepositoryTest {
             
             // then
             assertThat(foundBookmark).isEmpty();
+        }
+    }
+    
+    @Nested
+    @DisplayName("다른 사용자의 북마크를 내 북마크로 복사 테스트")
+    class InsertOtherMemberBookmarkTest {
+        
+        private Member otherMember;
+        private MyBookmark otherMemberBookmark;
+        
+        @BeforeEach
+        void setUpOtherMemberBookmark() {
+            // 다른 사용자 생성
+            otherMember = Member.builder()
+                    .username("other@test.com")
+                    .password("password123")
+                    .nickname("other")
+                    .memberRoleList(List.of(MemberType.USER))
+                    .isPublic(true)
+                    .build();
+            em.persist(otherMember);
+            
+            // 다른 사용자의 북마크용 책 생성
+            AladinBook book = AladinBook.builder()
+                    .isbn13("9788956740123")
+                    .title("다른 사용자의 책")
+                    .author("테스트 작가")
+                    .link("http://example.com/other")
+                    .cover("http://example.com/cover/other")
+                    .fullDescription("다른 사용자의 책 설명")
+                    .publisher("테스트출판사")
+                    .categoryName("IT/컴퓨터")
+                    .customerReviewRank(4.5)
+                    .itemPage(400)
+                    .build();
+            em.persist(book);
+            
+            // 다른 사용자의 북마크 생성
+            otherMemberBookmark = MyBookmark.builder()
+                    .member(otherMember)
+                    .aladinBook(book)
+                    .phrase("다른 사용자의 인상적인 구절")
+                    .pageNumber(150)
+                    .build();
+            em.persist(otherMemberBookmark);
+            
+            em.flush();
+            em.clear();
+        }
+        
+        @Test
+        @DisplayName("다른 사용자의 북마크를 내 북마크로 성공적으로 복사")
+        void insertOtherMemberBookmarkSuccess() {
+            // when
+            MyBookmark myBookmark = MyBookmark.builder()
+                    .member(member)
+                    .aladinBook(otherMemberBookmark.getAladinBook())
+                    .phrase(otherMemberBookmark.getPhrase())
+                    .pageNumber(otherMemberBookmark.getPageNumber())
+                    .build();
+            MyBookmark savedBookmark = myBookmarkRepository.save(myBookmark);
+            
+            // then
+            assertThat(savedBookmark).isNotNull();
+            assertThat(savedBookmark.getMember().getId()).isEqualTo(member.getId());
+            assertThat(savedBookmark.getAladinBook().getIsbn13()).isEqualTo(otherMemberBookmark.getAladinBook().getIsbn13());
+            assertThat(savedBookmark.getPhrase()).isEqualTo(otherMemberBookmark.getPhrase());
+            assertThat(savedBookmark.getPageNumber()).isEqualTo(otherMemberBookmark.getPageNumber());
+        }
+        
+        @Test
+        @DisplayName("복사된 북마크는 원본과 다른 ID를 가짐")
+        void insertedBookmarkHasDifferentId() {
+            // when
+            MyBookmark myBookmark = MyBookmark.builder()
+                    .member(member)
+                    .aladinBook(otherMemberBookmark.getAladinBook())
+                    .phrase(otherMemberBookmark.getPhrase())
+                    .pageNumber(otherMemberBookmark.getPageNumber())
+                    .build();
+            MyBookmark savedBookmark = myBookmarkRepository.save(myBookmark);
+            
+            // then
+            assertThat(savedBookmark.getId()).isNotNull();
+            assertThat(savedBookmark.getId()).isNotEqualTo(otherMemberBookmark.getId());
+        }
+        
+        @Test
+        @DisplayName("복사된 북마크의 책 정보는 원본과 동일한 참조를 가짐")
+        void insertedBookmarkSharesSameBookReference() {
+            // when
+            MyBookmark myBookmark = MyBookmark.builder()
+                    .member(member)
+                    .aladinBook(otherMemberBookmark.getAladinBook())
+                    .phrase(otherMemberBookmark.getPhrase())
+                    .pageNumber(otherMemberBookmark.getPageNumber())
+                    .build();
+            MyBookmark savedBookmark = myBookmarkRepository.save(myBookmark);
+            
+            // then
+            assertThat(savedBookmark.getAladinBook().getId()).isEqualTo(otherMemberBookmark.getAladinBook().getId());
         }
     }
 }

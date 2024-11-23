@@ -79,6 +79,9 @@ dependencies {
 
     // Quartz 스케줄러
     implementation 'org.quartz-scheduler:quartz:2.3.2'
+
+    // 테스트용 H2 DB
+    testRuntimeOnly 'com.h2database:h2'
 }
 
 // chat gpt

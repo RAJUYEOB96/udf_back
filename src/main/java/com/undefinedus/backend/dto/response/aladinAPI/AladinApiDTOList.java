@@ -15,6 +15,8 @@ import lombok.ToString;
 @ToString
 public class AladinApiDTOList {
 
+    private Long totalResults;
+
     @JsonProperty("item")
     private List<AladinApiResponseDTO> item;
 }

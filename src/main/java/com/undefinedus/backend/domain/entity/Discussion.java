@@ -1,9 +1,7 @@
 package com.undefinedus.backend.domain.entity;
 
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -12,19 +10,19 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
@@ -71,9 +69,11 @@ public class Discussion extends BaseEntity {
     private List<DiscussionParticipant> participants = new ArrayList<>(); // 토론 찬성 반대 참여자 수를 세기 위해 필요 예(찬성 2/ 반대 2)
     
     @Column
+    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime startDate; // 토론을 시작할 시간 // 토론 시작 시간은 createdDate보다 최소 24시간 뒤 최대 7일 이여야 한다.
     
     @Column
+    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime closedAt;    // status가 CLOSED일 경우 기록, 토론 종료 시간(시작 시간으로 부터 24시간 후)
     
     @OneToMany(mappedBy = "discussion", orphanRemoval = true)
@@ -126,5 +126,42 @@ public class Discussion extends BaseEntity {
         if (count != null && count > 0) {
             this.views += count;
         }
+    }
+
+    public void setViews(Long views) {
+        this.views = views;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setMyBook(MyBook myBook) {
+        this.myBook = myBook;
+    }
+
+    public void setStartDate(LocalDateTime startDate) {
+        this.startDate = startDate;
+    }
+
+    public void setStatus(DiscussionStatus status) {
+        this.status = status;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setMember(Member member) {
+        this.member = member;
+    }
+
+    public void setParticipants(
+        List<DiscussionParticipant> participants) {
+        this.participants = participants;
     }
 }

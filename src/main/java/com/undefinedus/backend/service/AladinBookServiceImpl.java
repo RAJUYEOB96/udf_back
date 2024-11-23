@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -71,38 +70,33 @@ public class AladinBookServiceImpl implements AladinBookService {
     }
 
     @Override
-    public List<AladinApiResponseDTO> searchKeywordAladinAPI(String search) {
+    public Map<String, Object> searchKeywordAladinAPI(Integer page,
+        String search, String sort) {
 
         String ttbkey = "ttbrladyd971718002";
         String url = "http://www.aladin.co.kr/ttb/api/ItemSearch.aspx";
 
         RestTemplate restTemplate = new RestTemplate();
         List<AladinApiResponseDTO> keywordAladinBookNotAdultList = new ArrayList<>();
-        int page = 1;
 
         try {
-
-            while (keywordAladinBookNotAdultList.size() < 10) {
 
                 URI uri = UriComponentsBuilder.fromHttpUrl(url)
                     .queryParam("ttbkey", ttbkey)
                     .queryParam("Query", search)
                     .queryParam("QueryType", "Keyword")
-                    .queryParam("MaxResults", 10)
+                    .queryParam("MaxResults", 30)
                     .queryParam("start", page)
                     .queryParam("SearchTarget", "Book")
                     .queryParam("output", "js")
                     .queryParam("Version", "20131101")
+                    .queryParam("Sort", sort)
                     .build()
                     .toUri();
 
                 AladinApiDTOList response = restTemplate.getForObject(uri,
                     AladinApiDTOList.class);
 
-                if (response == null || response.getItem().isEmpty()) {
-                    // 더 이상 가져올 책이 없으면 반복 종료
-                    break;
-                }
 
                 // adult가 아닌 책만 필터링하여 리스트에 추가
                 List<AladinApiResponseDTO> filteredNotAdultList = response.getItem().stream()
@@ -111,16 +105,9 @@ public class AladinBookServiceImpl implements AladinBookService {
 
                 keywordAladinBookNotAdultList.addAll(filteredNotAdultList);
 
-                page++;
-
-                // 현재 수집된 책의 개수가 10개 이상이면 잘라내기
-                if (keywordAladinBookNotAdultList.size() >= 10) {
-                    keywordAladinBookNotAdultList = keywordAladinBookNotAdultList.subList(0, 10);
-                    break;
-                }
                 log.info("알라딘 API 연결 성공");
-            }
-            return keywordAladinBookNotAdultList;
+            return Map.of("items", keywordAladinBookNotAdultList, "currentPage", page, "totalResults", response.getTotalResults());
+//            return Map.of(page, keywordAladinBookNotAdultList);
         } catch (Exception e) {
             log.error("알라딘 API 연결 실패", e);
             return null;
@@ -171,7 +158,8 @@ public class AladinBookServiceImpl implements AladinBookService {
 
                 // 현재 수집된 책의 개수가 10개 이상이면 잘라내기
                 if (bestsellerAladinBookNotAdultList.size() >= 10) {
-                    bestsellerAladinBookNotAdultList = bestsellerAladinBookNotAdultList.subList(0, 10);
+                    bestsellerAladinBookNotAdultList = bestsellerAladinBookNotAdultList.subList(0,
+                        10);
                     break;
                 }
 
@@ -209,7 +197,7 @@ public class AladinBookServiceImpl implements AladinBookService {
             List<AladinApiResponseDTO> booksForCategoryNotAdult = new ArrayList<>();
             int page = 1;
 
-            while (booksForCategoryNotAdult.size() < 10) {
+            while (booksForCategoryNotAdult.size() <= 10) {
                 URI uri = UriComponentsBuilder.fromHttpUrl(url)
                     .queryParam("ttbkey", ttbkey)
                     .queryParam("QueryType", "ItemEditorChoice")
@@ -232,15 +220,23 @@ public class AladinBookServiceImpl implements AladinBookService {
                     }
 
                     // 성인 도서를 제외하고, adult=false인 도서만 필터링
+                    List<AladinApiResponseDTO> finalBooksForCategoryNotAdult = booksForCategoryNotAdult;
                     response.getItem().stream()
                         .filter(item -> !item.getAdult())
                         .forEach(responseDTO -> {
-                            responseDTO.setCategoryId(preference.getCategoryId());
-                            booksForCategoryNotAdult.add(responseDTO);
+                            responseDTO.setCategory(String.valueOf(preference));
+                            finalBooksForCategoryNotAdult.add(responseDTO);
                         });
 
                     // 페이지 증가
                     page++;
+
+                    // 현재 수집된 책의 개수가 10개 이상이면 더 이상 페이지를 넘기지 않음
+                    if (booksForCategoryNotAdult.size() >= 10) {
+                        // `subList`를 사용하지 않고, 10개 이상의 책이 모이면 그만두기
+                        booksForCategoryNotAdult = new ArrayList<>(booksForCategoryNotAdult.subList(0, 10)); // 새로운 ArrayList로 복사
+                        break;
+                    }
 
                 } catch (Exception e) {
                     log.error("알라딘 API 연결 실패 : ", e.getMessage());
@@ -249,7 +245,7 @@ public class AladinBookServiceImpl implements AladinBookService {
             }
 
             // 카테고리 ID를 키로 책 리스트 저장
-            categorizedResults.put(preference.getCategoryId().toString(), booksForCategoryNotAdult);
+            categorizedResults.put(String.valueOf(preference), booksForCategoryNotAdult);
             log.info("알라딘 API 연결 성공 - 카테고리 ID: " + preference.getCategoryId());
         }
         return categorizedResults;
@@ -278,7 +274,7 @@ public class AladinBookServiceImpl implements AladinBookService {
             .queryParam("ItemId", isbn13)
             .queryParam("output", "js")
             .queryParam("Version", "20131101")
-            .queryParam("OptResult", "fulldescription")
+            .queryParam("OptResult", "fulldescription,bestSellerRank")
             .build()
             .toUri();
 

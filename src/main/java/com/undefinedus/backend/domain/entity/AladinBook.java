@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -59,4 +58,16 @@ public class AladinBook {
 
     @Column                             // 페이지 정보가 없는 책도 있음
     private Integer itemPage;         // 총 페이지 수
+
+    public void changeIsbn13(String isbn13) {
+        this.isbn13 = isbn13;
+    }
+
+    public void changeCover(String cover) {
+        this.cover = cover;
+    }
+
+    public void changeTitle(String title) {
+        this.title = title;
+    }
 }
