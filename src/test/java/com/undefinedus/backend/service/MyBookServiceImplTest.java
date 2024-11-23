@@ -163,7 +163,7 @@ class MyBookServiceImplTest {
         // 이 테스트에서만 필요한 save 설정 추가
         when(myBookRepository.save(any(MyBook.class))).thenAnswer(invocation -> {
             MyBook myBook = invocation.getArgument(0);
-            myBook.setId(1L);
+            myBook.changeId(1L);
             return myBook;
         });
         
@@ -201,7 +201,7 @@ class MyBookServiceImplTest {
         // 이 테스트에서만 필요한 save 설정 추가
         when(myBookRepository.save(any(MyBook.class))).thenAnswer(invocation -> {
             MyBook myBook = invocation.getArgument(0);
-            myBook.setId(1L);
+            myBook.changeId(1L);
             return myBook;
         });
         
