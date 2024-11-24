@@ -36,7 +36,8 @@ public class JWTCheckFilter extends OncePerRequestFilter {
                 path.contains("/api/member/email/send-verification") ||  // 이메일 인증 발송
                 path.contains("/api/member/email/verify") || // 이메일 인증 확인
                 path.contains("/api/book/**") || // 나중에 제거 필요
-                path.contains("/scheduler/**"); // 나중에 제거 필요
+                path.contains("/api/discussion/**") || // 나중에 제거 필요
+                path.contains("/api/discussionComment/**"); // 나중에 제거 필요
     }
 
     @Override

@@ -46,4 +46,5 @@ public class DiscussionParticipant {
     
     @Column(nullable = false)
     private boolean isAgree;  // true: 찬성, false: 반대
+
 }
