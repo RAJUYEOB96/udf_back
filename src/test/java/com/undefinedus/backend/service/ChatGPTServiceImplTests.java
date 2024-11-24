@@ -38,9 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Log4j2
 @Transactional
-//@TestPropertySource(properties = {
-//    "spring.ai.openai.api-key=sk-proj-io6fe43aSwBrKw3Fg69QT3BlbkFJ3ZtzigqqHKK8TUHGbCgq"
-//})
+
 class ChatGPTServiceImplTests {
 
     @Autowired
