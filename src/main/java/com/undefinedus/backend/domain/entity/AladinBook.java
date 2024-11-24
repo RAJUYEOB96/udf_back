@@ -43,6 +43,9 @@ public class AladinBook {
     
     @Column(length = 4000, nullable = false)  // 책 소개가 매우 긴 경우가 많음
     private String fullDescription;   // 도서 소개
+
+    @Column(length = 5000, nullable = false)  // 책 소개가 매우 긴 경우가 많음
+    private String fullDescription2;   // 출판사 제공 책소개  // gpt에게 책의 추가적인 정보를 넘겨주기 위해 필요
     
     @Column(length = 100, nullable = false)  // 출판사명은 적절
     private String publisher;     // 출판사
