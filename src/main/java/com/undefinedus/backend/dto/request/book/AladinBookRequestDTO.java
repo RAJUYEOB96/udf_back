@@ -19,6 +19,8 @@ public class AladinBookRequestDTO {
 
     private String fullDescription;   // 도서 소개
 
+    private String fullDescription2;   // 도서 소개 정보량 많음 // gpt에게 토론용 책에 대한 정보를 주기 위해 필요
+
     private String publisher;     // 출판사
 
     private String categoryName;  // 카테고리명

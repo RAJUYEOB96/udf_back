@@ -60,6 +60,7 @@ public class AladinBookServiceImpl implements AladinBookService {
             .link(requestDTO.getLink())
             .cover(requestDTO.getCover())
             .fullDescription(requestDTO.getFullDescription())
+            .fullDescription2(requestDTO.getFullDescription2())
             .publisher(requestDTO.getPublisher())
             .categoryName(requestDTO.getCategoryName())
             .customerReviewRank(requestDTO.getCustomerReviewRank())

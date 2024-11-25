@@ -92,27 +92,27 @@ public class DiscussionComment extends BaseEntity {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    public void setId(Long id) {
+    public void changeId(Long id) {
         this.id = id;
     }
 
-    public void setDiscussion(Discussion discussion) {
+    public void changeDiscussion(Discussion discussion) {
         this.discussion = discussion;
     }
 
-    public void setGroupId(Long groupId) {
+    public void changeGroupId(Long groupId) {
         this.groupId = groupId;
     }
 
-    public void setMember(Member member) {
+    public void changeMember(Member member) {
         this.member = member;
     }
 
-    public void setVoteType(VoteType voteType) {
+    public void changeVoteType(VoteType voteType) {
         this.voteType = voteType;
     }
 
-    public void setContent(String content) {
+    public void changeContent(String content) {
         this.content = content;
     }
 }

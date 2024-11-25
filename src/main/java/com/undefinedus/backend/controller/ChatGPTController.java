@@ -3,6 +3,7 @@ package com.undefinedus.backend.controller;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.aladinAPI.AladinApiResponseDTO;
+import com.undefinedus.backend.dto.response.discussion.DiscussionGPTResponseDTO;
 import com.undefinedus.backend.service.ChatGPTService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class ChatGPTController {
 
     private final ChatGPTService chatGPTService;
 
-    @GetMapping
+    @GetMapping("/recommended")
     public ResponseEntity<ApiResponseDTO<List<AladinApiResponseDTO>>> getGPTRecommendedBookLIst(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO) {
 
@@ -27,9 +28,21 @@ public class ChatGPTController {
 
         System.out.println("memberId : " + memberId);
 
-        List<AladinApiResponseDTO> gptRecommendedBookLIst = chatGPTService.getGPTRecommendedBookList(
+        List<AladinApiResponseDTO> gptRecommendedBookList = chatGPTService.getGPTRecommendedBookList(
             memberId);
 
-        return ResponseEntity.ok(ApiResponseDTO.success(gptRecommendedBookLIst));
+        return ResponseEntity.ok(ApiResponseDTO.success(gptRecommendedBookList));
     }
+
+    @GetMapping("/discussion")
+    public ResponseEntity<ApiResponseDTO<DiscussionGPTResponseDTO>> getDiscussionGTP(
+        Long discussionId) {
+
+        DiscussionGPTResponseDTO discussionGPTResult = chatGPTService.getDiscussionGPTResult(
+            discussionId);
+
+        return ResponseEntity.ok(ApiResponseDTO.success(discussionGPTResult));
+    }
+
+
 }
