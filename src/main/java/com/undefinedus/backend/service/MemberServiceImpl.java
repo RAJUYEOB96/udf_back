@@ -8,6 +8,7 @@ import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
 import com.undefinedus.backend.dto.response.social.MemberSocialInfoResponseDTO;
 import com.undefinedus.backend.repository.MemberRepository;
+import com.undefinedus.backend.util.JWTUtil;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,29 +38,34 @@ public class MemberServiceImpl implements MemberService {
     private final PasswordEncoder passwordEncoder;
     
     @Override
-    public Map<String, Object> getKakaoInfo(String accessToken) {
+    public Map<String, Object> getKakaoInfo(String kakaoAccessToken) {
         
         Map<String, Object> result = new HashMap<>();
         
         // accessToken을 이용해서 사용자의 정보를 가져오기
         Map<String, String> kakaoInfo = getKakaoIdAndNicknameFromKakaoAccessToken(
-                accessToken);
+                kakaoAccessToken);
         
         // 기존에 DB에 회원 정보가 있는 경우 / 없는 경우
-        Optional<Member> isRegister = memberRepository.findByUsernameAndNickname(
-                kakaoInfo.get("kakaoId"),
-                kakaoInfo.get("nickname")
-        );
+        Optional<Member> isRegister = memberRepository.findByUsername("kakao_" + kakaoInfo.get("kakaoId"));
         
         if (isRegister.isPresent()) {
             MemberSecurityDTO memberSecurityDTO = entityToDTOWithSocial(isRegister.get());
+            
+            Map<String, Object> claims = memberSecurityDTO.getClaims();
+            
+            String accessToken = JWTUtil.generateAccessToken(claims);
+            String refreshToken = JWTUtil.generateRefreshToken(claims);
+            
+            claims.put("accessToken", accessToken);
+            claims.put("refreshToken", refreshToken);
+            
             result.put("result", "exists");
-            result.put("member", memberSecurityDTO);
+            result.put("member", claims);
             return result;
         }
         
         result.put("kakaoId", kakaoInfo.get("kakaoId"));
-        result.put("nickname", kakaoInfo.get("nickname"));
         result.put("result", "new");
         
         return result;
@@ -129,7 +135,7 @@ public class MemberServiceImpl implements MemberService {
     private Member makeSocialMember(RegisterRequestDTO requestDTO) {
         
         // 소셜 로그인 비밀번호는 사용자가 사용하진 않지만 최소한의 보안은 하도록 아래처럼
-        String tempPassword = "kakao_" + requestDTO.getUsername();
+        String tempPassword = "pw_" + requestDTO.getUsername();
         
         log.info("tempPassword : " + tempPassword);
         
@@ -143,10 +149,13 @@ public class MemberServiceImpl implements MemberService {
                 .gender(requestDTO.getGender())
                 .build();
         
+        String[] split = requestDTO.getUsername().split("_");
+        String providerId = split[1];
+        
         SocialLogin socialLogin = SocialLogin.builder()
                 .member(member)
                 .provider("KAKAO")
-                .providerId(requestDTO.getUsername())
+                .providerId(providerId)
                 .build();
         
         member.setSocialLogin(socialLogin);
@@ -197,8 +206,7 @@ public class MemberServiceImpl implements MemberService {
         String nickname = kakaoAccount.get("nickname");
         
         log.info("kakaoId : " + kakaoId);
-        log.info("nickname : " + nickname);
         
-        return Map.of("kakaoId", kakaoId, "nickname", nickname);
+        return Map.of("kakaoId", kakaoId);
     }
 }
