@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
@@ -35,12 +36,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
+
+@Disabled("API 키가 필요한 테스트 - 로컬에서 API-KEY로 확인 후 올림, 테스트 application.yml은 키가 없어서 에러남")
 @SpringBootTest
 @Log4j2
 @Transactional
-
 class ChatGPTServiceImplTests {
-
+    
     @Autowired
     private ChatClient chatClient;
 
@@ -63,7 +65,7 @@ class ChatGPTServiceImplTests {
     private Member testMember;
     private MyBook testMyBook;
     private AladinBook testAladinBook;
-
+    
     @Value("${spring.ai.openai.api-key}")
     String apiKey;
 
