@@ -1,12 +1,16 @@
 package com.undefinedus.backend.controller;
 
+import com.undefinedus.backend.domain.entity.DiscussionComment;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.DiscussionCommentsScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentRequestDTO;
-import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentListResponseDTO;
+import com.undefinedus.backend.dto.response.discussion.DiscussionDetailResponseDTO;
+import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentResponseDTO;
+import com.undefinedus.backend.repository.DiscussionCommentRepository;
 import com.undefinedus.backend.service.DiscussionCommentService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,12 +64,19 @@ public class DiscussionCommentController {
             .body(ApiResponseDTO.success(null));
     }
 
+    @GetMapping("/bestComment/{discussionId}")
+    public ResponseEntity<ApiResponseDTO<List<DiscussionCommentResponseDTO>>> getBest3CommentsList(@PathVariable(name = "discussionId") Long discussionId) {
+
+        List<DiscussionCommentResponseDTO> best3CommentByCommentLikes = discussionCommentService.getBest3CommentByCommentLikes(discussionId);
+        return ResponseEntity.ok(ApiResponseDTO.success(best3CommentByCommentLikes));
+    }
+
     @GetMapping
-    public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<DiscussionCommentListResponseDTO>>> getCommentList(
+    public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<DiscussionCommentResponseDTO>>> getCommentList(
         @ModelAttribute DiscussionCommentsScrollRequestDTO requestDTO
     ) {
 
-        ScrollResponseDTO<DiscussionCommentListResponseDTO> response = discussionCommentService.getCommentList(
+        ScrollResponseDTO<DiscussionCommentResponseDTO> response = discussionCommentService.getCommentList(
             requestDTO);
 
         return ResponseEntity.ok(ApiResponseDTO.success(response));
