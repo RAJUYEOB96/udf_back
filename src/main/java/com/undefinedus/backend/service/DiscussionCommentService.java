@@ -3,7 +3,8 @@ package com.undefinedus.backend.service;
 import com.undefinedus.backend.dto.request.DiscussionCommentsScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentRequestDTO;
-import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentListResponseDTO;
+import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentResponseDTO;
+import java.util.List;
 
 public interface DiscussionCommentService {
 
@@ -13,7 +14,7 @@ public interface DiscussionCommentService {
     void writeReply(Long discussionId, Long discussionCommentId, Long memberId,
         DiscussionCommentRequestDTO discussionCommentRequestDTO);
 
-    ScrollResponseDTO<DiscussionCommentListResponseDTO> getCommentList(
+    ScrollResponseDTO<DiscussionCommentResponseDTO> getCommentList(
         DiscussionCommentsScrollRequestDTO discussionCommentsScrollRequestDTO);
 
     void addLike(Long memberId, Long discussionCommentId);
@@ -21,4 +22,6 @@ public interface DiscussionCommentService {
     void addDislike(Long memberId, Long discussionCommentId);
 
     void deleteComment(Long memberId, Long commentId);
+
+    List<DiscussionCommentResponseDTO> getBest3CommentByCommentLikes(Long discussionId);
 }

@@ -1,5 +1,6 @@
 package com.undefinedus.backend.repository;
 
+import com.undefinedus.backend.domain.entity.CommentLike;
 import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.entity.DiscussionComment;
 import com.undefinedus.backend.domain.entity.Member;
@@ -7,7 +8,10 @@ import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.enums.BookStatus;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.domain.enums.VoteType;
+import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentResponseDTO;
 import jakarta.persistence.EntityManager;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,7 +46,14 @@ class DiscussionCommentRepositoryTest {
     private EntityManager entityManager;
 
     private Discussion discussion;
-    private Member member;
+    Member member1;
+    Member member2;
+    Member member3;
+    Member member4;
+    Member member5;
+    private DiscussionComment comment1;
+    private DiscussionComment comment2;
+    private DiscussionComment comment3;
 
     @BeforeEach
     void setUp() {
@@ -50,17 +61,45 @@ class DiscussionCommentRepositoryTest {
         // 댓글 테이블 초기화
         discussionCommentRepository.deleteAll();  // 모든 댓글 삭제
 
-        // 멤버 생성 및 저장
-        member = Member.builder()
+        // 여러 멤버 생성 및 저장
+        member1 = Member.builder()
+            .nickname("testuser1")
+            .username("test1@example.com")
+            .password("testpassword1")
+            .build();
+        memberRepository.save(member1);
+
+        member2 = Member.builder()
+            .nickname("testuser2")
+            .username("test2@example.com")
+            .password("testpassword2")
+            .build();
+        memberRepository.save(member2);
+
+        member3 = Member.builder()
+            .nickname("testuser3")
+            .username("test3@example.com")
+            .password("testpassword3")
+            .build();
+        memberRepository.save(member3);
+
+        member4 = Member.builder()
+            .nickname("testuser4")
+            .username("test4@example.com")
+            .password("testpassword4")
+            .build();
+        memberRepository.save(member4);
+
+        member5 = Member.builder()
             .nickname("testuser5")
             .username("test5@example.com")
-            .password("testpassword5")  // 비밀번호 추가
+            .password("testpassword5")
             .build();
-        memberRepository.save(member);
+        memberRepository.save(member5);
 
         // MyBook 생성 및 저장
         MyBook myBook = MyBook.builder()
-            .member(member)
+            .member(member1)
             .status(BookStatus.READING)  // 적절한 BookStatus 설정
             .isbn13("9780123456789")  // 예시 ISBN
             .build();
@@ -68,13 +107,79 @@ class DiscussionCommentRepositoryTest {
 
         // Discussion 생성 및 저장
         discussion = Discussion.builder()
-            .member(member)
+            .member(member1)
             .myBook(myBook)
             .title("Test Discussion")
             .content("Discussion Content")
             .status(DiscussionStatus.PROPOSED)
             .build();
         discussionRepository.save(discussion);
+
+        // 댓글을 여러 개 추가
+        comment1 = DiscussionComment.builder()
+            .discussion(discussion)
+            .member(member1)
+            .voteType(VoteType.AGREE)
+            .content("Best Comment with many likes")
+            .build();
+        discussionCommentRepository.save(comment1);
+
+        comment2 = DiscussionComment.builder()
+            .discussion(discussion)
+            .member(member2)
+            .voteType(VoteType.DISAGREE)
+            .content("Comment with some likes")
+            .build();
+        discussionCommentRepository.save(comment2);
+
+        comment3 = DiscussionComment.builder()
+            .discussion(discussion)
+            .member(member3)
+            .voteType(VoteType.AGREE)
+            .content("Comment with fewer likes")
+            .build();
+        discussionCommentRepository.save(comment3);
+
+        // 좋아요 추가 - 멤버별로 댓글에 좋아요 추가
+        CommentLike commentLike1 = CommentLike.builder()
+            .comment(comment1)
+            .isLike(true)
+            .member(member1)
+            .build();
+
+        commentLikeRepository.save(commentLike1);
+
+        CommentLike commentLike2 = CommentLike.builder()
+            .comment(comment2)
+            .isLike(true)
+            .member(member2)
+            .build();
+
+        commentLikeRepository.save(commentLike2);
+
+        CommentLike commentLike3 = CommentLike.builder()
+            .comment(comment3)
+            .isLike(true)
+            .member(member3)
+            .build();
+
+        commentLikeRepository.save(commentLike3);
+
+        CommentLike commentLike4 = CommentLike.builder()
+            .comment(comment1)
+            .isLike(true)
+            .member(member4)
+            .build();
+
+        commentLikeRepository.save(commentLike4);
+
+        CommentLike commentLike5 = CommentLike.builder()
+            .comment(comment2)
+            .isLike(true)
+            .member(member5)
+            .build();
+
+        commentLikeRepository.save(commentLike5);
     }
 
     @Test
@@ -89,7 +194,7 @@ class DiscussionCommentRepositoryTest {
         // 댓글을 두 개 추가
         DiscussionComment parentComment = DiscussionComment.builder()
             .discussion(discussion)
-            .member(member)
+            .member(member1)
             .parentId(null)
             .order(1L)
             .voteType(VoteType.AGREE)
@@ -99,7 +204,7 @@ class DiscussionCommentRepositoryTest {
 
         DiscussionComment childComment1 = DiscussionComment.builder()
             .discussion(discussion)
-            .member(member)
+            .member(member2)
             .parentId(parentComment.getId())
             .order(1L)
             .voteType(VoteType.DISAGREE)
@@ -109,7 +214,7 @@ class DiscussionCommentRepositoryTest {
 
         DiscussionComment childComment2 = DiscussionComment.builder()
             .discussion(discussion)
-            .member(member)
+            .member(member3)
             .parentId(parentComment.getId())
             .order(2L)
             .voteType(VoteType.DISAGREE)
@@ -135,7 +240,7 @@ class DiscussionCommentRepositoryTest {
         // 새로운 댓글 추가
         DiscussionComment comment = DiscussionComment.builder()
             .discussion(discussion)
-            .member(member)
+            .member(member1)
             .groupId(1L)
             .voteType(VoteType.AGREE)
             .content("New Comment with Group ID")
@@ -157,7 +262,7 @@ class DiscussionCommentRepositoryTest {
         // 댓글을 몇 개 추가
         DiscussionComment comment1 = DiscussionComment.builder()
             .discussion(discussion)
-            .member(member)
+            .member(member1)
             .voteType(VoteType.AGREE)
             .totalOrder(1L)
             .content("Comment 1")
@@ -166,7 +271,7 @@ class DiscussionCommentRepositoryTest {
 
         DiscussionComment comment2 = DiscussionComment.builder()
             .discussion(discussion)
-            .member(member)
+            .member(member2)
             .voteType(VoteType.DISAGREE)
             .totalOrder(2L)
             .content("Comment 2")
@@ -184,7 +289,7 @@ class DiscussionCommentRepositoryTest {
         // 자식 댓글을 추가
         DiscussionComment parentComment = DiscussionComment.builder()
             .discussion(discussion)
-            .member(member)
+            .member(member1)
             .groupId(1L)
             .voteType(VoteType.AGREE)
             .content("Parent Comment")
@@ -193,7 +298,7 @@ class DiscussionCommentRepositoryTest {
 
         DiscussionComment childComment = DiscussionComment.builder()
             .discussion(discussion)
-            .member(member)
+            .member(member2)
             .parentId(parentComment.getId())
             .groupId(1L)
             .totalOrder(5L)
@@ -214,7 +319,7 @@ class DiscussionCommentRepositoryTest {
         // 초기 댓글 추가
         DiscussionComment comment = DiscussionComment.builder()
             .discussion(discussion)
-            .member(member)
+            .member(member1)
             .totalOrder(10L)
             .voteType(VoteType.AGREE)
             .content("Original Comment")
@@ -234,4 +339,13 @@ class DiscussionCommentRepositoryTest {
 
         // 이 테스트 후 DB에 실제로 반영되지 않음
     }
+
+//    @Test
+//    @DisplayName("getBestCommentTop3List 메서드 테스트")
+//    void testGetBestCommentTop3List() {
+//        // 메서드 실행
+//        Optional<List<DiscussionComment>> top3Comments = discussionCommentRepository.findBestCommentTop3List();
+//
+//        System.out.println("top3Comments = " + top3Comments);
+//    }
 }

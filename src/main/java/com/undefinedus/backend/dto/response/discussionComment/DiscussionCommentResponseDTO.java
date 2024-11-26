@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class DiscussionCommentListResponseDTO {
+public class DiscussionCommentResponseDTO {
 
     private Long commentId;
 
