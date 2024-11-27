@@ -1,16 +1,17 @@
 package com.undefinedus.backend.repository;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.undefinedus.backend.config.QueryDSLConfig;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
-@TestPropertySource(properties = "spring.ai.openai.api-key=skip")
-@SpringBootTest
+@DataJpaTest
+@Import(QueryDSLConfig.class)  // 이 부분 추가
 class MyBookRepositoryTests {
 
     @Autowired
@@ -23,7 +24,7 @@ class MyBookRepositoryTests {
         Long memberId = 2L;
 
         List<String> top5Isbn13ByMemberId = myBookRepository.findTop5Isbn13ByMemberId(memberId);
-
-        System.out.println(top5Isbn13ByMemberId);
+        
+        assertNotNull(top5Isbn13ByMemberId);
     }
 }

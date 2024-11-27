@@ -60,6 +60,7 @@ public class AladinBookServiceImpl implements AladinBookService {
             .link(requestDTO.getLink())
             .cover(requestDTO.getCover())
             .fullDescription(requestDTO.getFullDescription())
+            .fullDescription2(requestDTO.getFullDescription2())
             .publisher(requestDTO.getPublisher())
             .categoryName(requestDTO.getCategoryName())
             .customerReviewRank(requestDTO.getCustomerReviewRank())
@@ -224,7 +225,7 @@ public class AladinBookServiceImpl implements AladinBookService {
                     response.getItem().stream()
                         .filter(item -> !item.getAdult())
                         .forEach(responseDTO -> {
-                            responseDTO.setCategoryId(preference.getCategoryId());
+                            responseDTO.setCategory(String.valueOf(preference));
                             finalBooksForCategoryNotAdult.add(responseDTO);
                         });
 
@@ -245,7 +246,7 @@ public class AladinBookServiceImpl implements AladinBookService {
             }
 
             // 카테고리 ID를 키로 책 리스트 저장
-            categorizedResults.put(preference.getCategoryId().toString(), booksForCategoryNotAdult);
+            categorizedResults.put(String.valueOf(preference), booksForCategoryNotAdult);
             log.info("알라딘 API 연결 성공 - 카테고리 ID: " + preference.getCategoryId());
         }
         return categorizedResults;
@@ -274,7 +275,7 @@ public class AladinBookServiceImpl implements AladinBookService {
             .queryParam("ItemId", isbn13)
             .queryParam("output", "js")
             .queryParam("Version", "20131101")
-            .queryParam("OptResult", "fulldescription")
+            .queryParam("OptResult", "fulldescription,bestSellerRank")
             .build()
             .toUri();
 

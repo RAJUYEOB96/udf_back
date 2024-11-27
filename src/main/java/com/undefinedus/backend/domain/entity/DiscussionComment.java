@@ -1,9 +1,7 @@
 package com.undefinedus.backend.domain.entity;
 
 import com.undefinedus.backend.domain.enums.VoteType;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -16,9 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,7 +36,7 @@ public class DiscussionComment extends BaseEntity {
     // === ID === //
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // groupId와 같다고 보면 됨
     
     // === 연관 관계 === //
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,15 +48,23 @@ public class DiscussionComment extends BaseEntity {
     private Member member;  // 작성자
     
     // 대댓글 단순한 버전 =================================
+
+    @Column
+    private Long groupId;
+
     @Column
     private Long parentId; // 부모Id // 고유 아이디는 id로 사용
     
-    @Column
-    private Long groupId;
-    
     @Column(name = "comment_order")  // 'order' 대신 'comment_order' 사용
     private Long order;
-    
+
+    @Column
+    @Builder.Default
+    private boolean isChild = false; // id를 조회하고 나온 것을 가지고 isChild count 해서 조회하면 자식의 ord 를 쉽게 알 수 있다.
+
+    @Column
+    private Long totalOrder; // 자식 포함 전체 댓글의 실제 보여지는 순서
+
     // === 내용 === //
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -87,4 +91,28 @@ public class DiscussionComment extends BaseEntity {
     
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    public void changeId(Long id) {
+        this.id = id;
+    }
+
+    public void changeDiscussion(Discussion discussion) {
+        this.discussion = discussion;
+    }
+
+    public void changeGroupId(Long groupId) {
+        this.groupId = groupId;
+    }
+
+    public void changeMember(Member member) {
+        this.member = member;
+    }
+
+    public void changeVoteType(VoteType voteType) {
+        this.voteType = voteType;
+    }
+
+    public void changeContent(String content) {
+        this.content = content;
+    }
 }

@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -44,6 +43,9 @@ public class AladinBook {
     
     @Column(length = 4000, nullable = false)  // 책 소개가 매우 긴 경우가 많음
     private String fullDescription;   // 도서 소개
+
+    @Column(length = 5000, nullable = false)  // 책 소개가 매우 긴 경우가 많음
+    private String fullDescription2;   // 출판사 제공 책소개  // gpt에게 책의 추가적인 정보를 넘겨주기 위해 필요
     
     @Column(length = 100, nullable = false)  // 출판사명은 적절
     private String publisher;     // 출판사
@@ -59,4 +61,16 @@ public class AladinBook {
 
     @Column                             // 페이지 정보가 없는 책도 있음
     private Integer itemPage;         // 총 페이지 수
+
+    public void changeIsbn13(String isbn13) {
+        this.isbn13 = isbn13;
+    }
+
+    public void changeCover(String cover) {
+        this.cover = cover;
+    }
+
+    public void changeTitle(String title) {
+        this.title = title;
+    }
 }

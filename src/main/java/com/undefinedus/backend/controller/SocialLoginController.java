@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -70,7 +71,7 @@ public class SocialLoginController {
     @GetMapping("/kakao")
     public Map<String, Object> getMemberFromKakao(
             @Parameter(description = "카카오 액세스 토큰", required = true)
-            String accessToken) {
+            @RequestParam String accessToken) {
         
         log.info("Kakao accessToken : " + accessToken);
         

@@ -14,7 +14,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
-@Setter
 @SuperBuilder
 @MappedSuperclass
 @NoArgsConstructor
@@ -32,4 +31,8 @@ public abstract class BaseEntity {
     
     @LastModifiedDate
     private LocalDateTime lastModifiedDate;
+
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
+    }
 }

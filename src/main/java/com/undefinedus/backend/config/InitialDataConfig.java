@@ -3,19 +3,28 @@ package com.undefinedus.backend.config;
 
 import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.domain.entity.CalendarStamp;
+import com.undefinedus.backend.domain.entity.Discussion;
+import com.undefinedus.backend.domain.entity.DiscussionComment;
+import com.undefinedus.backend.domain.entity.DiscussionParticipant;
 import com.undefinedus.backend.domain.entity.Follow;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.entity.SocialLogin;
 import com.undefinedus.backend.domain.enums.BookStatus;
+import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.domain.enums.MemberType;
 import com.undefinedus.backend.domain.enums.PreferencesType;
+import com.undefinedus.backend.domain.enums.VoteType;
 import com.undefinedus.backend.repository.AladinBookRepository;
 import com.undefinedus.backend.repository.CalendarStampRepository;
+import com.undefinedus.backend.repository.DiscussionCommentRepository;
+import com.undefinedus.backend.repository.DiscussionParticipantRepository;
+import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.MyBookRepository;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +45,9 @@ public class InitialDataConfig {
     private final AladinBookRepository aladinBookRepository;
     private final MyBookRepository myBookRepository;
     private final CalendarStampRepository calendarStampRepository;
+    private final DiscussionRepository discussionRepository;
+    private final DiscussionParticipantRepository discussionParticipantRepository;
+    private final DiscussionCommentRepository discussionCommentRepository;
 
     @PostConstruct
     public void initData() {
@@ -47,6 +59,8 @@ public class InitialDataConfig {
         settingAladinBooks();
         settingMyBooks();
         settingCalendarStamp();
+        settingDiscussions();
+        settingDiscussionComments();
     }
 
     @Transactional
@@ -246,6 +260,7 @@ public class InitialDataConfig {
             .cover("https://image.aladin.co.kr/product/24727/6/cover/k582730586_1.jpg")
             .fullDescription(
                 "이미예 작가의 장편소설. 잠들어야만 입장할 수 있는 신비로운 상점, '달러구트 꿈 백화점'을 통해 꿈을 사고파는 가게의 비밀스러운 이야기를 그려낸 판타지 소설. 꿈을 통해 잃어버린 희망을 되찾고 새로운 삶의 의미를 발견하는 감동적인 이야기.")
+            .fullDescription2("test")
             .publisher("팩토리나인")
             .categoryName("국내도서>소설")
             .customerReviewRank(4.8)
@@ -260,6 +275,7 @@ public class InitialDataConfig {
             .link("https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=71895491")
             .cover("https://image.aladin.co.kr/product/7189/54/cover/8901219948_1.jpg")
             .fullDescription("단순함의 힘을 강조하는 자기계발서. 성공을 위해 가장 중요한 한 가지에 집중하라는 메시지를 전달한다.")
+            .fullDescription2("test")
             .publisher("비즈니스북스")
             .categoryName("국내도서>자기계발")
             .customerReviewRank(4.7)
@@ -275,6 +291,7 @@ public class InitialDataConfig {
             .cover("https://image.aladin.co.kr/product/175/2/cover/8983711892_1.jpg")
             .fullDescription(
                 "우주의 탄생부터 현재까지, 그리고 미래까지 아우르는 장대한 우주 여행. 과학의 역사와 함께 인류의 미래까지 전망하는 과학 교양서의 고전.")
+            .fullDescription2("test")
             .publisher("사이언스북스")
             .categoryName("국내도서>과학")
             .customerReviewRank(4.9)
@@ -289,6 +306,7 @@ public class InitialDataConfig {
             .link("https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=6574537")
             .cover("https://image.aladin.co.kr/product/657/45/cover/8965962277_1.jpg")
             .fullDescription("진정한 부자가 되기 위한 현실적인 방법을 제시하는 책. 저자는 부자가 되는 길은 결코 일반적인 방법이 아님을 강조한다.")
+            .fullDescription2("test")
             .publisher("청림출판")
             .categoryName("국내도서>경제경영")
             .customerReviewRank(4.6)
@@ -303,6 +321,7 @@ public class InitialDataConfig {
             .link("https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=34083680")
             .cover("https://image.aladin.co.kr/product/3408/36/cover/8966260959_1.jpg")
             .fullDescription("로버트 마틴의 Clean Code는 오늘날 프로그래머들에게 가장 중요한 참고 도서가 되었다.")
+            .fullDescription2("test")
             .publisher("인사이트")
             .categoryName("국내도서>컴퓨터/IT")
             .customerReviewRank(4.8)
@@ -317,6 +336,7 @@ public class InitialDataConfig {
             .link("https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=44168331")
             .cover("https://image.aladin.co.kr/product/4416/83/cover/8934972467_2.jpg")
             .fullDescription("인류의 역사를 생물학, 경제학, 종교, 심리학 등 다양한 관점에서 통찰력 있게 분석한 역작")
+            .fullDescription2("test")
             .publisher("김영사")
             .categoryName("국내도서>인문학")
             .customerReviewRank(4.7)
@@ -331,6 +351,7 @@ public class InitialDataConfig {
             .link("https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=308986523")
             .cover("https://image.aladin.co.kr/product/30898/65/cover/k582835377_1.jpg")
             .fullDescription("유튜브 구독자 250만의 흔한남매! 흔한남매의 일상 속 에피소드를 담은 에세이")
+            .fullDescription2("test")
             .publisher("미래엔")
             .categoryName("국내도서>시/에세이")
             .customerReviewRank(4.9)
@@ -345,6 +366,7 @@ public class InitialDataConfig {
             .link("https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=56162231")
             .cover("https://image.aladin.co.kr/product/5616/22/cover/k212434773_1.jpg")
             .fullDescription("대한민국 대표 요리연구가 백종원이 추천하는 집밥 메뉴 55가지 레시피")
+            .fullDescription2("test")
             .publisher("서울문화사")
             .categoryName("국내도서>요리")
             .customerReviewRank(4.5)
@@ -358,6 +380,7 @@ public class InitialDataConfig {
             .author("린다")
             .link("https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=276247392")
             .cover("https://image.aladin.co.kr/product/27624/73/cover/k032731435_1.jpg")
+            .fullDescription2("test")
             .fullDescription("유튜버 린다의 실속있는 홈트레이닝 가이드")
             .publisher("북로그컴퍼니")
             .categoryName("국내도서>건강/스포츠")
@@ -373,6 +396,7 @@ public class InitialDataConfig {
             .link("https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=284529433")
             .cover("https://image.aladin.co.kr/product/28452/94/cover/k582730341_1.jpg")
             .fullDescription("농구 만화의 전설, 슬램덩크가 더욱 선명하고 실감나게 돌아왔다!")
+            .fullDescription2("test")
             .publisher("대원씨아이")
             .categoryName("국내도서>만화")
             .customerReviewRank(4.9)
@@ -389,6 +413,7 @@ public class InitialDataConfig {
             .cover("https://image.aladin.co.kr/product/4086/97/coversum/8936434128_2.jpg")
             .fullDescription(
                 "섬세한 감수성과 치밀한 문장으로 인간 존재의 본질을 탐구해온 작가 한강의 여섯번째 장편소설. '상처의 구조에 대한 투시와 천착의 서사'를 통해 한강만이 풀어낼 수 있는 방식으로 1980년 5월을 새롭게 조명한다.")
+            .fullDescription2("test")
             .publisher("창비")
             .categoryName("국내도서>소설")
             .customerReviewRank(10.0)
@@ -541,47 +566,188 @@ public class InitialDataConfig {
         // 모든 MyBook 저장
         myBookRepository.saveAll(myBooks);
         log.info("Saved {} test myBooks", myBooks.size());
-        
+
     }
-    
-    public void settingCalendarStamp(){
+
+    public void settingCalendarStamp() {
         // MyBook 생성 후에 CalendarStamp 생성
         if (calendarStampRepository.count() > 0) {
-            log.info("Test CalendarStamp data already exists. Skipping CalendarStamp initialization.");
+            log.info(
+                "Test CalendarStamp data already exists. Skipping CalendarStamp initialization.");
             return;
         }
-        
+
         List<CalendarStamp> stamps = new ArrayList<>();
 
         // READING, COMPLETED 상태의 MyBook들 가져오기
         myBookRepository.findAll().stream()
-                .filter(myBook -> myBook.getStatus() == BookStatus.READING ||
-                        myBook.getStatus() == BookStatus.COMPLETED)
-                .forEach(myBook -> {
-                    // 시작일이 있는 경우 스탬프 생성
-                    if (myBook.getStartDate() != null) {
-                        stamps.add(CalendarStamp.builder()
-                                .member(myBook.getMember())
-                                .myBook(myBook)
-                                .bookCoverUrl("test")   // .findAll()이 aladinBook을 안가져와서 (Lazy) 이렇게함
-                                .recordedAt(myBook.getStartDate())
-                                .status(myBook.getStatus())
-                                .build());
-                    }
+            .filter(myBook -> myBook.getStatus() == BookStatus.READING ||
+                myBook.getStatus() == BookStatus.COMPLETED)
+            .forEach(myBook -> {
+                // 시작일이 있는 경우 스탬프 생성
+                if (myBook.getStartDate() != null) {
+                    stamps.add(CalendarStamp.builder()
+                        .member(myBook.getMember())
+                        .myBook(myBook)
+                        .bookCoverUrl("test")   // .findAll()이 aladinBook을 안가져와서 (Lazy) 이렇게함
+                        .recordedAt(myBook.getStartDate())
+                        .status(myBook.getStatus())
+                        .build());
+                }
 
-                    // COMPLETED이고 종료일이 있는 경우 추가 스탬프 생성
-                    if (myBook.getStatus() == BookStatus.COMPLETED && myBook.getEndDate() != null) {
-                        stamps.add(CalendarStamp.builder()
-                                .member(myBook.getMember())
-                                .myBook(myBook)
-                                .bookCoverUrl("test")
-                                .recordedAt(myBook.getEndDate())
-                                .status(myBook.getStatus())
-                                .build());
-                    }
-                });
+                // COMPLETED이고 종료일이 있는 경우 추가 스탬프 생성
+                if (myBook.getStatus() == BookStatus.COMPLETED && myBook.getEndDate() != null) {
+                    stamps.add(CalendarStamp.builder()
+                        .member(myBook.getMember())
+                        .myBook(myBook)
+                        .bookCoverUrl("test")
+                        .recordedAt(myBook.getEndDate())
+                        .status(myBook.getStatus())
+                        .build());
+                }
+            });
 
         calendarStampRepository.saveAll(stamps);
         log.info("Saved {} calendar stamps", stamps.size());
+    }
+
+
+    // 김용 추가
+    @Transactional
+    public void settingDiscussions() {
+        if (discussionRepository.count() > 0) {
+            log.info("Discussion data already exists. Skipping discussion initialization.");
+            return;
+        }
+
+        Member reader1 = memberRepository.findByUsername("reader1@gmail.com").orElseThrow();
+        Member bookworm = memberRepository.findByUsername("bookworm@naver.com").orElseThrow();
+
+        MyBook myBook1 = myBookRepository.findByMemberIdAndIsbn13(reader1.getId(), "9791165341909")
+            .orElseThrow();
+        MyBook myBook2 = myBookRepository.findByMemberIdAndIsbn13(bookworm.getId(), "9788934972464")
+            .orElseThrow();
+
+        List<Discussion> discussions = new ArrayList<>();
+
+        // Discussion 1
+        discussions.add(Discussion.builder()
+            .myBook(myBook1)
+            .member(reader1)
+            .title("'달러구트 꿈 백화점'에서 가장 인상 깊었던 꿈은?")
+            .content("이 책에서 소개된 여러 꿈들 중 가장 기억에 남는 꿈과 그 이유에 대해 이야기해봐요.")
+            .status(DiscussionStatus.PROPOSED)
+            .startDate(LocalDateTime.now().plusMinutes(10))
+            .closedAt(LocalDateTime.now().plusDays(1))
+            .build());
+
+        // Discussion 2
+        discussions.add(Discussion.builder()
+            .myBook(myBook2)
+            .member(bookworm)
+            .title("'사피엔스'가 제시하는 인류의 미래는?")
+            .content("유발 하라리가 그리는 인류의 미래상에 대해 어떻게 생각하시나요?")
+            .status(DiscussionStatus.SCHEDULED)
+            .startDate(LocalDateTime.now().plusHours(1))
+            .closedAt(LocalDateTime.now().plusDays(1))
+            .views(15L)
+            .build());
+
+        // Discussion 3
+        Discussion completedDiscussion = Discussion.builder()
+            .myBook(myBook1)
+            .member(reader1)
+            .title("꿈을 사고파는 것이 윤리적일까?")
+            .content("달러구트 꿈 백화점의 컨셉처럼 꿈을 거래하는 것에 대한 윤리적 문제에 대해 토론해봐요.")
+            .status(DiscussionStatus.PROPOSED)
+            .startDate(LocalDateTime.now().plusHours(2))
+            .closedAt(LocalDateTime.now().plusDays(1))
+            .views(50L)
+            .build();
+        discussions.add(completedDiscussion);
+
+        discussionRepository.saveAll(discussions);
+        log.info("Saved {} test discussions", discussions.size());
+
+        // 참여자 추가 예시
+        addParticipants(completedDiscussion, reader1, bookworm);
+    }
+
+    private void addParticipants(Discussion discussion, Member... members) {
+        for (Member member : members) {
+            DiscussionParticipant participant = DiscussionParticipant.builder()
+                .discussion(discussion)
+                .member(member)
+                .isAgree(Math.random() < 0.5)  // 랜덤하게 찬성/반대 설정
+                .build();
+            discussionParticipantRepository.save(participant);
+        }
+    }
+
+    @Transactional
+    public void settingDiscussionComments() {
+        if (discussionCommentRepository.count() > 0) {
+            log.info(
+                "Discussion comment data already exists. Skipping discussion comment initialization.");
+            return;
+        }
+
+        // 특정 Discussion을 가져옵니다. 여기서는 첫 번째 Discussion을 사용합니다.
+        Discussion discussion = discussionRepository.findAll().stream().findFirst()
+            .orElseThrow(
+                () -> new RuntimeException("No discussions found for comment initialization."));
+
+        List<Member> members = memberRepository.findAll();
+        if (members.isEmpty()) {
+            log.warn("No members found. Skipping discussion comment initialization.");
+            return;
+        }
+
+        List<DiscussionComment> comments = new ArrayList<>();
+
+        Long groupId = 1L; // 그룹 ID 초기화
+        Long totalOrder = 1L; // 총 순서 초기화
+
+        // 찬성 댓글 1
+        DiscussionComment agreeComment1 = createComment(discussion, members.get(0), VoteType.AGREE,
+            "이 책의 주제에 대해 전적으로 동의합니다. 저자의 통찰력이 돋보이는 작품이라고 생각합니다.",
+            null, groupId, 0L, false, totalOrder++);
+        comments.add(agreeComment1);
+
+        // 찬성 댓글 2
+        comments.add(createComment(discussion, members.get(1), VoteType.AGREE,
+            "저도 같은 생각입니다. 특히 3장에서 다룬 내용이 현대 사회의 문제를 정확히 짚어내고 있어 인상 깊었어요.",
+            null, groupId, 0L, false, totalOrder++));
+
+        // 반대 댓글 1
+        DiscussionComment disagreeComment1 = createComment(discussion, members.get(2),
+            VoteType.DISAGREE,
+            "저자는 너무 비관적인 시각에서 문제를 바라보고 있는 것 같습니다. 해결책이 비현실적이에요.",
+            null, groupId, 0L, false, totalOrder++);
+        comments.add(disagreeComment1);
+
+        // 반대 댓글 2
+        comments.add(createComment(discussion, members.get(3), VoteType.DISAGREE,
+            "동감합니다. 특히 저자가 제시한 해결책은 현실에서 적용하기 힘들 것 같아요.",
+            null, groupId, 0L, false, totalOrder++));
+
+        discussionCommentRepository.saveAll(comments);
+        log.info("Saved {} test discussion comments for one discussion", comments.size());
+    }
+
+    private DiscussionComment createComment(Discussion discussion, Member member, VoteType voteType,
+        String content, Long parentId, Long groupId,
+        Long order, boolean isChild, Long totalOrder) {
+        return DiscussionComment.builder()
+            .discussion(discussion)
+            .member(member)
+            .voteType(voteType)
+            .content(content)
+            .parentId(parentId)
+            .groupId(groupId)
+            .order(order)
+            .isChild(isChild)
+            .totalOrder(totalOrder)
+            .build();
     }
 }

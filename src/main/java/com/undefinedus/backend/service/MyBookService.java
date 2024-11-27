@@ -21,4 +21,10 @@ public interface MyBookService {
     MyBookResponseDTO getMyBook(Long memberId, Long bookId);
     
     void deleteMyBook(Long id, Long bookId);
+    
+    ScrollResponseDTO<MyBookResponseDTO> getOtherMemberBookList(Long loginMemberId, Long targetMemberId, ScrollRequestDTO requestDTO);
+    
+    MyBookResponseDTO getOtherMemberBook(Long loginMemberId, Long targetMemberId, Long myBookId);
+    
+    void insertNewBookByWish(Long loginMemberId, Long targetMyBookId);
 }

@@ -53,8 +53,18 @@ public class MyBookResponseDTO {
     
     private Integer itemPage;    // 총 페이지 수
     
+    // 아래는 social에서 남의 기록한 책을 볼때 필요한 필드
+    
+    // 내가 남의 책장을 볼때 null이면 기록안된 책
+    // 기록되어있으면 "COMPLETED", "READING", "WISH", "STOPPED" 중 하나
+    private String existingStatus;
+    
     
     public static MyBookResponseDTO from(MyBook myBook, Integer count) {
+        return from(myBook, count, null);
+    }
+    
+    public static MyBookResponseDTO from(MyBook myBook, Integer count, String existingStatus) {
         return MyBookResponseDTO.builder()
                 .id(myBook.getId())
                 .status(myBook.getStatus().name())
@@ -73,11 +83,11 @@ public class MyBookResponseDTO {
                 .fullDescription(myBook.getAladinBook().getFullDescription())
                 .publisher(myBook.getAladinBook().getPublisher())
                 .categoryName(myBook.getAladinBook().getCategoryName())
+                .customerReviewRank(myBook.getAladinBook().getCustomerReviewRank())
                 .itemPage(myBook.getAladinBook().getItemPage())
+                .existingStatus(existingStatus)
                 .build();
     }
     
-    public void updateUpdateCount(Integer updateCount) {
-        this.updateCount = updateCount;
-    }
+    
 }
