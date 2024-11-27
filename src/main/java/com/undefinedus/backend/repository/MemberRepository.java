@@ -4,6 +4,7 @@ import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.repository.queryDSL.MemberRepositoryCustom;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -21,4 +22,16 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
     Optional<Member> findByUsername(String username);
     
     Optional<Member> findByNickname(String nickname);
+    
+    // 아래는 initData할때 필요한 sql, 추후 삭제 될 수 있음
+    @Query("SELECT m FROM Member m " +
+            "LEFT JOIN FETCH m.followings " +
+            "LEFT JOIN FETCH m.followers " +
+            "WHERE m.username = :username")
+    Optional<Member> findByUsernameWithFollows(@Param("username") String username);
+    
+    // 아래는 initData할때 필요한 sql, 추후 삭제 될 수 있음
+    @Modifying
+    @Query(value = "DELETE FROM follow", nativeQuery = true)
+    void deleteAllFollows();
 }

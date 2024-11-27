@@ -39,4 +39,8 @@ public interface MyBookRepository extends JpaRepository<MyBook, Long>, MyBookRep
     List<String> findTop5Isbn13ByMemberId(@Param("memberId") Long memberId);
     
     Set<MyBook> findByMemberId(Long loginMemberId);
+    
+    // 아래는 initData할때 필요한 sql, 추후 삭제 될 수 있음
+    @Query("SELECT m FROM MyBook m JOIN FETCH m.aladinBook WHERE m.status IN ('READING', 'COMPLETED')")
+    List<MyBook> findAllWithAladinBook();
 }

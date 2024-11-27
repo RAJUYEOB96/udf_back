@@ -7,6 +7,7 @@ import com.undefinedus.backend.exception.book.BookExistsException;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
 import com.undefinedus.backend.exception.bookmark.BookmarkNotFoundException;
+import com.undefinedus.backend.exception.calendar.YearOrMonthException;
 import com.undefinedus.backend.exception.discussion.DiscussionException;
 import com.undefinedus.backend.exception.discussion.DiscussionNotFoundException;
 import com.undefinedus.backend.exception.discussionComment.DiscussionCommentException;
@@ -172,6 +173,13 @@ public class GlobalExceptionHandler {
             .body(new ErrorResponse(e.getMessage()));
     }
 
+    // calendarStamp 관련
+    @ExceptionHandler(YearOrMonthException.class)
+    protected ResponseEntity<ErrorResponse> handleYearOrMonthException(YearOrMonthException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ErrorResponse(e.getMessage()));
+    }
+    
     // 기타 예외 처리
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ErrorResponse> handleException(Exception e) {
