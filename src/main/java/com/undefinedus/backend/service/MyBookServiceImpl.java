@@ -341,12 +341,24 @@ public class MyBookServiceImpl implements MyBookService {
     
     private void recordCalendarStamp(Member findMember, MyBook myBook) {
         try {
+            
+            // 현재 책의 readDateCount를 올리기 위해서
+            Integer count = calendarStampRepository.countByMemberIdAndMyBookId(findMember.getId(), myBook.getId());
+            
             CalendarStamp calendarStamp = CalendarStamp.builder()
                     .member(findMember)
-                    .myBook(myBook)
-                    .bookCoverUrl(myBook.getAladinBook().getCover())
+                    .myBookId(myBook.getId())
+                    .bookTitle(myBook.getAladinBook().getTitle())
+                    .bookAuthor(myBook.getAladinBook().getAuthor())
+                    .bookCover(myBook.getAladinBook().getCover())
                     .recordedAt(LocalDate.now())
                     .status(myBook.getStatus())
+                    .itemPage(myBook.getAladinBook().getItemPage())
+                    .currentPage(myBook.getCurrentPage())
+                    .startDate(myBook.getStartDate())
+                    .endDate(myBook.getEndDate())
+                    .readDateCount(count)
+                    .myRating(myBook.getMyRating())
                     .build();
             
             calendarStampRepository.save(calendarStamp);

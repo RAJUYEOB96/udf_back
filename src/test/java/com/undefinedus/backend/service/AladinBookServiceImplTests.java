@@ -1,20 +1,17 @@
 package com.undefinedus.backend.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.dto.response.aladinAPI.AladinApiResponseDTO;
 import com.undefinedus.backend.repository.MemberRepository;
-import com.undefinedus.backend.repository.MyBookRepository;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest
 @Log4j2
@@ -22,6 +19,9 @@ class AladinBookServiceImplTests {
 
     @Autowired
     private AladinBookService aladinBookService;
+    
+    @Autowired
+    private MemberRepository memberRepository;
 
     @Test
     @DisplayName("알라딘 api 검색 호출 테스트")
@@ -58,12 +58,21 @@ class AladinBookServiceImplTests {
     @Test
     @DisplayName("알라딘 api 에디터 초이스 호출 테스트")
     public void searchEditorChoiceAladinAPIListTest() {
-
-        Long memberId = 2L;
-
+        
+        // given
+        Member testMember = Member.builder()
+                .username("test@test.com")
+                .password("test@test.com")
+                .nickname("test2")
+                .build();
+        Member savedMember = memberRepository.save(testMember);
+        
+        
         Map<String, List<AladinApiResponseDTO>> aladinApiResponseDTOS = aladinBookService.searchEditorChoiceAladinAPIList(
-            memberId);
-
+                savedMember.getId());
+        
+        // then
+        assertThat(aladinApiResponseDTOS).isNotNull();
         int count = 0;
 
         // 결과를 반복하여 출력
