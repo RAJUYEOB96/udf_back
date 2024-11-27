@@ -44,7 +44,8 @@ public class QuartzConfig {
         System.out.println("시간 : " + targetTime.toString());
 
         // PROPOSED -> SCHEDULED (시작 3시간 전)
-        LocalDateTime startDateTime = targetTime.minusHours(3);
+//        LocalDateTime startDateTime = targetTime.minusHours(3);
+        LocalDateTime startDateTime = targetTime.minusMinutes(2);
         Date startDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
         JobDetail scheduleDetail = JobBuilder.newJob(Scheduled.class)
@@ -75,7 +76,8 @@ public class QuartzConfig {
         saveQuartzTrigger(discussionId, startDate, DiscussionStatus.IN_PROGRESS);
 
         // IN_PROGRESS -> ANALYZING (시작 24시간 후)
-        startDateTime = targetTime.plusHours(24);
+//        startDateTime = targetTime.plusHours(24);
+        startDateTime = targetTime.plusSeconds(30);
         startDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
         JobDetail analyzingDetail = JobBuilder.newJob(Analyzing.class)
@@ -91,7 +93,8 @@ public class QuartzConfig {
         saveQuartzTrigger(discussionId, startDate, DiscussionStatus.ANALYZING);
 
         // ANALYZING -> COMPLETED (시작 25시간 후, 분석에 1시간 가정)
-        startDateTime = targetTime.plusHours(25);
+//        startDateTime = targetTime.plusHours(25);
+        startDateTime = targetTime.plusSeconds(30);
         startDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
         JobDetail completedDetail = JobBuilder.newJob(Completed.class)
