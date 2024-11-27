@@ -2,6 +2,7 @@ package com.undefinedus.backend.service;
 
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.dto.response.statistics.StatisticsCategoryBookCountResponseDTO;
+import com.undefinedus.backend.dto.response.statistics.StatisticsCategoryResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsMonthBookAverageByYearResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsMonthBookByYearResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsResponseDTO;
@@ -27,7 +28,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     private final MyBookRepository myBookRepository;
 
     // 카테고리별 읽은 책 권 수
-    public List<StatisticsCategoryBookCountResponseDTO> getCategoryAndBookCountList(Long memberId) {
+    public StatisticsCategoryResponseDTO getCategoryAndBookCountList(Long memberId) {
 
         List<Object[]> results = myBookRepository.findCompletedBooksGroupedByCategory(memberId);
 
@@ -47,7 +48,17 @@ public class StatisticsServiceImpl implements StatisticsService {
             })
             .collect(Collectors.toList());
 
-        return statisticsCategoryBookCountResponseDTOList;
+        // 총 책 권수 계산
+        Long totalBookCount = statisticsCategoryBookCountResponseDTOList.stream()
+            .mapToLong(StatisticsCategoryBookCountResponseDTO::getBookCount)
+            .sum();
+
+        StatisticsCategoryResponseDTO statisticsCategoryResponseDTO = StatisticsCategoryResponseDTO.builder()
+            .totalCount(totalBookCount)
+            .statisticsCategoryBookCountResponseDTOList(statisticsCategoryBookCountResponseDTOList)
+            .build();
+
+        return statisticsCategoryResponseDTO;
     }
 
     // 연도 별 읽은 책 권 수
