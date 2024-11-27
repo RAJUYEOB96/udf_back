@@ -204,4 +204,103 @@ class CalendarStampRepositoryTest {
             testMember.getId(), myBookId);
         assertEquals(0, afterCount); // 모두 삭제되어 0개
     }
+    
+    @Test
+    @DisplayName("연도와 월에 해당하는 CalendarStamp 조회 테스트")
+    void testGetAllStampsWhenYearAndMonth() {
+        // given
+        LocalDate date1 = LocalDate.of(2023, 5, 1);
+        LocalDate date2 = LocalDate.of(2023, 5, 15);
+        LocalDate date3 = LocalDate.of(2023, 6, 1);
+        
+        // 다른 회원 생성 및 CalendarStamp 데이터 추가
+        Member otherMember = Member.builder()
+                .username("other@test.com")
+                .password("password")
+                .nickname("otherTest")
+                .memberRoleList(List.of(MemberType.USER))
+                .isPublic(true)
+                .build();
+        memberRepository.save(otherMember);
+        
+        CalendarStamp otherStamp = CalendarStamp.builder()
+                .member(otherMember)
+                .myBookId(testMyBook.getId())
+                .bookTitle(testAladinBook.getTitle())
+                .bookAuthor(testAladinBook.getAuthor())
+                .bookCover(testAladinBook.getCover())
+                .recordedAt(date1)
+                .status(BookStatus.READING)
+                .itemPage(testAladinBook.getItemPage())
+                .currentPage(testMyBook.getCurrentPage())
+                .startDate(date1.minusDays(7))
+                .endDate(date1)
+                .readDateCount(1)
+                .build();
+        calendarStampRepository.save(otherStamp);
+        
+        CalendarStamp stamp1 = CalendarStamp.builder()
+                .member(testMember)
+                .myBookId(testMyBook.getId())
+                .bookTitle(testAladinBook.getTitle())
+                .bookAuthor(testAladinBook.getAuthor())
+                .bookCover(testAladinBook.getCover())
+                .recordedAt(date1)
+                .status(BookStatus.READING)
+                .itemPage(testAladinBook.getItemPage())
+                .currentPage(testMyBook.getCurrentPage())
+                .startDate(date1.minusDays(7))
+                .endDate(date1)
+                .readDateCount(1)
+                .build();
+        
+        CalendarStamp stamp2 = CalendarStamp.builder()
+                .member(testMember)
+                .myBookId(testMyBook.getId())
+                .bookTitle(testAladinBook.getTitle())
+                .bookAuthor(testAladinBook.getAuthor())
+                .bookCover(testAladinBook.getCover())
+                .recordedAt(date2)
+                .status(BookStatus.READING)
+                .itemPage(testAladinBook.getItemPage())
+                .currentPage(testMyBook.getCurrentPage())
+                .startDate(date2.minusDays(7))
+                .endDate(date2)
+                .readDateCount(1)
+                .build();
+        
+        CalendarStamp stamp3 = CalendarStamp.builder()
+                .member(testMember)
+                .myBookId(testMyBook.getId())
+                .bookTitle(testAladinBook.getTitle())
+                .bookAuthor(testAladinBook.getAuthor())
+                .bookCover(testAladinBook.getCover())
+                .recordedAt(date3)
+                .status(BookStatus.READING)
+                .itemPage(testAladinBook.getItemPage())
+                .currentPage(testMyBook.getCurrentPage())
+                .startDate(date3.minusDays(7))
+                .endDate(date3)
+                .readDateCount(1)
+                .build();
+        
+        calendarStampRepository.save(stamp1);
+        calendarStampRepository.save(stamp2);
+        calendarStampRepository.save(stamp3);
+        em.flush();
+        em.clear();
+        
+        // when
+        List<CalendarStamp> stampsInMay = calendarStampRepository.getAllStampsWhenYearAndMonth(testMember.getId(), 2023, 5);
+        log.info("Stamps in May: {}", stampsInMay);
+        List<CalendarStamp> stampsInJune = calendarStampRepository.getAllStampsWhenYearAndMonth(testMember.getId(), 2023, 6);
+        log.info("Stamps in June: {}", stampsInJune);
+        
+        // then
+        assertEquals(2, stampsInMay.size());
+        assertEquals(1, stampsInJune.size());
+        assertTrue(stampsInMay.stream().anyMatch(stamp -> stamp.getId().equals(stamp1.getId())));
+        assertTrue(stampsInMay.stream().anyMatch(stamp -> stamp.getId().equals(stamp2.getId())));
+        assertTrue(stampsInJune.stream().anyMatch(stamp -> stamp.getId().equals(stamp3.getId())));
+    }
 }
