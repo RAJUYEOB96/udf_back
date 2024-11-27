@@ -3,7 +3,6 @@ package com.undefinedus.backend.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.domain.entity.Member;
@@ -16,9 +15,7 @@ import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import org.hibernate.proxy.HibernateProxy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -27,8 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-// @SpringBootTest: 스프링 부트 애플리케이션 컨텍스트를 로드하여 통합 테스트를 수행합니다.
-// @Transactional: 각 테스트 메서드가 끝나면 데이터베이스를 롤백하여 테스트 격리를 보장합니다.
 @SpringBootTest
 @Transactional
 class MyBookRepositoryTest {
@@ -43,9 +38,6 @@ class MyBookRepositoryTest {
     @Autowired
     private AladinBookRepository aladinBookRepository;
 
-    /**
-     * 각 테스트 전에 실행되어 테스트 데이터를 준비합니다.
-     */
     @BeforeEach
     void setUp() {
         // === Member 생성 === //
@@ -415,5 +407,165 @@ class MyBookRepositoryTest {
                 .extracting("aladinBook.title")
                 .contains("테스트 책 1", "테스트 책 2", "테스트 책 3");
         }
+    }
+
+    @Test
+    @DisplayName("완료된 책을 카테고리별로 그룹화하여 조회")
+    void findCompletedBooksGroupedByCategory() {
+
+        // when
+        List<Object[]> result = myBookRepository.findCompletedBooksGroupedByCategory(
+            member.getId());
+
+        // then
+        assertThat(result).isNotEmpty();  // 결과가 비어 있지 않음을 확인
+
+        // 결과가 카테고리별로 그룹화된 책 수를 확인
+        assertThat(result).anyMatch(record -> {
+            String categoryName = (String) record[0];
+            Long count = (Long) record[1];
+            // 카테고리별 책의 수가 1개 이상임을 확인
+            return count >= 1;
+        });
+
+        // 예시로 카테고리명이 "IT/컴퓨터"일 때 책 수 확인 (categoryName과 count를 출력하여 디버깅 가능)
+        result.forEach(record -> {
+            String categoryName = (String) record[0];
+            Long count = (Long) record[1];
+            System.out.println("Category: " + categoryName + ", Count: " + count);
+        });
+    }
+
+    @Test
+    @DisplayName("완료된 책을 연도별로 그룹화하여 조회")
+    void findCompletedBooksGroupedByYear() {
+        // when
+        List<Object[]> result = myBookRepository.findCompletedBooksGroupedByYear(member.getId());
+
+        // then
+        assertThat(result).isNotEmpty();  // 결과가 비어 있지 않음을 확인
+
+        // 결과 출력
+        result.forEach(row -> {
+            System.out.println("Year: " + row[0] + ", Count: " + row[1]);
+            assertThat(row[0]).isInstanceOf(Integer.class);  // 연도는 Integer이어야 함
+            assertThat(row[1]).isInstanceOf(Long.class);     // 카운트 값은 Long이어야 함
+        });
+    }
+
+    @Test
+    @DisplayName("완료된 책을 연_월별로 그룹화하여 조회")
+    void findMonthCompletedBooksByYear() {
+        // when
+        List<Object[]> result = myBookRepository.findCompletedBooksGroupedByYearAndMonth(member.getId());
+
+        // then
+        assertThat(result).isNotEmpty();  // 결과가 비어 있지 않음을 확인
+
+        // 결과 출력
+        result.forEach(row -> {
+            System.out.println("Year-Month: " + row[0] + ", Count: " + row[1]);
+            assertThat(row[0]).isInstanceOf(String.class);  // 연_월은 String이어야 함 (YYYY-MM 형식)
+            assertThat(row[1]).isInstanceOf(Long.class);    // 카운트 값은 Long이어야 함
+        });
+    }
+
+    @Nested
+    @DisplayName("연도별 월별 완료된 책 수 조회 테스트")
+    class FindMonthCompletedBooksByYearTest {
+
+        @Test
+        @DisplayName("연도별 월별 완료된 책 수 조회")
+        void findMonthCompletedBooksByYearSuccess() {
+            // given
+            Integer year = 2023;  // 테스트할 연도
+            Long memberId = member.getId();  // 회원 ID
+
+            // 특정 월에 완료된 책을 만들어 놓은 상태
+            for (int i = 1; i <= 10; i++) {
+                MyBook myBook = MyBook.builder()
+                    .member(member)
+                    .aladinBook(aladinBookRepository.findAll().get(i % 10))  // 임의로 책을 할당
+                    .isbn13("978895674" + String.format("%04d", i))
+                    .status(BookStatus.COMPLETED)  // 상태를 'COMPLETED'로 설정
+                    .endDate(LocalDate.of(year, (i % 12) + 1, i % 28 + 1))  // 월별로 완료일 설정
+                    .build();
+                em.persist(myBook);
+            }
+
+            em.flush();
+            em.clear();
+
+            // when
+            List<MyBook> result = myBookRepository.findCompletedBooksByYear(year, memberId);
+
+            // then
+            assertThat(result).isNotEmpty();  // 결과가 비어 있지 않음
+            assertThat(result).hasSize(10);  // 위에서 넣은 10개의 책데이터 만큼
+
+            System.out.println("result = " + result);
+        }
+
+        @Test
+        @DisplayName("연도별 완료된 책이 없는 경우")
+        void findMonthCompletedBooksByYearNoData() {
+            // given
+            Integer year = 2021;  // 완료된 책이 없는 연도
+            Long memberId = member.getId();
+
+            // when
+            List<MyBook> result = myBookRepository.findCompletedBooksByYear(year, memberId);
+
+            // then
+            assertThat(result).isEmpty();  // 결과가 비어 있어야 함
+        }
+    }
+
+    @Test
+    @DisplayName("연도별 완료된 책의 총 페이지 수 조회")
+    void findCompletedBookPageGroupedByYearTest() {
+        // given
+        LocalDate currentDate = LocalDate.now();
+        Long memberId = member.getId();
+
+        // 테스트 데이터 생성
+        for (int i = 0; i < 5; i++) {
+            MyBook myBook = MyBook.builder()
+                .member(member)
+                .aladinBook(aladinBookRepository.findAll().get(i % 10))
+                .isbn13("978895674" + String.format("%04d", i))
+                .status(BookStatus.COMPLETED)
+                .currentPage((i + 1) * 100)
+                .endDate(currentDate.minusYears(i % 3))
+                .build();
+            em.persist(myBook);
+        }
+        em.flush();
+        em.clear();
+
+        // when
+        List<Object[]> result = myBookRepository.finCompletedBookPageGroupedByYear(memberId);
+
+        // then
+        assertThat(result).isNotEmpty();
+        assertThat(result.size()).isLessThanOrEqualTo(3); // 최대 3년치 데이터
+
+        for (Object[] row : result) {
+            assertThat(row[0]).isInstanceOf(Integer.class); // 연도는 Integer
+            assertThat(row[1]).isInstanceOf(Long.class);    // 총 페이지 수는 Long
+
+            Integer year = (Integer) row[0];
+            Long totalPages = (Long) row[1];
+
+            assertThat(year).isGreaterThanOrEqualTo(currentDate.getYear() - 2);
+            assertThat(totalPages).isPositive();
+
+            System.out.println("Year: " + year + ", Total Pages: " + totalPages);
+        }
+
+        // 결과가 연도 내림차순으로 정렬되었는지 확인
+        assertThat(result)
+            .extracting(row -> (Integer) row[0])
+            .isSortedAccordingTo(Comparator.reverseOrder());
     }
 }

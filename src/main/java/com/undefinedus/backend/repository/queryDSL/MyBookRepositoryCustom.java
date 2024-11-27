@@ -8,4 +8,6 @@ public interface MyBookRepositoryCustom {
     List<MyBook> findBooksWithScroll(Long memberId, ScrollRequestDTO requestDTO);
     
     Long countByMemberIdAndStatus(Long memberId, ScrollRequestDTO requestDTO);
+
+    List<MyBook> findCompletedBooksByYear(Integer year,  Long memberId);
 }
