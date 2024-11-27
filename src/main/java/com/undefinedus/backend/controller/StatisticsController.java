@@ -3,6 +3,7 @@ package com.undefinedus.backend.controller;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsCategoryBookCountResponseDTO;
+import com.undefinedus.backend.dto.response.statistics.StatisticsCategoryResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsYearsBookInfoResponseDTO;
 import com.undefinedus.backend.service.StatisticsService;
@@ -25,15 +26,15 @@ public class StatisticsController {
     private final StatisticsService statisticsService;
 
     @GetMapping // 카테고리별 읽은 책 권 수
-    public ResponseEntity<ApiResponseDTO<List<StatisticsCategoryBookCountResponseDTO>>> getCategoryAndBookCountList(
+    public ResponseEntity<ApiResponseDTO<StatisticsCategoryResponseDTO>> getCategoryAndBookCountList(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO
     ) {
         Long memberId = memberSecurityDTO.getId();
 
-        List<StatisticsCategoryBookCountResponseDTO> categoryAndBookCountList = statisticsService.getCategoryAndBookCountList(
+        StatisticsCategoryResponseDTO categoryAndBookCount = statisticsService.getCategoryAndBookCountList(
             memberId);
 
-        return ResponseEntity.ok(ApiResponseDTO.success((categoryAndBookCountList)));
+        return ResponseEntity.ok(ApiResponseDTO.success((categoryAndBookCount)));
     }
 
     // todo: 주소 값이 이상한지 포스트맨에서 이 컨트롤러가 안됨.

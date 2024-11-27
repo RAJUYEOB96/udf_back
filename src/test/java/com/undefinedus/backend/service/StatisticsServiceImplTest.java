@@ -8,6 +8,7 @@ import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.enums.BookStatus;
 import com.undefinedus.backend.domain.enums.MemberType;
 import com.undefinedus.backend.dto.response.statistics.StatisticsCategoryBookCountResponseDTO;
+import com.undefinedus.backend.dto.response.statistics.StatisticsCategoryResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsMonthBookByYearResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsTotalPageByYearResponseDTO;
@@ -149,17 +150,17 @@ class StatisticsServiceImplTest {
         Long memberId = member.getId();
 
         // when
-        List<StatisticsCategoryBookCountResponseDTO> result = statisticsServiceImpl.getCategoryAndBookCountList(
+        StatisticsCategoryResponseDTO result = statisticsServiceImpl.getCategoryAndBookCountList(
             memberId);
 
         // then
         assertNotNull(result);
-        assertEquals(2, result.size()); // 두 개의 카테고리 (IT/컴퓨터, 문학)가 있을 것으로 예상
-        assertTrue(result.stream().anyMatch(dto -> dto.getCategoryName().equals("IT/컴퓨터")));
-        assertTrue(result.stream().anyMatch(dto -> dto.getCategoryName().equals("문학")));
+        assertEquals(2, result.getStatisticsCategoryBookCountResponseDTOList().size()); // 두 개의 카테고리 (IT/컴퓨터, 문학)가 있을 것으로 예상
+        assertTrue(result.getStatisticsCategoryBookCountResponseDTOList().stream().anyMatch(dto -> dto.getCategoryName().equals("IT/컴퓨터")));
+        assertTrue(result.getStatisticsCategoryBookCountResponseDTOList().stream().anyMatch(dto -> dto.getCategoryName().equals("문학")));
 
         // IT/컴퓨터와 문학 각각에 대해 완료된 책 권 수가 제대로 반환되었는지 확인
-        result.forEach(dto -> {
+        result.getStatisticsCategoryBookCountResponseDTOList().forEach(dto -> {
             // 카테고리 이름과 책 권 수 출력
             System.out.println(dto.getCategoryName() + ": " + dto.getBookCount());
             assertTrue(dto.getBookCount() >= 0, "Book count should be greater than 0");
@@ -227,7 +228,7 @@ class StatisticsServiceImplTest {
             assertTrue(monthData.getAverageBooks() >= 0);
         });
 
-// === 각 연도별 총 페이지 수 확인 === //
+        // === 각 연도별 총 페이지 수 확인 === //
         List<StatisticsTotalPageByYearResponseDTO> totalPageByYear = result.getStatisticsTotalPageByYearResponseDTO();
         assertNotNull(totalPageByYear);
         assertFalse(totalPageByYear.isEmpty());
