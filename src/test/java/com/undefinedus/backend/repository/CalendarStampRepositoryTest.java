@@ -38,6 +38,7 @@ class CalendarStampRepositoryTest {
 
     private Member testMember;
     private MyBook testMyBook;
+    private AladinBook testAladinBook;
     private CalendarStamp testStamp;
 
     @BeforeEach
@@ -53,7 +54,7 @@ class CalendarStampRepositoryTest {
         memberRepository.save(testMember);
 
         // 테스트 AladinBook 생성
-        AladinBook aladinBook = AladinBook.builder()
+        testAladinBook = AladinBook.builder()
             .isbn13("9788956746425")
             .title("테스트 책")
             .author("테스트 작가")
@@ -66,13 +67,13 @@ class CalendarStampRepositoryTest {
             .categoryName("IT/컴퓨터")
             .customerReviewRank(4.5)
             .build();
-        em.persist(aladinBook);
+        em.persist(testAladinBook);
 
         // 테스트 MyBook 생성
         testMyBook = MyBook.builder()
             .member(testMember)
-            .aladinBook(aladinBook)
-            .isbn13(aladinBook.getIsbn13())
+            .aladinBook(testAladinBook)
+            .isbn13(testAladinBook.getIsbn13())
             .status(BookStatus.READING)
             .build();
         myBookRepository.save(testMyBook);
@@ -80,10 +81,17 @@ class CalendarStampRepositoryTest {
         // 테스트 CalendarStamp 생성
         testStamp = CalendarStamp.builder()
             .member(testMember)
-            .myBook(testMyBook)
-            .bookCoverUrl(aladinBook.getCover())
+            .myBookId(testMyBook.getId())
+            .bookTitle(testAladinBook.getTitle())
+            .bookAuthor(testAladinBook.getAuthor())
+            .bookCover(testAladinBook.getCover())
             .recordedAt(LocalDate.now())
             .status(BookStatus.READING)
+            .itemPage(testAladinBook.getItemPage())
+            .currentPage(testMyBook.getCurrentPage())
+            .startDate(LocalDate.now().minusDays(7))
+            .endDate(LocalDate.now())
+            .readDateCount(1)
             .build();
         calendarStampRepository.save(testStamp);
 
@@ -163,10 +171,17 @@ class CalendarStampRepositoryTest {
         // given - 추가 스탬프 생성
         CalendarStamp additionalStamp = CalendarStamp.builder()
             .member(testMember)
-            .myBook(testMyBook)
-            .bookCoverUrl(testMyBook.getAladinBook().getCover())
-            .recordedAt(LocalDate.now().minusDays(1))
+            .myBookId(testMyBook.getId())
+            .bookTitle(testAladinBook.getTitle())
+            .bookAuthor(testAladinBook.getAuthor())
+            .bookCover(testAladinBook.getCover())
+            .recordedAt(LocalDate.now())
             .status(BookStatus.READING)
+            .itemPage(testAladinBook.getItemPage())
+            .currentPage(testMyBook.getCurrentPage())
+            .startDate(LocalDate.now().minusDays(7))
+            .endDate(LocalDate.now())
+            .readDateCount(1)
             .build();
         calendarStampRepository.save(additionalStamp);
         em.flush();
