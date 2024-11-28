@@ -49,9 +49,10 @@ class StatisticsServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        
         // === Member 생성 === //
         member = Member.builder()
-            .username("test@test.com")
+            .username("test1@test.com")
             .password("password123")
             .nickname("tester")
             .memberRoleList(List.of(MemberType.USER))
