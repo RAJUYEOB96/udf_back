@@ -28,24 +28,28 @@ public class StatisticsServiceImpl implements StatisticsService {
     private final MyBookRepository myBookRepository;
 
     // 카테고리별 읽은 책 권 수
+    @Override
     public StatisticsCategoryResponseDTO getCategoryAndBookCountList(Long memberId) {
 
         List<Object[]> results = myBookRepository.findCompletedBooksGroupedByCategory(memberId);
 
-        List<StatisticsCategoryBookCountResponseDTO> statisticsCategoryBookCountResponseDTOList = results.stream()
-            .map(result -> {
+        // 두 번째 카테고리를 기준으로 묶고 카운트 합산
+        Map<String, Long> categoryCountMap = results.stream()
+            .collect(Collectors.groupingBy(
+                result -> {
+                    String categoryName = (String) result[0];
+                    String[] parts = categoryName.split(">");
+                    return parts.length > 1 ? parts[1].trim() : categoryName.trim(); // 두 번째 카테고리 반환
+                },
+                Collectors.summingLong(result -> (Long) result[1]) // 카운트 합산
+            ));
 
-                String categoryName = (String) result[0];
-                String[] parts = categoryName.split(">");
-
-                // 두 번째 항목 가져오기 (배열 길이 체크 추가)
-                String secondCategory = parts.length > 1 ? parts[1] : categoryName;
-
-                return StatisticsCategoryBookCountResponseDTO.builder()
-                .categoryName(secondCategory.trim())
-                .bookCount((Long) result[1])
-                .build();
-            })
+        // Map을 DTO 리스트로 변환
+        List<StatisticsCategoryBookCountResponseDTO> statisticsCategoryBookCountResponseDTOList = categoryCountMap.entrySet().stream()
+            .map(entry -> StatisticsCategoryBookCountResponseDTO.builder()
+                .categoryName(entry.getKey())
+                .bookCount(entry.getValue())
+                .build())
             .collect(Collectors.toList());
 
         // 총 책 권수 계산
@@ -53,10 +57,12 @@ public class StatisticsServiceImpl implements StatisticsService {
             .mapToLong(StatisticsCategoryBookCountResponseDTO::getBookCount)
             .sum();
 
+        // 최종 DTO 생성
         StatisticsCategoryResponseDTO statisticsCategoryResponseDTO = StatisticsCategoryResponseDTO.builder()
             .totalCount(totalBookCount)
             .statisticsCategoryBookCountResponseDTOList(statisticsCategoryBookCountResponseDTOList)
             .build();
+
 
         return statisticsCategoryResponseDTO;
     }
@@ -65,6 +71,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     // 연도 별 월 평균 책 읽은 권 수
     // 각 연도 별 총 페이지 수
     // 다 합친 것
+    @Override
     public StatisticsYearsBookInfoResponseDTO getTotalStatisticsYearsBookInfo(Long memberId) {
 
         List<StatisticsYearBookResponseDTO> yearBookCountList = getYearBookCountList(memberId);
@@ -142,6 +149,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     // 검색한 연도의 월 별 읽은 책 권 수 // 연도를 입력하지 않으면 현재 연도를 나오게 함
+    @Override
     public StatisticsResponseDTO getMonthCompletedBooksByYear(Integer searchYear,
         Long memberId) {
 

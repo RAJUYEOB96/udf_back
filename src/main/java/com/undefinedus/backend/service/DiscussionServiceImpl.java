@@ -74,7 +74,7 @@ public class DiscussionServiceImpl implements DiscussionService {
 
         // 상태 변경 작업 스케줄링
         try {
-            quartzConfig.scheduleJobs(savedDiscussion.getStartDate(), savedDiscussion.getId());
+            quartzConfig.scheduleDiscussionJobs(savedDiscussion.getStartDate(), savedDiscussion.getId());
         } catch (SchedulerException e) {
             log.error(
                 "Failed to schedule status change jobs for discussion: " + savedDiscussion.getId(),
@@ -236,7 +236,7 @@ public class DiscussionServiceImpl implements DiscussionService {
 
         Discussion save = discussionRepository.save(discussion);
 
-        quartzConfig.scheduleJobs(save.getStartDate(), save.getId());
+        quartzConfig.scheduleDiscussionJobs(save.getStartDate(), save.getId());
 
         return save.getId();
     }
