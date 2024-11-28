@@ -111,7 +111,7 @@ class DiscussionServiceImplTest {
         when(discussionRepository.save(any(Discussion.class))).thenReturn(discussion);
 
         // Quartz Config Mock
-        doNothing().when(quartzConfig).scheduleJobs(any(LocalDateTime.class), anyLong());
+        doNothing().when(quartzConfig).scheduleDiscussionJobs(any(LocalDateTime.class), anyLong());
 
         // 메서드 호출
         Long discussionId = discussionServiceImpl.discussionRegister(memberId, isbn13,
@@ -122,7 +122,7 @@ class DiscussionServiceImplTest {
         assertEquals(1L, discussionId);  // 반환된 토론 ID가 1L인지 확인
 
         // quartzConfig.scheduleJobs 호출 여부 검증
-        verify(quartzConfig, times(1)).scheduleJobs(any(LocalDateTime.class), anyLong());
+        verify(quartzConfig, times(1)).scheduleDiscussionJobs(any(LocalDateTime.class), anyLong());
 
         // discussionRepository.save 호출 여부 검증
         verify(discussionRepository, times(1)).save(any(Discussion.class));
@@ -254,7 +254,7 @@ class DiscussionServiceImplTest {
         when(myBookRepository.findByMemberIdAndIsbn13(memberId, isbn13)).thenReturn(java.util.Optional.of(mockMyBook));
         when(discussionRepository.findById(discussionId)).thenReturn(java.util.Optional.of(mockDiscussion));
         when(discussionRepository.save(any(Discussion.class))).thenReturn(mockDiscussion);
-        doNothing().when(quartzConfig).scheduleJobs(any(LocalDateTime.class), anyLong());
+        doNothing().when(quartzConfig).scheduleDiscussionJobs(any(LocalDateTime.class), anyLong());
 
         // 메서드 호출
         Long modifiedDiscussionId = discussionServiceImpl.discussionUpdate(memberId, isbn13, discussionId, requestDTO);
@@ -265,7 +265,7 @@ class DiscussionServiceImplTest {
 
         // Mock 객체 호출 여부 검증
         verify(discussionRepository, times(1)).save(any(Discussion.class));
-        verify(quartzConfig, times(1)).scheduleJobs(any(LocalDateTime.class), anyLong());
+        verify(quartzConfig, times(1)).scheduleDiscussionJobs(any(LocalDateTime.class), anyLong());
 
         // 업데이트된 값 검증
         assertEquals("Updated Title", mockDiscussion.getTitle());
