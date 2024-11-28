@@ -34,4 +34,8 @@ public class DiscussionDetailResponseDTO {
 
     private String status; // 게시물 상태
 
+    private Integer agreePercent; // AI가 분석한 결과 찬성
+
+    private Integer disagreePercent; // AI가 분석한 결과 반대
+
 }

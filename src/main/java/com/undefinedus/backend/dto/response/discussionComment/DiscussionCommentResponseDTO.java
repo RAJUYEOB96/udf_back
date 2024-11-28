@@ -39,4 +39,6 @@ public class DiscussionCommentResponseDTO {
     private boolean isSelected = false;  // 채택된 답변인지, 댓글의 최상위로 좋아요 많이 받은 3개를 올리기 위한? 잘 모르겠음
 
     private LocalDateTime createTime;
+
+    private String discussionCommentStatus;
 }

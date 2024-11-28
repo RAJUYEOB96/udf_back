@@ -6,7 +6,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.entity.QDiscussion;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
-import com.undefinedus.backend.dto.request.DiscussionScrollRequestDTO;
+import com.undefinedus.backend.dto.request.discussionComment.DiscussionScrollRequestDTO;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
