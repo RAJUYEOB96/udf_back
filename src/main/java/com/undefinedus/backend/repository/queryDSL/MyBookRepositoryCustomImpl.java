@@ -135,6 +135,7 @@ public class MyBookRepositoryCustomImpl implements MyBookRepositoryCustom{
 
         return queryFactory
             .selectFrom(myBook)
+            .leftJoin(myBook.aladinBook).fetchJoin()
             .where(builder)
             .fetch();
     }

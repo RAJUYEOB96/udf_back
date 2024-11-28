@@ -19,12 +19,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class StatisticsServiceImpl implements StatisticsService {
 
+    private static final Logger log = LoggerFactory.getLogger(StatisticsServiceImpl.class);
     private final MyBookRepository myBookRepository;
 
     // 카테고리별 읽은 책 권 수
@@ -177,14 +180,17 @@ public class StatisticsServiceImpl implements StatisticsService {
             StatisticsMonthBookByYearResponseDTO monthStat = monthlyStats.get(month - 1);
             monthStat.setCompletedBooks((long) monthBooks.size());
             monthStat.setPages(monthBooks.stream()
-                .mapToLong(book -> book.getCurrentPage() != null ? book.getCurrentPage() : 0)
+                .mapToLong(book -> book.getCurrentPage() != null ? book.getCurrentPage() : book.getAladinBook().getItemPage())
                 .sum());
         });
 
         // 전체 통계 계산
         totalBooks = books.size();
         totalPages = books.stream()
-            .mapToLong(MyBook::getCurrentPage)
+            .mapToLong(book -> {
+                log.info(String.valueOf(book.getAladinBook().getItemPage()));
+                return book.getCurrentPage() != null ? book.getCurrentPage() : book.getAladinBook().getItemPage();
+            })
             .sum();
 
         // 연간 통계 DTO 생성
