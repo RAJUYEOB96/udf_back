@@ -5,7 +5,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.undefinedus.backend.domain.entity.DiscussionComment;
 import com.undefinedus.backend.domain.entity.QDiscussionComment;
-import com.undefinedus.backend.dto.request.DiscussionCommentsScrollRequestDTO;
+import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentsScrollRequestDTO;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

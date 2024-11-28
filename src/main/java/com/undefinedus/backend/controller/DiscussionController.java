@@ -1,7 +1,7 @@
 package com.undefinedus.backend.controller;
 
 import com.undefinedus.backend.dto.MemberSecurityDTO;
-import com.undefinedus.backend.dto.request.DiscussionScrollRequestDTO;
+import com.undefinedus.backend.dto.request.discussionComment.DiscussionScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.exception.discussion.DiscussionException;

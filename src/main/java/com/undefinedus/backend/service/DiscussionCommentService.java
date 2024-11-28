@@ -1,6 +1,6 @@
 package com.undefinedus.backend.service;
 
-import com.undefinedus.backend.dto.request.DiscussionCommentsScrollRequestDTO;
+import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentsScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentRequestDTO;
 import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentResponseDTO;

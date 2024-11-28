@@ -60,6 +60,7 @@ public interface DiscussionCommentRepository extends JpaRepository<DiscussionCom
             + " FROM discussion_comment dc"
             + " JOIN comment_like l ON dc.id = l.comment_id"
             + " WHERE dc.discussion_id = :discussionId"
+            + " AND dc.discussion_comment_status = 'ACTIVE'"
             + " GROUP BY dc.id"
             + " ORDER BY "
             + " COUNT(CASE WHEN l.is_like = true THEN 1 ELSE null END) DESC,"

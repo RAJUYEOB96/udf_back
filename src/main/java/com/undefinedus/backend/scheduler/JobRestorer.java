@@ -41,11 +41,18 @@ public class JobRestorer {
 
             if (discussion.getDeletedAt() == null) {
 
+                if (discussion.getStatus() == DiscussionStatus.COMPLETED ||
+                    discussion.getStatus() == DiscussionStatus.BLOCKED
+                ) {
+                    continue;
+                }
+
                 // 'PROPOSED' 상태일 때도 이후 상태에 대한 작업을 진행하도록 처리
                 List<DiscussionStatus> statusList = getStatusListForProcessing(
                     discussion.getStatus());
 
                 for (DiscussionStatus status : statusList) {
+
                     try {
                         String jobName =
                             "discussion_" + discussion.getId().toString() + "_" + status;

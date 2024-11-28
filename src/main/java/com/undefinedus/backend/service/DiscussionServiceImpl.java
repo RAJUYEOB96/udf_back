@@ -6,7 +6,7 @@ import com.undefinedus.backend.domain.entity.DiscussionParticipant;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
-import com.undefinedus.backend.dto.request.DiscussionScrollRequestDTO;
+import com.undefinedus.backend.dto.request.discussionComment.DiscussionScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.exception.aladinBook.AladinBookNotFoundException;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
@@ -146,9 +146,8 @@ public class DiscussionServiceImpl implements DiscussionService {
                 .views(views)
                 .cover(cover)
                 .status(String.valueOf(discussion.getStatus()))
-                // todo: gpt에게 결과물을 받고 구현 후 꼭 넣어야 함 v
-//                .agreePercent()
-//                .disagreePercent()
+                .agreePercent(discussion.getAgreePercent())
+                .disagreePercent(discussion.getDisagreePercent())
                 .build();
 
             responseDTOList.add(dto);
@@ -202,6 +201,8 @@ public class DiscussionServiceImpl implements DiscussionService {
             .commentCount(savedDiscussion.getComments().stream().count())
             .cover(discussionBook.getCover())
             .status(String.valueOf(savedDiscussion.getStatus()))
+            .agreePercent(savedDiscussion.getAgreePercent())
+            .disagreePercent(savedDiscussion.getDisagreePercent())
             .build();
 
         return discussionDetailResponseDTO;

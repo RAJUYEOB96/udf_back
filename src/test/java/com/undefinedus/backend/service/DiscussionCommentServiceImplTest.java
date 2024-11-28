@@ -9,7 +9,7 @@ import com.undefinedus.backend.domain.entity.DiscussionComment;
 import com.undefinedus.backend.domain.entity.DiscussionParticipant;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.enums.VoteType;
-import com.undefinedus.backend.dto.request.DiscussionCommentsScrollRequestDTO;
+import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentsScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.exception.discussion.DiscussionNotFoundException;
 import com.undefinedus.backend.exception.discussionComment.DiscussionCommentNotFoundException;
@@ -190,13 +190,13 @@ class DiscussionCommentServiceImplTest {
         Discussion discussion = new Discussion();
         discussion.changeId(1L); // 토론 ID 설정
 
-        DiscussionComment comment1 = new DiscussionComment();
-        comment1.changeId(1L);
-        comment1.changeDiscussion(discussion);
-        comment1.changeMember(member); // 멤버 설정
-        comment1.changeVoteType(VoteType.AGREE);
-        comment1.changeContent("Test Comment");
-        comment1.setCreatedDate(LocalDateTime.now());
+        DiscussionComment comment1 = DiscussionComment.builder()
+            .id(1L)
+            .discussion(discussion)
+            .member(member)
+            .voteType(VoteType.AGREE)
+            .content("Test Comment")
+            .build();
 
         List<DiscussionComment> commentList = Arrays.asList(comment1);
 
