@@ -467,6 +467,7 @@ public class InitialDataConfig {
                 .publisher("창비")
                 .categoryName("국내도서>소설")
                 .customerReviewRank(10.0)
+                .itemPage(100)
                 .build());
         
         return books;

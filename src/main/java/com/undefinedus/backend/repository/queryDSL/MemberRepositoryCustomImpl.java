@@ -6,6 +6,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.QFollow;
 import com.undefinedus.backend.domain.entity.QMember;
+import com.undefinedus.backend.domain.enums.MemberType;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.exception.social.TabConditionNotEqualException;
 import jakarta.persistence.EntityManager;
@@ -30,6 +31,9 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
         
         // memberId 와 일치 하지 않는 것만 들고 오기 위해 ne (not equal)
         builder.and(member.id.ne(memberId));
+        
+        // ADMIN role을 가지고 있지 않는 것만 들고 오기
+        builder.and(member.memberRoleList.contains(MemberType.ADMIN).not());
         
         // 검색어 처리 (닉네임 검색)
         if (StringUtils.hasText(requestDTO.getSearch())) {
@@ -80,6 +84,9 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
         
         // memberId 와 일치 하지 않는 것만 들고 오기 위해 ne (not equal)
         builder.and(member.id.ne(memberId));
+        
+        // ADMIN role을 가지고 있지 않는 것만 들고 오기
+        builder.and(member.memberRoleList.contains(MemberType.ADMIN).not());
         
         // 검색어 처리 (닉네임 검색)
         if (StringUtils.hasText(requestDTO.getSearch())) {
