@@ -25,7 +25,7 @@ public class StatisticsController {
 
     private final StatisticsService statisticsService;
 
-    @GetMapping // 카테고리별 읽은 책 권 수
+    @GetMapping // 카테고리별 읽은 책 권 수, 총 권 수
     public ResponseEntity<ApiResponseDTO<StatisticsCategoryResponseDTO>> getCategoryAndBookCountList(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO
     ) {
@@ -37,8 +37,7 @@ public class StatisticsController {
         return ResponseEntity.ok(ApiResponseDTO.success((categoryAndBookCount)));
     }
 
-    // todo: 주소 값이 이상한지 포스트맨에서 이 컨트롤러가 안됨.
-    @GetMapping("/totalYearly")
+    @GetMapping("/totalYearly") // 연도별 총 권 수, 월 평균 권 수, 총 페이지 수
     public ResponseEntity<ApiResponseDTO<StatisticsYearsBookInfoResponseDTO>> getTotalStatisticsYearsBookInfo(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO
     ) {

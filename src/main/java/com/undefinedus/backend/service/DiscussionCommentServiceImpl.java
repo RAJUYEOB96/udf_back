@@ -5,8 +5,9 @@ import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.entity.DiscussionComment;
 import com.undefinedus.backend.domain.entity.DiscussionParticipant;
 import com.undefinedus.backend.domain.entity.Member;
+import com.undefinedus.backend.domain.enums.DiscussionCommentStatus;
 import com.undefinedus.backend.domain.enums.VoteType;
-import com.undefinedus.backend.dto.request.DiscussionCommentsScrollRequestDTO;
+import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentsScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.exception.discussion.DiscussionNotFoundException;
 import com.undefinedus.backend.exception.discussionComment.DiscussionCommentNotFoundException;
@@ -224,6 +225,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             boolean selected = discussionComment.isSelected();
             LocalDateTime createdDate = discussionComment.getCreatedDate();
             Long totalOrder = discussionComment.getTotalOrder();
+            DiscussionCommentStatus discussionCommentStatus = discussionComment.getDiscussionCommentStatus();
 
             Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId));
@@ -245,6 +247,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .dislike(dislikeCount)
                 .isSelected(selected)
                 .createTime(createdDate)
+                .discussionCommentStatus(String.valueOf(discussionCommentStatus))
                 .build();
 
             responseDTOList.add(dto);
@@ -418,6 +421,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 boolean selected = discussionComment.isSelected();
                 LocalDateTime createdDate = discussionComment.getCreatedDate();
                 Long totalOrder = discussionComment.getTotalOrder();
+                DiscussionCommentStatus discussionCommentStatus = discussionComment.getDiscussionCommentStatus();
 
                 Member member = memberRepository.findById(memberId)
                     .orElseThrow(() -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId));
@@ -439,6 +443,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                     .dislike(dislikeCount)
                     .isSelected(selected)
                     .createTime(createdDate)
+                    .discussionCommentStatus(String.valueOf(discussionCommentStatus))
                     .build();
 
                 responseDTOList.add(dto);

@@ -17,6 +17,8 @@ import com.undefinedus.backend.exception.discussionParticipant.DiscussionPartici
 import com.undefinedus.backend.exception.dto.ErrorResponse;
 import com.undefinedus.backend.exception.member.MemberException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
+import com.undefinedus.backend.exception.report.ReportException;
+import com.undefinedus.backend.exception.report.ReportNotFoundException;
 import com.undefinedus.backend.exception.social.InvalidFollowException;
 import com.undefinedus.backend.exception.social.TabConditionNotEqualException;
 import com.undefinedus.backend.util.CustomJWTException;
@@ -169,6 +171,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DiscussionCommentNotFoundException.class)
     protected ResponseEntity<ErrorResponse> handleDiscussionCommentsNotFoundException(
         DiscussionCommentNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(new ErrorResponse(e.getMessage()));
+    }
+
+    // 신고 관련
+    @ExceptionHandler(ReportException.class)
+    protected ResponseEntity<ErrorResponse> handleReportException(
+        ReportException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ErrorResponse(e.getMessage()));
+    }
+
+    @ExceptionHandler(ReportNotFoundException.class)
+    protected ResponseEntity<ErrorResponse> handleReportNotFoundException(
+        ReportNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(new ErrorResponse(e.getMessage()));
     }

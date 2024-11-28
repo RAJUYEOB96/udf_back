@@ -33,9 +33,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class AladinBookServiceImpl implements AladinBookService {
 
     private final AladinBookRepository aladinBookRepository;
-
     private final MemberRepository memberRepository;
-
     private final MyBookRepository myBookRepository;
 
 

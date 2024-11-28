@@ -1,4 +1,4 @@
-package com.undefinedus.backend.dto.request;
+package com.undefinedus.backend.dto.request.discussionComment;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,14 +1,11 @@
 package com.undefinedus.backend.controller;
 
-import com.undefinedus.backend.domain.entity.DiscussionComment;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
-import com.undefinedus.backend.dto.request.DiscussionCommentsScrollRequestDTO;
+import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentsScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentRequestDTO;
-import com.undefinedus.backend.dto.response.discussion.DiscussionDetailResponseDTO;
 import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentResponseDTO;
-import com.undefinedus.backend.repository.DiscussionCommentRepository;
 import com.undefinedus.backend.service.DiscussionCommentService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
