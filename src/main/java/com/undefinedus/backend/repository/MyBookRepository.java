@@ -94,7 +94,7 @@ public interface MyBookRepository extends JpaRepository<MyBook, Long>, MyBookRep
             + "AND YEAR(m.end_date) >= (YEAR(CURDATE()) - 2) "
             + "GROUP BY YEAR(m.end_date) "
             + "ORDER BY YEAR(m.end_date) DESC")
-    List<Object[]> finCompletedBookPageGroupedByYear(@Param("memberId") Long memberId);
+    List<Object[]> findCompletedBookPageGroupedByYear(@Param("memberId") Long memberId);
 
     // DISTINCT 중복된 값 제거 Set 이랑 같이 사용하면 좋음
     @Query("SELECT DISTINCT YEAR(m.endDate) " +

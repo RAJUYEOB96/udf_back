@@ -544,7 +544,7 @@ class MyBookRepositoryTest {
         em.clear();
 
         // when
-        List<Object[]> result = myBookRepository.finCompletedBookPageGroupedByYear(memberId);
+        List<Object[]> result = myBookRepository.findCompletedBookPageGroupedByYear(memberId);
 
         // then
         assertThat(result).isNotEmpty();
