@@ -8,6 +8,7 @@ import com.undefinedus.backend.dto.response.statistics.StatisticsResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsYearsBookInfoResponseDTO;
 import com.undefinedus.backend.service.StatisticsService;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
@@ -62,4 +63,15 @@ public class StatisticsController {
         return ResponseEntity.ok(ApiResponseDTO.success(result));
     }
 
+    @GetMapping("/years")
+    public ResponseEntity<ApiResponseDTO<Set<Integer>>> getMemberYears(
+        @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO
+    ) {
+
+        Long loginMemberId = memberSecurityDTO.getId();
+
+        Set<Integer> memberYears = statisticsService.getMemberYears(loginMemberId);
+
+        return ResponseEntity.ok(ApiResponseDTO.success(memberYears));
+    }
 }
