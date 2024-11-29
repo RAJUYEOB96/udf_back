@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -441,5 +442,14 @@ class StatisticsServiceImplTest {
         assertEquals(specificYearResult.getTotalPagesThisYear(), totalPagesFromMonthly);
     }
 
+    @Test
+    @DisplayName("회원의 다읽은 책을 기록한 년도의 목록")
+    void getMemberYears() {
 
+        Long memberId = member.getId();
+
+        Set<Integer> memberYears = statisticsServiceImpl.getMemberYears(memberId);
+
+        System.out.println("memberYears = " + memberYears);
+    }
 }

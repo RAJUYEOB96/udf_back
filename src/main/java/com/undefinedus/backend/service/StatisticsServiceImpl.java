@@ -15,8 +15,12 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Year;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -219,6 +223,13 @@ public class StatisticsServiceImpl implements StatisticsService {
                 .build());
         }
         return monthlyStats;
+    }
+
+    public Set<Integer> getMemberYears(Long memberId) {
+
+        Set<Integer> yearsSet = myBookRepository.findByMemberIdByCompleted(memberId);
+
+        return yearsSet;
     }
 
 }
