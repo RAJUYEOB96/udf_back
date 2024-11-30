@@ -19,6 +19,8 @@ public class MyBookmarkResponseDTO {
     
     private LocalDate recordDate;       // 기록된 날짜
     
+    private Integer totalPageNumber;  // 책이 가지고 있는 totalPageNumber
+    
     // 아래는 필요없지만 추가로 필요 할 수도 있는 필드들
     
     private String cover;               // 표지 이미지 URL
@@ -30,6 +32,7 @@ public class MyBookmarkResponseDTO {
                 .pageNumber(myBookmark.getPageNumber())
                 .phrase(myBookmark.getPhrase())
                 .recordDate(myBookmark.getCreatedDate().toLocalDate())
+                .totalPageNumber(myBookmark.getAladinBook().getItemPage())
                 .cover(myBookmark.getAladinBook().getCover())
                 .build();
     }
