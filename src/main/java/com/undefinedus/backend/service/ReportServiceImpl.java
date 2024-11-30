@@ -90,6 +90,7 @@ public class ReportServiceImpl implements ReportService {
             .reportReason(reason)
             .status(ReportStatus.PENDING)
             .targetType(ReportTargetType.valueOf(targetType))
+            .previousDiscussionStatus(discussion != null ? discussion.getStatus() : null)
             .build();
 
         reportRepository.save(reportDiscussion);
@@ -174,6 +175,32 @@ public class ReportServiceImpl implements ReportService {
                 .orElseThrow(() -> new ReportNotFoundException(String.format(REPORT_NOT_FOUND, reportId)));
         
         return ReportResponseDTO.from(report);
+    }
+    
+    @Override
+    public void rejectReport(Long reportId) {
+        
+        Report report = reportRepository.findByIdWithAll(reportId)
+                .orElseThrow(() -> new ReportNotFoundException(String.format(REPORT_NOT_FOUND, reportId)));
+        
+        // 이미 처리된 신고인지 확인
+        if (report.getStatus() != ReportStatus.TEMPORARY_ACCEPTED && report.getStatus() != ReportStatus.PENDING) {
+            throw new IllegalStateException("확정되지 않은 신고만 거절할 수 있습니다.");
+        }
+        
+        report.changeStatus(ReportStatus.REJECTED);
+        
+        Discussion discussion = report.getDiscussion();
+        DiscussionComment discussionComment = report.getComment();
+        
+        if (discussion != null && report.getPreviousDiscussionStatus() != null) {
+            discussion.changeStatus(report.getPreviousDiscussionStatus());
+        }
+        
+        if (discussionComment != null) {
+            discussionComment.changeDiscussionCommentStatus(DiscussionCommentStatus.ACTIVE);
+        }
+        
     }
     
 }

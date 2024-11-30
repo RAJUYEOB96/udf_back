@@ -504,4 +504,135 @@ class ReportServiceImplTest {
                 .isInstanceOf(ReportNotFoundException.class)
                 .hasMessageContaining("해당 report를 찾을 수 없습니다.");
     }
+    
+    @Test
+    @DisplayName("PENDING 상태의 토론 신고를 거절하면 토론이 이전 상태로 복구된다")
+    void testRejectPendingDiscussionReport() {
+        // given
+        Report report = Report.builder()
+                .reporter(reporter)
+                .reported(reported)
+                .targetType(ReportTargetType.DISCUSSION)
+                .reportReason("불법정보")
+                .status(ReportStatus.PENDING)
+                .discussion(discussion)
+                .previousDiscussionStatus(DiscussionStatus.PROPOSED)  // 이전 상태 저장
+                .build();
+        
+        Report savedReport = reportRepository.save(report);
+        discussion.changeStatus(DiscussionStatus.BLOCKED);  // 토론 상태를 BLOCKED로 변경
+        
+        entityManager.flush();
+        entityManager.clear();
+        
+        // when
+        reportService.rejectReport(savedReport.getId());
+        
+        // then
+        Report rejectedReport = reportRepository.findById(savedReport.getId()).orElseThrow();
+        Discussion updatedDiscussion = discussionRepository.findById(discussion.getId()).orElseThrow();
+        
+        assertThat(rejectedReport.getStatus()).isEqualTo(ReportStatus.REJECTED);
+        assertThat(updatedDiscussion.getStatus()).isEqualTo(DiscussionStatus.PROPOSED);
+    }
+    
+    @Test
+    @DisplayName("TEMPORARY_ACCEPTED 상태의 토론 신고를 거절하면 토론이 이전 상태로 복구된다")
+    void testRejectTemporaryAcceptedDiscussionReport() {
+        // given
+        Report report = Report.builder()
+                .reporter(reporter)
+                .reported(reported)
+                .targetType(ReportTargetType.DISCUSSION)
+                .reportReason("불법정보")
+                .status(ReportStatus.TEMPORARY_ACCEPTED)
+                .discussion(discussion)
+                .previousDiscussionStatus(DiscussionStatus.IN_PROGRESS)  // 이전 상태 저장
+                .build();
+        
+        Report savedReport = reportRepository.save(report);
+        discussion.changeStatus(DiscussionStatus.BLOCKED);  // 토론 상태를 BLOCKED로 변경
+        
+        entityManager.flush();
+        entityManager.clear();
+        
+        // when
+        reportService.rejectReport(savedReport.getId());
+        
+        // then
+        Report rejectedReport = reportRepository.findById(savedReport.getId()).orElseThrow();
+        Discussion updatedDiscussion = discussionRepository.findById(discussion.getId()).orElseThrow();
+        
+        assertThat(rejectedReport.getStatus()).isEqualTo(ReportStatus.REJECTED);
+        assertThat(updatedDiscussion.getStatus()).isEqualTo(DiscussionStatus.IN_PROGRESS);
+    }
+    
+    @Test
+    @DisplayName("댓글 신고를 거절하면 댓글이 ACTIVE 상태로 복구된다")
+    void testRejectCommentReport() {
+        // given
+        Report report = Report.builder()
+                .reporter(reporter)
+                .reported(reported)
+                .targetType(ReportTargetType.DISCUSSION_COMMENT)
+                .reportReason("불법정보")
+                .status(ReportStatus.TEMPORARY_ACCEPTED)
+                .comment(comment1)
+                .build();
+        
+        Report savedReport = reportRepository.save(report);
+        comment1.changeDiscussionCommentStatus(DiscussionCommentStatus.BLOCKED);
+        
+        entityManager.flush();
+        entityManager.clear();
+        
+        // when
+        reportService.rejectReport(savedReport.getId());
+        
+        // then
+        Report rejectedReport = reportRepository.findById(savedReport.getId()).orElseThrow();
+        DiscussionComment updatedComment = discussionCommentRepository.findById(comment1.getId()).orElseThrow();
+        
+        assertThat(rejectedReport.getStatus()).isEqualTo(ReportStatus.REJECTED);
+        assertThat(updatedComment.getDiscussionCommentStatus()).isEqualTo(DiscussionCommentStatus.ACTIVE);
+    }
+    
+    @Test
+    @DisplayName("이미 ACCEPTED나 REJECTED 상태인 신고는 거절할 수 없다")
+    void testCannotRejectFinalizedReport() {
+        // given
+        Report acceptedReport = Report.builder()
+                .reporter(reporter)
+                .reported(reported)
+                .targetType(ReportTargetType.DISCUSSION)
+                .reportReason("불법정보")
+                .status(ReportStatus.ACCEPTED)
+                .discussion(discussion)
+                .build();
+        
+        Report rejectedReport = Report.builder()
+                .reporter(reporter2)
+                .reported(reported)
+                .targetType(ReportTargetType.DISCUSSION)
+                .reportReason("불법정보")
+                .status(ReportStatus.REJECTED)
+                .discussion(discussion)
+                .build();
+        
+        // 변수를 재할당하지 않고 새로운 변수에 저장
+        Report savedAcceptedReport = reportRepository.save(acceptedReport);
+        Report savedRejectedReport = reportRepository.save(rejectedReport);
+        
+        entityManager.flush();
+        entityManager.clear();
+        
+        // when & then
+        assertThatThrownBy(() -> reportService.rejectReport(acceptedReport.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("확정되지 않은 신고만 거절할 수 있습니다.");
+        
+        assertThatThrownBy(() -> reportService.rejectReport(rejectedReport.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("확정되지 않은 신고만 거절할 수 있습니다.");
+    }
 }

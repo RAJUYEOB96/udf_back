@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -56,6 +57,15 @@ public class ReportController {
         ReportResponseDTO result = reportService.getReportDetail(reportId);
         
         return ResponseEntity.ok(ApiResponseDTO.success(result));
+    }
+    
+    @PatchMapping("/{reportId}")
+    public ResponseEntity<ApiResponseDTO<Void>> rejectReport(
+            @PathVariable("reportId") Long reportId) {
+        
+        reportService.rejectReport(reportId);
+        
+        return ResponseEntity.ok(ApiResponseDTO.success(null));
     }
 
 }

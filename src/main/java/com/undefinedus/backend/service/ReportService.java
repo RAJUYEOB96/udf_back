@@ -12,4 +12,6 @@ public interface ReportService {
     ScrollResponseDTO<ReportResponseDTO> getReportList(ScrollRequestDTO requestDTO);
     
     ReportResponseDTO getReportDetail(Long reportId);
+    
+    void rejectReport(Long reportId);
 }
