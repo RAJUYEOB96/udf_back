@@ -20,6 +20,7 @@ public class ChatGPTController {
 
     private final ChatGPTService chatGPTService;
 
+    // 회원이 읽은 책들 기반 gpt 추천 도서 목록(gpt가 추천 책의 isbn13을 출력하지 않음)
     @GetMapping("/recommended")
     public ResponseEntity<ApiResponseDTO<List<AladinApiResponseDTO>>> getGPTRecommendedBookLIst(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO) {
@@ -34,6 +35,7 @@ public class ChatGPTController {
         return ResponseEntity.ok(ApiResponseDTO.success(gptRecommendedBookList));
     }
 
+    // 토론 게시판의 정보들을 가지고 gpt가 결론낸것 보기
     @GetMapping("/discussion")
     public ResponseEntity<ApiResponseDTO<DiscussionGPTResponseDTO>> getDiscussionGTP(
         Long discussionId) {

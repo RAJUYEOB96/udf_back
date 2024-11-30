@@ -1,6 +1,6 @@
 package com.undefinedus.backend.service;
 
-import com.undefinedus.backend.dto.response.statistics.StatisticsCategoryBookCountResponseDTO;
+import com.undefinedus.backend.dto.response.statistics.StatisticsCategoryByYearResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsCategoryResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsYearsBookInfoResponseDTO;
@@ -16,4 +16,6 @@ public interface StatisticsService {
     StatisticsResponseDTO getMonthCompletedBooksByYear(Integer searchYear, Long memberId);
 
     Set<Integer> getMemberYears(Long memberId);
+
+    List<StatisticsCategoryByYearResponseDTO> getCompletedBooksGroupedByYears(Long memberId);
 }

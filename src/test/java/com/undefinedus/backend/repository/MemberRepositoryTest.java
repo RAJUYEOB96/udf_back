@@ -590,4 +590,50 @@ class MemberRepositoryTest {
         }
         return true;
     }
+
+    @Test
+    @DisplayName("findMessageToKakaoMemberIdList 메서드 테스트")
+    void testFindMessageToKakaoMemberIdList() {
+        // Given
+        Member member1 = Member.builder()
+            .username("user10@test.com")
+            .password("password1")
+            .nickname("user1")
+            .isMessageToKakao(true)
+            .build();
+
+        memberRepository.save(member1);
+
+        Member member2 = Member.builder()
+            .username("user11@test.com")
+            .password("password2")
+            .nickname("user2")
+            .isMessageToKakao(false)
+            .build();
+
+        memberRepository.save(member2);
+
+        Member member3 = Member.builder()
+            .username("user12@test.com")
+            .password("password3")
+            .nickname("user3")
+            .isMessageToKakao(true)
+            .build();
+
+        memberRepository.save(member3);
+
+        // When
+        List<Long> result = memberRepository.findMessageToKakaoMemberIdList();
+
+        System.out.println("result = " + result);
+
+        // Then
+        assertAll(
+            () -> assertNotNull(result),
+            () -> assertEquals(2, result.size()),
+            () -> assertTrue(result.contains(member1.getId())),
+            () -> assertFalse(result.contains(member2.getId())),
+            () -> assertTrue(result.contains(member3.getId()))
+        );
+    }
 }

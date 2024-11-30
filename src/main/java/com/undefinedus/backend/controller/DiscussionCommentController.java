@@ -29,6 +29,7 @@ public class DiscussionCommentController {
 
     private final DiscussionCommentService discussionCommentService;
 
+    // 댓글 달기
     @PostMapping("/writeComment/{discussionId}")
     public ResponseEntity<ApiResponseDTO<Void>> writeComment(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
@@ -44,6 +45,7 @@ public class DiscussionCommentController {
             .body(ApiResponseDTO.success(null));
     }
 
+    // 답글 달기
     @PostMapping("/writeComment/{discussionId}/{discussionCommentId}")
     public ResponseEntity<ApiResponseDTO<Void>> writeReply(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
@@ -61,6 +63,7 @@ public class DiscussionCommentController {
             .body(ApiResponseDTO.success(null));
     }
 
+    // 베스트 3 댓글 목록
     @GetMapping("/bestComment/{discussionId}")
     public ResponseEntity<ApiResponseDTO<List<DiscussionCommentResponseDTO>>> getBest3CommentsList(@PathVariable(name = "discussionId") Long discussionId) {
 
@@ -79,6 +82,7 @@ public class DiscussionCommentController {
         return ResponseEntity.ok(ApiResponseDTO.success(response));
     }
 
+    // 댓글에 좋아요 달기
     @PatchMapping("/addLike/{discussionCommentId}")
     public ResponseEntity<ApiResponseDTO<Void>> addLike(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
@@ -92,6 +96,7 @@ public class DiscussionCommentController {
         return ResponseEntity.ok().body(ApiResponseDTO.success(null));
     }
 
+    // 댓글에 싫어요 달기
     @PatchMapping("/addDislike/{discussionCommentId}")
     public ResponseEntity<ApiResponseDTO<Void>> addDislike(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
@@ -105,8 +110,8 @@ public class DiscussionCommentController {
         return ResponseEntity.ok().body(ApiResponseDTO.success(null));
     }
 
+    // 필요 시 사용 // 댓글 삭제
     @DeleteMapping("/{commentId}")
-    // 필요 시 사용
     public ResponseEntity<ApiResponseDTO<Void>> deleteComment(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @PathVariable(name = "commentId") Long commentId
