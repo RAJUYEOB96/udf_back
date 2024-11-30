@@ -23,6 +23,7 @@ import com.undefinedus.backend.repository.ReportRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -201,6 +202,25 @@ public class ReportServiceImpl implements ReportService {
             discussionComment.changeDiscussionCommentStatus(DiscussionCommentStatus.ACTIVE);
         }
         
+    }
+    
+    @Override
+    public void approvalReport(Long reportId) {
+        Report report = reportRepository.findByIdWithAll(reportId)
+                .orElseThrow(() -> new ReportNotFoundException(String.format(REPORT_NOT_FOUND, reportId)));
+        
+        // 이미 처리된 신고인지 확인
+        if (report.getStatus() != ReportStatus.TEMPORARY_ACCEPTED && report.getStatus() != ReportStatus.PENDING) {
+            throw new IllegalStateException("확정되지 않은 신고만 승인할 수 있습니다.");
+        }
+        
+        report.changeStatus(ReportStatus.ACCEPTED);
+        
+        Optional.ofNullable(report.getDiscussion())
+                .ifPresent(discussion -> discussion.changeStatus(DiscussionStatus.BLOCKED));
+        
+        Optional.ofNullable(report.getComment())
+                .ifPresent(comment -> comment.changeDiscussionCommentStatus(DiscussionCommentStatus.BLOCKED));
     }
     
 }
