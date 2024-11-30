@@ -14,4 +14,6 @@ public interface ReportService {
     ReportResponseDTO getReportDetail(Long reportId);
     
     void rejectReport(Long reportId);
+    
+    void approvalReport(Long reportId);
 }
