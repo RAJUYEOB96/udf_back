@@ -8,13 +8,13 @@ import com.undefinedus.backend.domain.enums.DiscussionCommentStatus;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.domain.enums.ReportStatus;
 import com.undefinedus.backend.domain.enums.ReportTargetType;
+import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.report.ReportRequestDTO;
-import com.undefinedus.backend.dto.response.report.ReportCommentDetailResponseDTO;
-import com.undefinedus.backend.dto.response.report.ReportDiscussionDetailResponseDTO;
+import com.undefinedus.backend.dto.response.ScrollResponseDTO;
+import com.undefinedus.backend.dto.response.report.ReportResponseDTO;
 import com.undefinedus.backend.exception.discussion.DiscussionNotFoundException;
 import com.undefinedus.backend.exception.discussionComment.DiscussionCommentNotFoundException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
-import com.undefinedus.backend.exception.report.ReportNotFoundException;
 import com.undefinedus.backend.repository.DiscussionCommentRepository;
 import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MemberRepository;
@@ -22,6 +22,7 @@ import com.undefinedus.backend.repository.ReportRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -130,41 +131,37 @@ public class ReportServiceImpl implements ReportService {
             }
         }
     }
-
-    // 토론 신고 보기
-    public ReportDiscussionDetailResponseDTO getReportDiscussionDetail(Long reportId) {
-
-        Report report = reportRepository.findById(reportId)
-            .orElseThrow(() -> new ReportNotFoundException("해당 신고 건을 찾을 수 없습니다. : " + reportId));
-
-        ReportDiscussionDetailResponseDTO reportCommentDetailResponseDTO = ReportDiscussionDetailResponseDTO.builder()
-            .reportReason(report.getReportReason())
-            .reporterMemberName(report.getReporter().getNickname())
-            .reportedMemberName(report.getReported().getNickname())
-            .reportTime(report.getCreatedDate())
-            .targetType(String.valueOf(report.getTargetType()))
-            .discussionTitle(report.getDiscussion().getTitle())
-            .discussionContent(report.getDiscussion().getContent())
-            .build();
-
-        return reportCommentDetailResponseDTO;
+    
+    @Override
+    public ScrollResponseDTO<ReportResponseDTO> getReportList(ScrollRequestDTO requestDTO) {
+        
+        // 해당 tabCondition에 따른 전체 갯수
+        Long totalElements = reportRepository.countReportListByTabCondition(requestDTO);
+        
+        // size + 1개 데이터 조회해서 가져옴 (size가 10이면 11개 가져옴)
+        List<Report> findReports = reportRepository.getReportListByTabCondition(requestDTO);
+        
+        boolean hasNext = false;
+        if (findReports.size() > requestDTO.getSize()) { // 11 > 10 이면 있다는 뜻
+            hasNext = true;
+            findReports.remove(findReports.size() - 1); // 11개 가져온 걸 10개를 보내기 위해
+        }
+        
+        List<ReportResponseDTO> dtoList =
+                findReports.stream().map(report -> ReportResponseDTO.from(report)).collect(Collectors.toList());
+        
+        // 마지막 항목의 ID 설정
+        Long lastId = findReports.isEmpty() ?
+                requestDTO.getLastId() :    // 조회된 목록이 비어있는 경우를 대비해 삼항 연산자 사용
+                findReports.get(findReports.size() - 1).getId(); // lastId를 요청 DTO의 값이 아닌, 실제 조회된 마지막 항목의 ID로 설정
+        
+        return ScrollResponseDTO.<ReportResponseDTO>withAll()
+                .content(dtoList)
+                .hasNext(hasNext)
+                .lastId(lastId)
+                .numberOfElements(dtoList.size())
+                .totalElements(totalElements)
+                .build();
     }
-
-    // 댓글 신고 보기
-    public ReportCommentDetailResponseDTO getReportCommentDetail(Long reportId) {
-
-        Report report = reportRepository.findById(reportId)
-            .orElseThrow(() -> new ReportNotFoundException("해당 신고 건을 찾을 수 없습니다. : " + reportId));
-
-        ReportCommentDetailResponseDTO reportCommentDetailResponseDTO = ReportCommentDetailResponseDTO.builder()
-            .reportReason(report.getReportReason())
-            .reporterMemberName(report.getReporter().getNickname())
-            .reportedMemberName(report.getReported().getNickname())
-            .reportTime(report.getCreatedDate())
-            .targetType(String.valueOf(report.getTargetType()))
-            .commentContent(report.getComment().getContent())
-            .build();
-
-        return reportCommentDetailResponseDTO;
-    }
+    
 }

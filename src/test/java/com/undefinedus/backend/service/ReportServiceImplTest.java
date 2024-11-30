@@ -13,7 +13,9 @@ import com.undefinedus.backend.domain.enums.DiscussionCommentStatus;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.domain.enums.ReportTargetType;
 import com.undefinedus.backend.domain.enums.VoteType;
+import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.report.ReportRequestDTO;
+import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.repository.AladinBookRepository;
 import com.undefinedus.backend.repository.DiscussionCommentRepository;
 import com.undefinedus.backend.repository.DiscussionRepository;
@@ -23,6 +25,7 @@ import com.undefinedus.backend.repository.ReportRepository;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -298,4 +301,124 @@ class ReportServiceImplTest {
 
         System.out.println("discussionComment = " + discussionComment.getDiscussionCommentStatus());
     }
+    
+    @Test
+    @DisplayName("미처리 신고 목록을 페이징하여 조회한다")
+    void testGetPendingReportList() {
+        // given
+        // 신고 데이터 생성 (토론글 신고)
+        List<Discussion> discussions = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            Discussion newDiscussion = Discussion.builder()
+                    .myBook(myBook)
+                    .member(reported)
+                    .title("토론 제목 " + i)
+                    .content("토론 내용 " + i)
+                    .status(DiscussionStatus.PROPOSED)
+                    .startDate(LocalDateTime.now().plusDays(1))
+                    .views(0L)
+                    .isDeleted(false)
+                    .build();
+            discussionRepository.save(newDiscussion);
+            discussions.add(newDiscussion);
+        }
+        
+        // 각 토론글에 대한 신고 생성
+        for (Discussion disc : discussions) {
+            ReportRequestDTO requestDTO = new ReportRequestDTO();
+            requestDTO.setDiscussionId(disc.getId());
+            requestDTO.setReportedId(reported.getId());
+            requestDTO.setReason("불법정보");
+            requestDTO.setTargetType(ReportTargetType.DISCUSSION.name());
+            
+            reportService.report(reporter.getId(), requestDTO);
+        }
+        
+        entityManager.flush();
+        entityManager.clear();
+        
+        // when
+        ScrollRequestDTO scrollRequestDTO = new ScrollRequestDTO();
+        scrollRequestDTO.setTabCondition("미처리");
+        scrollRequestDTO.setSort("desc");
+        scrollRequestDTO.setSize(2);
+        
+        ScrollResponseDTO<?> response = reportService.getReportList(scrollRequestDTO);
+        
+        // then
+        assertThat(response.getContent()).hasSize(2); // size만큼만 조회되는지 확인
+        assertThat(response.isHasNext()).isTrue(); // 다음 페이지 존재 여부 확인
+        assertThat(response.getTotalElements()).isEqualTo(3L); // 전체 개수 확인
+    }
+    
+    @Test
+    @DisplayName("처리완료된 신고 목록을 페이징하여 조회한다")
+    void testGetCompletedReportList() {
+        // given
+        // 토론글 3개 생성
+        List<Discussion> discussions = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            Discussion newDiscussion = Discussion.builder()
+                    .myBook(myBook)
+                    .member(reported)
+                    .title("토론 제목 " + i)
+                    .content("토론 내용 " + i)
+                    .status(DiscussionStatus.PROPOSED)
+                    .startDate(LocalDateTime.now().plusDays(1))
+                    .views(0L)
+                    .isDeleted(false)
+                    .build();
+            discussionRepository.save(newDiscussion);
+            discussions.add(newDiscussion);
+        }
+        
+        // 각 토론글에 대해 3번씩 신고하여 BLOCKED 상태로 만듦
+        for (Discussion disc : discussions) {
+            ReportRequestDTO requestDTO = new ReportRequestDTO();
+            requestDTO.setDiscussionId(disc.getId());
+            requestDTO.setReportedId(reported.getId());
+            requestDTO.setReason("불법정보");
+            requestDTO.setTargetType(ReportTargetType.DISCUSSION.name());
+            
+            reportService.report(reporter.getId(), requestDTO);
+            reportService.report(reporter2.getId(), requestDTO);
+            reportService.report(reported2.getId(), requestDTO);
+        }
+        
+        entityManager.flush();
+        entityManager.clear();
+        
+        // when
+        ScrollRequestDTO scrollRequestDTO = new ScrollRequestDTO();
+        scrollRequestDTO.setTabCondition("미처리");
+        scrollRequestDTO.setSort("desc");
+        scrollRequestDTO.setSize(2);
+        
+        ScrollResponseDTO<?> response = reportService.getReportList(scrollRequestDTO);
+        
+        // then
+        assertThat(response.getContent()).hasSize(2);
+        assertThat(response.isHasNext()).isTrue();
+        assertThat(response.getTotalElements()).isEqualTo(9L); // 3개의 토론글 * 3번의 신고 = 9
+    }
+    
+    @Test
+    @DisplayName("빈 목록을 조회한다")
+    void testGetEmptyList() {
+        // given
+        ScrollRequestDTO scrollRequestDTO = new ScrollRequestDTO();
+        scrollRequestDTO.setTabCondition("미처리");
+        scrollRequestDTO.setSort("desc");
+        scrollRequestDTO.setSize(10);
+        
+        // when
+        ScrollResponseDTO<?> response = reportService.getReportList(scrollRequestDTO);
+        
+        // then
+        assertThat(response.getContent()).isEmpty();
+        assertThat(response.isHasNext()).isFalse();
+        assertThat(response.getTotalElements()).isEqualTo(0L);
+    }
+    
+    
 }

@@ -53,10 +53,10 @@ public class Report extends BaseEntity {
     @Column(nullable = false)
     private String reportReason;
     
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)  // 'TEMPORARY_ACCEPTED' 길이를 고려한 충분한 길이
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private ReportStatus status = ReportStatus.PENDING; // 처리 상태 (PENDING, ACCEPTED, REJECTED)
+    private ReportStatus status = ReportStatus.PENDING; // 처리 상태 (PENDING, TEMPORARY_ACCEPTED, ACCEPTED, REJECTED)
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "discussion_id", updatable = false)
