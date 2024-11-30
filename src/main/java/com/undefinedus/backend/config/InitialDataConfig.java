@@ -176,7 +176,7 @@ public class InitialDataConfig {
                 .memberRoleList(List.of(MemberType.USER))
                 .preferences(Set.of(PreferencesType.컴퓨터_모바일, PreferencesType.경제경영, PreferencesType.자기계발))
                 .isPublic(true)
-                .isMessageToKakao(true)
+                .isMessageToKakao(false)
                 .build();
         
         SocialLogin kakaoLogin = SocialLogin.builder()

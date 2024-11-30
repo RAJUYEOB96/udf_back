@@ -56,6 +56,19 @@ public interface MyBookRepository extends JpaRepository<MyBook, Long>, MyBookRep
         "GROUP BY a.categoryName")
     List<Object[]> findCompletedBooksGroupedByCategory(@Param("memberId") Long memberId);
 
+    // 연도 별 카테고리 별 읽은 책 권 수
+    @Query(nativeQuery = true,
+        value = "SELECT a.category_name AS categoryName, YEAR(m.end_date), "
+            + "       COUNT(m.isbn13) AS bookCount "
+            + "  FROM my_book m "
+            + "  JOIN aladin_book a ON m.isbn13 = a.isbn13 "
+            + "WHERE m.STATUS = 'COMPLETED' "
+            + "  AND m.member_id = :memberId "
+            + "  AND YEAR(m.end_date) >= (YEAR(CURDATE()) - 2) "
+            + "GROUP BY a.category_name, YEAR(m.end_date) "
+            + "ORDER BY YEAR(m.end_date) DESC")
+    List<Object[]> findCompletedBooksGroupedByYears(@Param("memberId") Long memberId);
+
     // 연도 별 읽은 책 권 수 // 평균 내는 것에도 사용 // AND YEAR(m.end_date) >= (YEAR(CURDATE()) - 2) 최근 3년
     @Query(nativeQuery = true,
         value = "SELECT YEAR(m.end_date), COUNT(m.id) " +

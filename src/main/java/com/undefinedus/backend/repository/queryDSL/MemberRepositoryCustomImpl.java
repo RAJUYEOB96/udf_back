@@ -210,4 +210,21 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
         } else {
             throw new TabConditionNotEqualException("해당 TabCondition이 일치하지 않습니다. : " + requestDTO.getTabCondition());
         }    }
+
+
+    // 모든 회원 중 isMessageToKakao = true인 회원들의 id를 가져옴
+    public List<Long> findMessageToKakaoMemberIdList() {
+        QMember member = QMember.member;
+
+        BooleanBuilder builder = new BooleanBuilder();
+
+        builder.and(member.isMessageToKakao.eq(true));
+
+        return queryFactory
+            .select(member.id) // member의 id만 선택
+            .from(member)
+            .where(builder)
+            .fetch();
+    }
+
 }

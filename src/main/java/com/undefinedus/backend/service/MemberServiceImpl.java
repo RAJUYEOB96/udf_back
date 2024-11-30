@@ -6,7 +6,6 @@ import com.undefinedus.backend.domain.enums.MemberType;
 import com.undefinedus.backend.domain.enums.PreferencesType;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
-import com.undefinedus.backend.dto.response.social.MemberSocialInfoResponseDTO;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.util.JWTUtil;
 import java.util.HashMap;
@@ -56,7 +55,11 @@ public class MemberServiceImpl implements MemberService {
             
             String accessToken = JWTUtil.generateAccessToken(claims);
             String refreshToken = JWTUtil.generateRefreshToken(claims);
-            
+
+            // todo: 메시지 보내기 위한 토큰 정보 저장
+            isRegister.get().updateKakaoAccessToken(accessToken);
+            isRegister.get().updateKakaoRefreshToken(refreshToken);
+
             claims.put("accessToken", accessToken);
             claims.put("refreshToken", refreshToken);
             

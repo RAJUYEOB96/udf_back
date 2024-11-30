@@ -1,5 +1,6 @@
 package com.undefinedus.backend.dto.response.statistics;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,8 +10,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class StatisticsCategoryBookCountResponseDTO {
+public class StatisticsCategoryByYearResponseDTO {
 
-    private String categoryName;
-    private Long bookCount;
+    private Integer year;
+    private List<StatisticsCategoryBookCountResponseDTO> statisticsCategoryBookCountResponseDTOList;
 }

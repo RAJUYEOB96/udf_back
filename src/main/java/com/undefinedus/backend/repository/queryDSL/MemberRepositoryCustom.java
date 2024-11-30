@@ -13,4 +13,6 @@ public interface MemberRepositoryCustom {
     List<Member> findFollowMembersByTabCondition(Long memberId, ScrollRequestDTO requestDTO);
     
     Long countAllFollowMembersByTabCondition(Long memberId, ScrollRequestDTO requestDTO);
+
+    List<Long> findMessageToKakaoMemberIdList();
 }

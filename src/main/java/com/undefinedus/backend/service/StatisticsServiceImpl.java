@@ -2,6 +2,7 @@ package com.undefinedus.backend.service;
 
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.dto.response.statistics.StatisticsCategoryBookCountResponseDTO;
+import com.undefinedus.backend.dto.response.statistics.StatisticsCategoryByYearResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsCategoryResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsMonthBookAverageByYearResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsMonthBookByYearResponseDTO;
@@ -12,15 +13,12 @@ import com.undefinedus.backend.dto.response.statistics.StatisticsYearResponseDTO
 import com.undefinedus.backend.dto.response.statistics.StatisticsYearsBookInfoResponseDTO;
 import com.undefinedus.backend.repository.MyBookRepository;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -72,6 +70,55 @@ public class StatisticsServiceImpl implements StatisticsService {
 
 
         return statisticsCategoryResponseDTO;
+    }
+
+    // 최근 3년간의 각 연도의 카테고리 별 다 읽은 책 권 수
+    public List<StatisticsCategoryByYearResponseDTO> getCompletedBooksGroupedByYears(Long memberId) {
+        // 데이터베이스에서 완료된 책 정보를 가져옴
+        List<Object[]> results = myBookRepository.findCompletedBooksGroupedByYears(memberId);
+
+        // 데이터를 연도별로 그룹화
+        Map<Integer, List<StatisticsCategoryBookCountResponseDTO>> groupedData = results.stream()
+            .collect(Collectors.groupingBy(
+                row -> ((Number) row[1]).intValue(), // 연도 추출 (row[1]은 연도 정보)
+                Collectors.mapping(row -> {
+                    String categoryName = (String) row[0]; // 카테고리 이름 추출
+                    String[] parts = categoryName.split(">"); // '>' 기호로 카테고리 분리
+                    // 두 번째 카테고리가 있으면 사용, 없으면 전체 카테고리 이름 사용
+                    String secondCategory = parts.length > 1 ? parts[1].trim() : categoryName.trim();
+                    return new StatisticsCategoryBookCountResponseDTO(
+                        secondCategory, // 정제된 카테고리 이름
+                        ((Number) row[2]).longValue() // 책 수량 (row[2]는 책 수량 정보)
+                    );
+                }, Collectors.toList()) // 각 연도별로 카테고리와 책 수량 정보를 리스트로 수집
+            ));
+
+        // 그룹화된 데이터를 DTO로 변환하고 카테고리별로 합산
+        List<StatisticsCategoryByYearResponseDTO> statisticsCategoryByYearResponseDTOList = groupedData.entrySet().stream()
+            .map(entry -> {
+                // 각 연도 내에서 카테고리별로 책 수량 합산
+                Map<String, Long> categorySum = entry.getValue().stream()
+                    .collect(Collectors.groupingBy(
+                        StatisticsCategoryBookCountResponseDTO::getCategoryName, // 카테고리별 그룹화
+                        Collectors.summingLong(StatisticsCategoryBookCountResponseDTO::getBookCount) // 책 수량 합산
+                    ));
+
+                // 합산된 결과를 DTO 리스트로 변환
+                List<StatisticsCategoryBookCountResponseDTO> summedList = categorySum.entrySet().stream()
+                    .map(categoryEntry -> new StatisticsCategoryBookCountResponseDTO(
+                        categoryEntry.getKey(), categoryEntry.getValue()))
+                    .collect(Collectors.toList());
+
+                // 연도별 통계 DTO 생성
+                return StatisticsCategoryByYearResponseDTO.builder()
+                    .year(entry.getKey()) // 연도 설정
+                    .statisticsCategoryBookCountResponseDTOList(summedList) // 해당 연도의 카테고리별 통계 리스트 설정
+                    .build();
+            })
+            .sorted(Comparator.comparing(StatisticsCategoryByYearResponseDTO::getYear).reversed()) // 연도 기준 내림차순 정렬
+            .collect(Collectors.toList()); // 최종 결과를 리스트로 수집
+
+        return statisticsCategoryByYearResponseDTOList; // 처리된 통계 데이터 반환
     }
 
     // 연도 별 읽은 책 권 수
@@ -132,7 +179,7 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     // 각 연도 별 총 페이지 수
     private List<StatisticsTotalPageByYearResponseDTO> getTotalPageByYear(Long memberId) {
-        List<Object[]> results = myBookRepository.finCompletedBookPageGroupedByYear(memberId);
+        List<Object[]> results = myBookRepository.findCompletedBookPageGroupedByYear(memberId);
 
         List<StatisticsTotalPageByYearResponseDTO> responseDTOList = results.stream().map(
             result -> {
@@ -225,6 +272,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         return monthlyStats;
     }
 
+    // 회원의 complete 한 책에서 추출한 year 정보 목록
     public Set<Integer> getMemberYears(Long memberId) {
 
         Set<Integer> yearsSet = myBookRepository.findByMemberIdByCompleted(memberId);
