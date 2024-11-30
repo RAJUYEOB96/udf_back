@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,6 +47,15 @@ public class ReportController {
         ScrollResponseDTO<ReportResponseDTO> response = reportService.getReportList(requestDTO);
 
         return ResponseEntity.ok(ApiResponseDTO.success(response));
+    }
+    
+    @GetMapping("/{reportId}")
+    public ResponseEntity<ApiResponseDTO<ReportResponseDTO>> getReportDetail(
+            @PathVariable("reportId") Long reportId) {
+        
+        ReportResponseDTO result = reportService.getReportDetail(reportId);
+        
+        return ResponseEntity.ok(ApiResponseDTO.success(result));
     }
 
 }

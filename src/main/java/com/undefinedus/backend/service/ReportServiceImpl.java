@@ -15,6 +15,7 @@ import com.undefinedus.backend.dto.response.report.ReportResponseDTO;
 import com.undefinedus.backend.exception.discussion.DiscussionNotFoundException;
 import com.undefinedus.backend.exception.discussionComment.DiscussionCommentNotFoundException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
+import com.undefinedus.backend.exception.report.ReportNotFoundException;
 import com.undefinedus.backend.repository.DiscussionCommentRepository;
 import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MemberRepository;
@@ -32,6 +33,8 @@ import org.springframework.stereotype.Service;
 @Log4j2
 @Transactional
 public class ReportServiceImpl implements ReportService {
+    
+    private static final String REPORT_NOT_FOUND = "해당 report를 찾을 수 없습니다. : %d";
 
     private final MemberRepository memberRepository;
     private final DiscussionRepository discussionRepository;
@@ -162,6 +165,15 @@ public class ReportServiceImpl implements ReportService {
                 .numberOfElements(dtoList.size())
                 .totalElements(totalElements)
                 .build();
+    }
+    
+    @Override
+    public ReportResponseDTO getReportDetail(Long reportId) {
+        
+        Report report = reportRepository.findByIdWithAll(reportId)
+                .orElseThrow(() -> new ReportNotFoundException(String.format(REPORT_NOT_FOUND, reportId)));
+        
+        return ReportResponseDTO.from(report);
     }
     
 }

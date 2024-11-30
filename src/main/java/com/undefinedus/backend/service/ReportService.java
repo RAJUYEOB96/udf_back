@@ -10,4 +10,6 @@ public interface ReportService {
     void report(Long reporterId, ReportRequestDTO reportRequestDTO);
     
     ScrollResponseDTO<ReportResponseDTO> getReportList(ScrollRequestDTO requestDTO);
+    
+    ReportResponseDTO getReportDetail(Long reportId);
 }

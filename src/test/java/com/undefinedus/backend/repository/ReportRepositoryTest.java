@@ -22,8 +22,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
 import org.assertj.core.api.Assertions;
+import org.hibernate.Hibernate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -527,5 +529,52 @@ class ReportRepositoryTest {
         // 첫 페이지의 마지막 ID가 두 번째 페이지의 첫 ID보다 큰지 확인
         assertThat(actualFirstPage.get(actualFirstPage.size() - 1).getId())
                 .isGreaterThan(actualSecondPage.get(0).getId());
+    }
+    
+    @Test
+    @DisplayName("findByIdWithAll: Report와 연관된 모든 엔티티를 함께 조회한다")
+    void testFindByIdWithAll() {
+        // given
+        Report report = Report.builder()
+                .reporter(reporter)
+                .reported(reported)
+                .targetType(ReportTargetType.DISCUSSION_COMMENT)
+                .reportReason("불법정보")
+                .status(ReportStatus.PENDING)
+                .comment(comment1)
+                .build();
+        
+        Report savedReport = reportRepository.save(report);
+        entityManager.flush();
+        entityManager.clear(); // 영속성 컨텍스트 초기화
+        
+        // when
+        Report foundReport = reportRepository.findByIdWithAll(savedReport.getId())
+                .orElseThrow();
+        
+        // then
+        assertThat(foundReport).isNotNull();
+        assertThat(foundReport.getId()).isEqualTo(savedReport.getId());
+        
+        // 연관 엔티티들이 프록시가 아닌 실제 객체로 로딩되었는지 검증
+        assertThat(Hibernate.isInitialized(foundReport.getReporter())).isTrue();
+        assertThat(Hibernate.isInitialized(foundReport.getReported())).isTrue();
+        assertThat(Hibernate.isInitialized(foundReport.getComment())).isTrue();
+        
+        // 연관 엔티티들의 데이터가 정확한지 검증
+        assertThat(foundReport.getReporter().getId()).isEqualTo(reporter.getId());
+        assertThat(foundReport.getReported().getId()).isEqualTo(reported.getId());
+        assertThat(foundReport.getComment().getId()).isEqualTo(comment1.getId());
+        assertThat(foundReport.getDiscussion()).isNull(); // comment가 설정된 경우 discussion은 null
+    }
+    
+    @Test
+    @DisplayName("findByIdWithAll: 존재하지 않는 ID로 조회시 빈 Optional을 반환한다")
+    void testFindByIdWithAll_NotFound() {
+        // when
+        Optional<Report> result = reportRepository.findByIdWithAll(999L);
+        
+        // then
+        assertThat(result).isEmpty();
     }
 }
