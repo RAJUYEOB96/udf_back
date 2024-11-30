@@ -1,5 +1,6 @@
 package com.undefinedus.backend.domain.entity;
 
+import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.domain.enums.ReportStatus;
 import com.undefinedus.backend.domain.enums.ReportTargetType;
 import jakarta.persistence.Column;
@@ -53,10 +54,10 @@ public class Report extends BaseEntity {
     @Column(nullable = false)
     private String reportReason;
     
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)  // 'TEMPORARY_ACCEPTED' 길이를 고려한 충분한 길이
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private ReportStatus status = ReportStatus.PENDING; // 처리 상태 (PENDING, ACCEPTED, REJECTED)
+    private ReportStatus status = ReportStatus.PENDING; // 처리 상태 (PENDING, TEMPORARY_ACCEPTED, ACCEPTED, REJECTED)
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "discussion_id", updatable = false)
@@ -65,8 +66,16 @@ public class Report extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "discussion_comment_id", updatable = false)
     private DiscussionComment comment;  // 신고 당한 토론 댓글 게시물 // discussion가 존재하면 null
+    
+    @Column(length = 20)    // enum이 길이를 위해
+    @Enumerated(EnumType.STRING)
+    private DiscussionStatus previousDiscussionStatus;  // discussion에만 사용할 예정
 
     public void changeStatus(ReportStatus status) {
         this.status = status;
+    }
+    
+    public void changePreviousDiscussionStatus(DiscussionStatus previousDiscussionStatus) {
+        this.previousDiscussionStatus = previousDiscussionStatus;
     }
 }

@@ -1,6 +1,7 @@
 package com.undefinedus.backend.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.domain.entity.Discussion;
@@ -14,12 +15,19 @@ import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.domain.enums.ReportStatus;
 import com.undefinedus.backend.domain.enums.ReportTargetType;
 import com.undefinedus.backend.domain.enums.VoteType;
+import com.undefinedus.backend.dto.request.ScrollRequestDTO;
+import com.undefinedus.backend.exception.social.TabConditionNotEqualException;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
+import org.assertj.core.api.Assertions;
+import org.hibernate.Hibernate;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -300,5 +308,273 @@ class ReportRepositoryTest {
         // 신고 리스트 조회
         List<Report> reports = reportRepository.findByCommentAndStatus(comment1, ReportStatus.PENDING);
         assertThat(reports).hasSize(1);  // 1개의 신고가 조회되어야 함
+    }
+    
+    @Test
+    @DisplayName("미처리 상태의 신고 목록을 조회한다")
+    void testGetPendingReportList() {
+        // given
+        // 여러 개의 Discussion을 만들어서 각각 신고
+        Discussion discussion1 = Discussion.builder()
+                .myBook(myBook)
+                .member(reported)
+                .title("토론 제목 1")
+                .content("토론 내용 1")
+                .status(DiscussionStatus.PROPOSED)
+                .startDate(LocalDateTime.now().plusDays(1))
+                .views(0L)
+                .isDeleted(false)
+                .build();
+        discussionRepository.save(discussion1);
+        
+        Discussion discussion2 = Discussion.builder()
+                .myBook(myBook)
+                .member(reported)
+                .title("토론 제목 2")
+                .content("토론 내용 2")
+                .status(DiscussionStatus.PROPOSED)
+                .startDate(LocalDateTime.now().plusDays(1))
+                .views(0L)
+                .isDeleted(false)
+                .build();
+        discussionRepository.save(discussion2);
+        
+        Report report1 = Report.builder()
+                .reporter(reporter)
+                .reported(reported)
+                .targetType(ReportTargetType.DISCUSSION)
+                .reportReason("불법정보")
+                .status(ReportStatus.PENDING)
+                .discussion(discussion1)
+                .build();
+        
+        Report report2 = Report.builder()
+                .reporter(reporter2)
+                .reported(reported)
+                .targetType(ReportTargetType.DISCUSSION)
+                .reportReason("기타")
+                .status(ReportStatus.TEMPORARY_ACCEPTED)
+                .discussion(discussion2)
+                .build();
+        
+        reportRepository.saveAll(List.of(report1, report2));
+        entityManager.flush();
+        entityManager.clear();
+        
+        ScrollRequestDTO requestDTO = new ScrollRequestDTO();
+        requestDTO.setTabCondition("미처리");
+        requestDTO.setSort("desc");
+        requestDTO.setSize(10);
+        
+        // when
+        List<Report> results = reportRepository.getReportListByTabCondition(requestDTO);
+        
+        // then
+        assertThat(results).hasSize(2)
+                .extracting("status")
+                .containsOnly(ReportStatus.PENDING, ReportStatus.TEMPORARY_ACCEPTED);
+    }
+    
+    @Test
+    @DisplayName("처리 완료된 신고 목록을 조회한다")
+    void testGetCompletedReportList() {
+        // given
+        Discussion discussion1 = Discussion.builder()
+                .myBook(myBook)
+                .member(reported)
+                .title("토론 제목 1")
+                .content("토론 내용 1")
+                .status(DiscussionStatus.PROPOSED)
+                .startDate(LocalDateTime.now().plusDays(1))
+                .views(0L)
+                .isDeleted(false)
+                .build();
+        discussionRepository.save(discussion1);
+        
+        Discussion discussion2 = Discussion.builder()
+                .myBook(myBook)
+                .member(reported)
+                .title("토론 제목 2")
+                .content("토론 내용 2")
+                .status(DiscussionStatus.PROPOSED)
+                .startDate(LocalDateTime.now().plusDays(1))
+                .views(0L)
+                .isDeleted(false)
+                .build();
+        discussionRepository.save(discussion2);
+        
+        DiscussionComment comment2 = DiscussionComment.builder()
+                .discussion(discussion2)
+                .member(reported)
+                .groupId(2L)
+                .parentId(0L)
+                .order(1L)
+                .isChild(false)
+                .totalOrder(1L)
+                .voteType(VoteType.AGREE)
+                .content("Test comment")
+                .isSelected(false)
+                .discussionCommentStatus(DiscussionCommentStatus.ACTIVE)
+                .isDeleted(false)
+                .deletedAt(null)
+                .build();
+        discussionCommentRepository.save(comment2);
+        
+        Report report1 = Report.builder()
+                .reporter(reporter)
+                .reported(reported)
+                .targetType(ReportTargetType.DISCUSSION)
+                .reportReason("불법정보")
+                .status(ReportStatus.ACCEPTED)
+                .discussion(discussion1)
+                .build();
+        
+        Report report2 = Report.builder()
+                .reporter(reporter2)
+                .reported(reported)
+                .targetType(ReportTargetType.DISCUSSION_COMMENT)
+                .reportReason("기타")
+                .status(ReportStatus.REJECTED)
+                .comment(comment2)
+                .build();
+        
+        Report report3 = Report.builder()
+                .reporter(reporter)
+                .reported(reported)
+                .targetType(ReportTargetType.DISCUSSION)
+                .reportReason("불법정보")
+                .status(ReportStatus.PENDING)
+                .discussion(discussion2)
+                .build();
+        
+        reportRepository.saveAll(List.of(report1, report2, report3));
+        entityManager.flush();
+        entityManager.clear();
+        
+        ScrollRequestDTO requestDTO = new ScrollRequestDTO();
+        requestDTO.setTabCondition("처리 완료");
+        requestDTO.setSort("desc");
+        requestDTO.setSize(10);
+        
+        // when
+        List<Report> results = reportRepository.getReportListByTabCondition(requestDTO);
+        
+        // then
+        assertThat(results).hasSize(2)
+                .extracting("status")
+                .containsOnly(ReportStatus.ACCEPTED, ReportStatus.REJECTED);
+    }
+    
+    @Test
+    @DisplayName("Cursor 기반 페이징이 정상적으로 동작한다")
+    void testCursorPaging() {
+        // given
+        List<Report> reports = new ArrayList<>();
+        
+        // 여러 개의 Discussion을 만들어서 각각 신고
+        for (int i = 0; i < 5; i++) {
+            Discussion newDiscussion = Discussion.builder()
+                    .myBook(myBook)
+                    .member(reported)
+                    .title("토론 제목 " + i)
+                    .content("토론 내용 " + i)
+                    .status(DiscussionStatus.PROPOSED)
+                    .startDate(LocalDateTime.now().plusDays(1))
+                    .views(0L)
+                    .isDeleted(false)
+                    .build();
+            discussionRepository.save(newDiscussion);
+            
+            Report report = Report.builder()
+                    .reporter(reporter)
+                    .reported(reported)
+                    .targetType(ReportTargetType.DISCUSSION)
+                    .reportReason("불법정보" + i)
+                    .status(ReportStatus.PENDING)
+                    .discussion(newDiscussion)
+                    .build();
+            reports.add(report);
+        }
+        reportRepository.saveAll(reports);
+        entityManager.flush();
+        entityManager.clear();
+        
+        ScrollRequestDTO requestDTO = new ScrollRequestDTO();
+        requestDTO.setTabCondition("미처리");
+        requestDTO.setSort("desc");
+        requestDTO.setSize(2);
+        
+        // when
+        List<Report> firstPage = reportRepository.getReportListByTabCondition(requestDTO);
+        
+        // 실제로는 size + 1 개를 가져오므로, 마지막 항목은 제거하고 저장
+        Long lastId = firstPage.get(firstPage.size() - 2).getId();
+        requestDTO.setLastId(lastId);
+        List<Report> secondPage = reportRepository.getReportListByTabCondition(requestDTO);
+        
+        // then
+        // size + 1개를 가져오므로 3개가 맞음
+        assertThat(firstPage).hasSize(3);
+        assertThat(secondPage).hasSize(3);
+        
+        // 실제 사용할 데이터는 size 개수만큼만 사용
+        List<Report> actualFirstPage = firstPage.subList(0, requestDTO.getSize());
+        List<Report> actualSecondPage = secondPage.subList(0, requestDTO.getSize());
+        
+        // 내림차순 정렬 확인
+        for (int i = 0; i < actualFirstPage.size() - 1; i++) {
+            assertThat(actualFirstPage.get(i).getId()).isGreaterThan(actualFirstPage.get(i + 1).getId());
+        }
+        
+        // 첫 페이지의 마지막 ID가 두 번째 페이지의 첫 ID보다 큰지 확인
+        assertThat(actualFirstPage.get(actualFirstPage.size() - 1).getId())
+                .isGreaterThan(actualSecondPage.get(0).getId());
+    }
+    
+    @Test
+    @DisplayName("findByIdWithAll: Report와 연관된 모든 엔티티를 함께 조회한다")
+    void testFindByIdWithAll() {
+        // given
+        Report report = Report.builder()
+                .reporter(reporter)
+                .reported(reported)
+                .targetType(ReportTargetType.DISCUSSION_COMMENT)
+                .reportReason("불법정보")
+                .status(ReportStatus.PENDING)
+                .comment(comment1)
+                .build();
+        
+        Report savedReport = reportRepository.save(report);
+        entityManager.flush();
+        entityManager.clear(); // 영속성 컨텍스트 초기화
+        
+        // when
+        Report foundReport = reportRepository.findByIdWithAll(savedReport.getId())
+                .orElseThrow();
+        
+        // then
+        assertThat(foundReport).isNotNull();
+        assertThat(foundReport.getId()).isEqualTo(savedReport.getId());
+        
+        // 연관 엔티티들이 프록시가 아닌 실제 객체로 로딩되었는지 검증
+        assertThat(Hibernate.isInitialized(foundReport.getReporter())).isTrue();
+        assertThat(Hibernate.isInitialized(foundReport.getReported())).isTrue();
+        assertThat(Hibernate.isInitialized(foundReport.getComment())).isTrue();
+        
+        // 연관 엔티티들의 데이터가 정확한지 검증
+        assertThat(foundReport.getReporter().getId()).isEqualTo(reporter.getId());
+        assertThat(foundReport.getReported().getId()).isEqualTo(reported.getId());
+        assertThat(foundReport.getComment().getId()).isEqualTo(comment1.getId());
+        assertThat(foundReport.getDiscussion()).isNull(); // comment가 설정된 경우 discussion은 null
+    }
+    
+    @Test
+    @DisplayName("findByIdWithAll: 존재하지 않는 ID로 조회시 빈 Optional을 반환한다")
+    void testFindByIdWithAll_NotFound() {
+        // when
+        Optional<Report> result = reportRepository.findByIdWithAll(999L);
+        
+        // then
+        assertThat(result).isEmpty();
     }
 }
