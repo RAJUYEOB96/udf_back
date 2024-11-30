@@ -635,4 +635,100 @@ class ReportServiceImplTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("확정되지 않은 신고만 거절할 수 있습니다.");
     }
+    
+    @Test
+    @DisplayName("TEMPORARY_ACCEPTED 상태의 신고를 승인하면 ACCEPTED 상태가 되고 관련 콘텐츠가 차단된다")
+    void testApproveTemporaryAcceptedReport() {
+        // given
+        Report report = Report.builder()
+                .reporter(reporter)
+                .reported(reported)
+                .targetType(ReportTargetType.DISCUSSION)
+                .reportReason("불법정보")
+                .status(ReportStatus.TEMPORARY_ACCEPTED)
+                .discussion(discussion)
+                .build();
+        
+        Report savedReport = reportRepository.save(report);
+        
+        entityManager.flush();
+        entityManager.clear();
+        
+        // when
+        reportService.approvalReport(savedReport.getId());
+        
+        // then
+        Report approvedReport = reportRepository.findById(savedReport.getId()).orElseThrow();
+        Discussion blockedDiscussion = discussionRepository.findById(discussion.getId()).orElseThrow();
+        
+        assertThat(approvedReport.getStatus()).isEqualTo(ReportStatus.ACCEPTED);
+        assertThat(blockedDiscussion.getStatus()).isEqualTo(DiscussionStatus.BLOCKED);
+    }
+    
+    @Test
+    @DisplayName("PENDING 상태의 신고를 승인하면 ACCEPTED 상태가 되고 관련 콘텐츠가 차단된다")
+    void testApprovePendingReport() {
+        // given
+        Report report = Report.builder()
+                .reporter(reporter)
+                .reported(reported)
+                .targetType(ReportTargetType.DISCUSSION_COMMENT)
+                .reportReason("불법정보")
+                .status(ReportStatus.PENDING)
+                .comment(comment1)
+                .build();
+        
+        Report savedReport = reportRepository.save(report);
+        
+        entityManager.flush();
+        entityManager.clear();
+        
+        // when
+        reportService.approvalReport(savedReport.getId());
+        
+        // then
+        Report approvedReport = reportRepository.findById(savedReport.getId()).orElseThrow();
+        DiscussionComment blockedComment = discussionCommentRepository.findById(comment1.getId()).orElseThrow();
+        
+        assertThat(approvedReport.getStatus()).isEqualTo(ReportStatus.ACCEPTED);
+        assertThat(blockedComment.getDiscussionCommentStatus()).isEqualTo(DiscussionCommentStatus.BLOCKED);
+    }
+    
+    @Test
+    @DisplayName("이미 ACCEPTED나 REJECTED 상태인 신고는 승인할 수 없다")
+    void testCannotApproveFinalizedReport() {
+        // given
+        Report acceptedReport = Report.builder()
+                .reporter(reporter)
+                .reported(reported)
+                .targetType(ReportTargetType.DISCUSSION)
+                .reportReason("불법정보")
+                .status(ReportStatus.ACCEPTED)
+                .discussion(discussion)
+                .build();
+        
+        Report rejectedReport = Report.builder()
+                .reporter(reporter2)
+                .reported(reported)
+                .targetType(ReportTargetType.DISCUSSION)
+                .reportReason("불법정보")
+                .status(ReportStatus.REJECTED)
+                .discussion(discussion)
+                .build();
+        
+        Report savedAcceptedReport = reportRepository.save(acceptedReport);
+        Report savedRejectedReport = reportRepository.save(rejectedReport);
+        
+        entityManager.flush();
+        entityManager.clear();
+        
+        // when & then
+        assertThatThrownBy(() -> reportService.approvalReport(savedAcceptedReport.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("확정되지 않은 신고만 승인할 수 있습니다.");
+        
+        assertThatThrownBy(() -> reportService.approvalReport(savedRejectedReport.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("확정되지 않은 신고만 승인할 수 있습니다.");
+    }
 }

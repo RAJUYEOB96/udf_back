@@ -59,11 +59,20 @@ public class ReportController {
         return ResponseEntity.ok(ApiResponseDTO.success(result));
     }
     
-    @PatchMapping("/{reportId}")
+    @PatchMapping("/reject/{reportId}")
     public ResponseEntity<ApiResponseDTO<Void>> rejectReport(
             @PathVariable("reportId") Long reportId) {
         
         reportService.rejectReport(reportId);
+        
+        return ResponseEntity.ok(ApiResponseDTO.success(null));
+    }
+    
+    @PatchMapping("/approval/{reportId}")
+    public ResponseEntity<ApiResponseDTO<Void>> approvalReport(
+            @PathVariable("reportId") Long reportId) {
+        
+        reportService.approvalReport(reportId);
         
         return ResponseEntity.ok(ApiResponseDTO.success(null));
     }
