@@ -61,7 +61,8 @@ public class DiscussionServiceImpl implements DiscussionService {
         MyBook myBook = myBookRepository.findByMemberIdAndIsbn13(memberId, isbn13)
             .orElseThrow(() -> new BookNotFoundException("해당 책을 찾을 수 없습니다. : " + isbn13));
 
-        Discussion discussion = Discussion.builder().myBook(myBook)  // MyBook 객체
+        Discussion discussion = Discussion.builder()
+            .myBook(myBook)  // MyBook 객체
             .member(member)  // Member 객체
             .title(discussionRegisterRequestDTO.getTitle())
             .content(discussionRegisterRequestDTO.getContent()).status(DiscussionStatus.PROPOSED)
@@ -126,6 +127,8 @@ public class DiscussionServiceImpl implements DiscussionService {
             Long views = discussion.getViews();
             Long discussionId = discussion.getId();
             String isbn13 = discussion.getMyBook().getIsbn13();
+            LocalDateTime startDateTime = discussion.getStartDate();
+            LocalDateTime closedAt = discussion.getClosedAt();
 
             AladinBook aladinBook = aladinBookRepository.findByIsbn13(isbn13).orElseThrow(
                 () -> new AladinBookNotFoundException("없는 ISBN13 입니다. : " + isbn13)
@@ -143,6 +146,8 @@ public class DiscussionServiceImpl implements DiscussionService {
                 .agree(agree)
                 .disagree(disagree)
                 .createdDate(createdDate)
+                .startDateTime(startDateTime)
+                .closedAt(closedAt)
                 .views(views)
                 .cover(cover)
                 .status(String.valueOf(discussion.getStatus()))
