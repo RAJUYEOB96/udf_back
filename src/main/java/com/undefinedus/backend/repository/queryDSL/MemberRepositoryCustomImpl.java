@@ -223,6 +223,7 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
     // 모든 회원 중 isMessageToKakao = true인 회원들의 id를 가져옴
     public List<Long> findMessageToKakaoMemberIdList() {
         QMember member = QMember.member;
+        QMyBookmark myBookmark = QMyBookmark.myBookmark;
 
         BooleanBuilder builder = new BooleanBuilder();
 
