@@ -76,6 +76,8 @@ dependencies {
 
     // chat gpt
     implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
+    // Perplexity
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
     // Quartz 스케줄러
     implementation 'org.quartz-scheduler:quartz:2.3.2'
@@ -91,6 +93,9 @@ dependencies {
     // AWS S3 지원
     implementation 'io.awspring.cloud:spring-cloud-aws-starter:3.2.1'
     implementation 'software.amazon.awssdk:s3:2.29.9'
+
+    // kakaoTolk 확인 테스트 용
+    testImplementation 'com.github.database-rider:rider-junit5:1.32.0'
 }
 
 // chat gpt

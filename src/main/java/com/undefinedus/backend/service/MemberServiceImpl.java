@@ -45,10 +45,12 @@ public class MemberServiceImpl implements MemberService {
             kakaoAccessToken);
 
         // 기존에 DB에 회원 정보가 있는 경우 / 없는 경우
-        Optional<Member> isRegister = memberRepository.findByUsername(
-            "kakao_" + kakaoInfo.get("kakaoId"));
+        Optional<Member> isRegister = memberRepository.findByUsername("kakao_" + kakaoInfo.get("kakaoId"));
 
         if (isRegister.isPresent()) {
+
+            isRegister.get().updateKakaoRefreshToken(kakaoRefreshToken);
+
             MemberSecurityDTO memberSecurityDTO = entityToDTOWithSocial(isRegister.get());
 
             Map<String, Object> claims = memberSecurityDTO.getClaims();
