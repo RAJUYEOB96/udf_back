@@ -66,6 +66,10 @@ spring:
       client:
         enabled: true   # ChatGPT 클라이언트 활성화
 
+  # perplexity (테스트 용)
+    perplexity:
+      api-key: test-key
+
   # Quartz (메모리 모드)
   quartz:
     job-store-type: memory

@@ -4,7 +4,7 @@ import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.exception.discussion.DiscussionNotFoundException;
 import com.undefinedus.backend.repository.DiscussionRepository;
-import com.undefinedus.backend.service.ChatGPTService;
+import com.undefinedus.backend.service.AiService;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.quartz.Job;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 public class Analyzing implements Job {
 
     private final DiscussionRepository discussionRepository;
-    private final ChatGPTService chatGPTService;
+    private final AiService aiService;
 
 
     @Override
@@ -35,7 +35,7 @@ public class Analyzing implements Job {
         discussionRepository.save(discussion);
 
         try {
-            chatGPTService.discussionInfoToGPT(discussionId);
+            aiService.discussionInfoToGPT(discussionId);
         } catch (IOException e) {
             throw new RuntimeException("GPT에 정보 전달 실패 : " + e.getMessage());
         }

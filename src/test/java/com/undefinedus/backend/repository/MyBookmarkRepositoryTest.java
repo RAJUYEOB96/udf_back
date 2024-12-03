@@ -43,9 +43,9 @@ class MyBookmarkRepositoryTest {
     void setUp() {
         // === Member 생성 === //
         member = Member.builder()
-            .username("test@test.com")
+            .username("test34@test.com")
             .password("password123")
-            .nickname("tester")
+            .nickname("tester34")
             .memberRoleList(List.of(MemberType.USER))
             .isPublic(true)
             .build();
@@ -54,7 +54,7 @@ class MyBookmarkRepositoryTest {
         // === 10개의 테스트용 북마크 데이터 생성 === //
         for (int i = 1; i <= 10; i++) {
             AladinBook book = AladinBook.builder()
-                .isbn13(String.format("978895674%04d", i))
+                .isbn13(String.format("978895574%04d", i))
                 .title("테스트 책 " + i)
                 .author(i % 2 == 0 ? "김작가" : "이작가")
                 .link("http://example.com/" + i)
