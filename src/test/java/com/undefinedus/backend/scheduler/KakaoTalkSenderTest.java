@@ -40,9 +40,10 @@ class KakaoTalkSenderTest {
         // Given
         String accessToken = "test-access-token";
         String message = "Hello, Kakao!";
+        String title = "title!";
 
         // When
-        kakaoTalkSender.sendMessage(accessToken, message);
+        kakaoTalkSender.sendMessage(accessToken, message, title);
 
         // Then
         verify(mockConnection).setRequestMethod("POST");
@@ -58,9 +59,10 @@ class KakaoTalkSenderTest {
 
         String accessToken = "invalid-access-token";
         String message = "Failed Message";
+        String title = "Failed title";
 
         // When
-        kakaoTalkSender.sendMessage(accessToken, message);
+        kakaoTalkSender.sendMessage(accessToken, message, title);
 
         // Then
         verify(mockConnection).getResponseCode();

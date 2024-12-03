@@ -1,6 +1,5 @@
 package com.undefinedus.backend.scheduler.job;
 
-import com.undefinedus.backend.service.KakaoMessageService;
 import com.undefinedus.backend.service.KakaoTalkService;
 import jakarta.transaction.Transactional;
 import org.quartz.Job;
@@ -14,17 +13,14 @@ import org.springframework.stereotype.Component;
 public class KakaoTalkJob implements Job {
 
     @Autowired
-    private KakaoMessageService kakaoMessageService;
+    private KakaoTalkService kakaoTalkService;
 
-    // 기본 생성자 추가
     public KakaoTalkJob() {
     }
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        // 실행할 작업 내용
 
-
-
+        kakaoTalkService.sendKakaoTalk();
     }
 }
