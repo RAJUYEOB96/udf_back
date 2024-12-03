@@ -1,6 +1,8 @@
 package com.undefinedus.backend.scheduler;
 
 import java.io.BufferedReader;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -15,7 +17,7 @@ public class KakaoTalkSender {
 
     private static final String KAKAO_API_URL = "https://kapi.kakao.com/v2/api/talk/memo/default/send";
 
-    public void sendMessage(String accessToken, String message) {
+    public void sendMessage(String accessToken, String phrase, String title) {
         try {
             HttpURLConnection connection = createConnection();
 
@@ -24,7 +26,7 @@ public class KakaoTalkSender {
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
             connection.setDoOutput(true);
 
-            String payload = "template_object=" + createTemplateJson(message);
+            String payload = "template_object=" + createTemplateJson(phrase, title);
             try (OutputStream os = connection.getOutputStream()) {
                 os.write(payload.getBytes(StandardCharsets.UTF_8));
                 os.flush();
@@ -55,18 +57,20 @@ public class KakaoTalkSender {
         return (HttpURLConnection) url.openConnection();
     }
 
-    private String createTemplateJson(String message) {
-        // 메시지 텍스트 escaping 처리
-        message = message.replace("\"", "\\\"");
+    private String createTemplateJson(String message, String title) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
 
-        return "{"
-            + "\"object_type\": \"text\","
-            + "\"text\": \"" + message + "\","
-            + "\"link\": {"
-            + "\"web_url\": \"https://www.gongchaek.site/\","
-            + "\"mobile_web_url\": \"https://www.gongchaek.site/\""
-            + "},"
-            + "\"button_title\": \"확인\""
-            + "}";
+        rootNode.put("object_type", "text");
+        rootNode.put("text",  message + "\n\n\u300E " + title + " \u300F"); // 『 』
+
+        ObjectNode linkNode = mapper.createObjectNode();
+        linkNode.put("web_url", "https://www.gongchaek.site/");
+        linkNode.put("mobile_web_url", "https://www.gongchaek.site/");
+
+        rootNode.set("link", linkNode);
+        rootNode.put("button_title", "확인");
+
+        return mapper.writeValueAsString(rootNode);
     }
 }

@@ -47,13 +47,14 @@ public class KakaoTalkService {
 
             MyBookmark randomMyBookmark = myBookmarkList.get(index);
 
+            String title = randomMyBookmark.getAladinBook().getTitle();
             String phrase = randomMyBookmark.getPhrase();
 
             String newAccessToken = updateKakaoAccessToken(member, refreshToken);
 
             if (newAccessToken != null) {
                 log.info("회원 ID {} - 메시지: {}", memberId, phrase);
-                kakaoTalkSender.sendMessage(newAccessToken, phrase);
+                kakaoTalkSender.sendMessage(newAccessToken, phrase, title);
             }
         }
     }

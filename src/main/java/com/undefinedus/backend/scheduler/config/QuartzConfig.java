@@ -15,8 +15,6 @@ import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import org.quartz.CronScheduleBuilder;
@@ -118,7 +116,7 @@ public class QuartzConfig {
 
         Trigger repeatTrigger = TriggerBuilder.newTrigger()
             .withIdentity("KakaoTalkCronTrigger")
-            .withSchedule(CronScheduleBuilder.cronSchedule("0 0 12 * * ?"))
+            .withSchedule(CronScheduleBuilder.cronSchedule("0 0 12 * * ?")) // 오후 12시
             .build();
 
         scheduler.scheduleJob(kakaoTalkDetail, repeatTrigger);
