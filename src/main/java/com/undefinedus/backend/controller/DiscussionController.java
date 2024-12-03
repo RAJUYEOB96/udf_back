@@ -1,7 +1,7 @@
 package com.undefinedus.backend.controller;
 
 import com.undefinedus.backend.dto.MemberSecurityDTO;
-import com.undefinedus.backend.dto.request.DiscussionScrollRequestDTO;
+import com.undefinedus.backend.dto.request.discussionComment.DiscussionScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.exception.discussion.DiscussionException;
@@ -32,6 +32,7 @@ public class DiscussionController {
 
     private final DiscussionService discussionService;
 
+    // 발의 작성
     @PostMapping("/register")
     public ResponseEntity<ApiResponseDTO<Void>> discussionRegister(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
@@ -52,6 +53,7 @@ public class DiscussionController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(null));
     }
 
+    // 토론(토론 상태 값 입력시 입력한 상태의 토론 게시판) 목록 보기
     @GetMapping
     public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<DiscussionListResponseDTO>>> getDiscussionList(
         @ModelAttribute DiscussionScrollRequestDTO requestDTO) {
@@ -61,6 +63,7 @@ public class DiscussionController {
         return ResponseEntity.ok(ApiResponseDTO.success(response));
     }
 
+    // 토론, 발의 상세 보기
     @GetMapping("/detail")
     public ResponseEntity<ApiResponseDTO<DiscussionDetailResponseDTO>> getDiscussionDetail(
         @RequestParam("discussionId") Long discussionId
@@ -70,6 +73,7 @@ public class DiscussionController {
         return ResponseEntity.ok(ApiResponseDTO.success(discussionDetail));
     }
 
+    // 발의글에 찬성으로 참여하기
     @GetMapping("/joinAgree")
     public ResponseEntity<ApiResponseDTO<Void>> joinAgree(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
@@ -88,6 +92,7 @@ public class DiscussionController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(null));
     }
 
+    // 발의글에 반대로 참석하기
     @GetMapping("/joinDisagree")
     public ResponseEntity<ApiResponseDTO<Void>> joinDisagree(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
@@ -106,6 +111,7 @@ public class DiscussionController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(null));
     }
 
+    // 발의 상태일때만 수정하기
     @PatchMapping("/update")
     public ResponseEntity<ApiResponseDTO<Void>> discussionUpdate(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
@@ -124,6 +130,7 @@ public class DiscussionController {
         return ResponseEntity.ok().body(ApiResponseDTO.success(null));
     }
 
+    // 내가 만든 토론 삭제
     @DeleteMapping("/{discussionId}")
     public ResponseEntity<ApiResponseDTO<Void>> deleteDiscussion(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,

@@ -5,8 +5,9 @@ import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.entity.DiscussionComment;
 import com.undefinedus.backend.domain.entity.DiscussionParticipant;
 import com.undefinedus.backend.domain.entity.Member;
+import com.undefinedus.backend.domain.enums.DiscussionCommentStatus;
 import com.undefinedus.backend.domain.enums.VoteType;
-import com.undefinedus.backend.dto.request.DiscussionCommentsScrollRequestDTO;
+import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentsScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.exception.discussion.DiscussionNotFoundException;
 import com.undefinedus.backend.exception.discussionComment.DiscussionCommentNotFoundException;
@@ -18,7 +19,7 @@ import com.undefinedus.backend.repository.DiscussionParticipantRepository;
 import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentRequestDTO;
-import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentListResponseDTO;
+import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentResponseDTO;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -191,7 +192,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
     }
 
     @Override
-    public ScrollResponseDTO<DiscussionCommentListResponseDTO> getCommentList(
+    public ScrollResponseDTO<DiscussionCommentResponseDTO> getCommentList(
         DiscussionCommentsScrollRequestDTO discussionCommentsScrollRequestDTO) {
 
         List<DiscussionComment> discussionCommentList = discussionCommentRepository.findDiscussionCommentListWithScroll(
@@ -205,7 +206,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
         }
 
         // 결과를 담을 리스트
-        List<DiscussionCommentListResponseDTO> responseDTOList = new ArrayList<>();
+        List<DiscussionCommentResponseDTO> responseDTOList = new ArrayList<>();
 
         for (DiscussionComment discussionComment : discussionCommentList) {
             // 각 토론 댓글의 관련 정보를 추출
@@ -224,12 +225,13 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             boolean selected = discussionComment.isSelected();
             LocalDateTime createdDate = discussionComment.getCreatedDate();
             Long totalOrder = discussionComment.getTotalOrder();
+            DiscussionCommentStatus discussionCommentStatus = discussionComment.getDiscussionCommentStatus();
 
             Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId));
 
             // DTO 객체 생성 후 리스트에 추가
-            DiscussionCommentListResponseDTO dto = DiscussionCommentListResponseDTO.builder()
+            DiscussionCommentResponseDTO dto = DiscussionCommentResponseDTO.builder()
                 .commentId(commentId)
                 .discussionId(discussionId)
                 .memberId(memberId)
@@ -245,6 +247,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .dislike(dislikeCount)
                 .isSelected(selected)
                 .createTime(createdDate)
+                .discussionCommentStatus(String.valueOf(discussionCommentStatus))
                 .build();
 
             responseDTOList.add(dto);
@@ -256,7 +259,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             discussionCommentList.get(discussionCommentList.size() - 1)
                 .getId(); // lastId를 요청 DTO의 값이 아닌, 실제 조회된 마지막 항목의 ID로 설정
 
-        return ScrollResponseDTO.<DiscussionCommentListResponseDTO>withAll()
+        return ScrollResponseDTO.<DiscussionCommentResponseDTO>withAll()
             .content(responseDTOList)
             .hasNext(hasNext)
             .lastId(lastId) // 조회된 목록의 마지막 항목의 ID ? INDEX ?
@@ -389,5 +392,63 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
     private DiscussionParticipant findParticipantByDiscussionAndMember(Discussion discussion, Member member) {
         return discussionParticipantRepository.findByDiscussionAndMember(discussion, member)
             .orElseThrow(() -> new DiscussionParticipantNotFoundException("해당 참여자를 찾을 수 없습니다."));
+    }
+
+    public List<DiscussionCommentResponseDTO> getBest3CommentByCommentLikes(Long discussionId) {
+
+        List<DiscussionComment> bestCommentTop3List = discussionCommentRepository.findBest3CommentList(discussionId).orElseThrow(
+            () -> new DiscussionCommentNotFoundException("댓글을 찾을 수 없습니다.")
+        );
+
+        System.out.println(bestCommentTop3List);
+
+            // 결과를 담을 리스트
+            List<DiscussionCommentResponseDTO> responseDTOList = new ArrayList<>();
+
+            for (DiscussionComment discussionComment : bestCommentTop3List) {
+                // 각 토론 댓글의 관련 정보를 추출
+
+                Long commentId = discussionComment.getId();
+                Long memberId = discussionComment.getMember().getId();
+                Long parentId = discussionComment.getParentId();
+                Long order = discussionComment.getOrder();
+                boolean isChild = discussionComment.isChild();
+                VoteType voteType = discussionComment.getVoteType();
+                String content = discussionComment.getContent();
+                long likeCount = discussionComment.getLikes().stream()
+                    .filter(commentLike -> commentLike.isLike() == true).count();
+                long dislikeCount = discussionComment.getLikes().size() - likeCount;
+                boolean selected = discussionComment.isSelected();
+                LocalDateTime createdDate = discussionComment.getCreatedDate();
+                Long totalOrder = discussionComment.getTotalOrder();
+                DiscussionCommentStatus discussionCommentStatus = discussionComment.getDiscussionCommentStatus();
+
+                Member member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId));
+
+                // DTO 객체 생성 후 리스트에 추가
+                DiscussionCommentResponseDTO dto = DiscussionCommentResponseDTO.builder()
+                    .commentId(commentId)
+                    .discussionId(discussionId)
+                    .memberId(memberId)
+                    .nickname(member.getNickname())
+                    .honorific(member.getHonorific())
+                    .parentId(parentId)
+                    .order(order)
+                    .totalOrder(totalOrder)
+                    .isChild(isChild)
+                    .voteType(String.valueOf(voteType))
+                    .content(content)
+                    .like(likeCount)
+                    .dislike(dislikeCount)
+                    .isSelected(selected)
+                    .createTime(createdDate)
+                    .discussionCommentStatus(String.valueOf(discussionCommentStatus))
+                    .build();
+
+                responseDTOList.add(dto);
+            }
+
+            return responseDTOList;
     }
 }

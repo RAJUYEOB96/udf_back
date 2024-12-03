@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import java.sql.Clob;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -44,7 +46,8 @@ public class AladinBook {
     @Column(length = 4000, nullable = false)  // 책 소개가 매우 긴 경우가 많음
     private String fullDescription;   // 도서 소개
 
-    @Column(length = 5000, nullable = false)  // 책 소개가 매우 긴 경우가 많음
+    @Column(columnDefinition = "LONGTEXT")
+    @Lob // 책 소개가 매우 긴 경우가 많음 // 대용량의 텍스트 일때 사용하는 어노테이션
     private String fullDescription2;   // 출판사 제공 책소개  // gpt에게 책의 추가적인 정보를 넘겨주기 위해 필요
     
     @Column(length = 100, nullable = false)  // 출판사명은 적절

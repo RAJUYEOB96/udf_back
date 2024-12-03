@@ -2,8 +2,10 @@ package com.undefinedus.backend.repository;
 
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.repository.queryDSL.MemberRepositoryCustom;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -22,5 +24,19 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
     
     Optional<Member> findByNickname(String nickname);
     
-    Optional<Member> findByUsernameAndNickname(String kakaoId, String nickname);
+    // 아래는 initData할때 필요한 sql, 추후 삭제 될 수 있음
+    @Query("SELECT m FROM Member m " +
+            "LEFT JOIN FETCH m.followings " +
+            "LEFT JOIN FETCH m.followers " +
+            "WHERE m.username = :username")
+    Optional<Member> findByUsernameWithFollows(@Param("username") String username);
+    
+    // 아래는 initData할때 필요한 sql, 추후 삭제 될 수 있음
+    @Modifying
+    @Query(value = "DELETE FROM follow", nativeQuery = true)
+    void deleteAllFollows();
+
+//    // 모든 회원 중 isMessageToKakao = true인 회원들의 id를 가져옴
+//    @Query("select m.id from Member m where m.isMessageToKakao = true")
+//    List<Long> findMessageToKakaoMemberIdList();
 }

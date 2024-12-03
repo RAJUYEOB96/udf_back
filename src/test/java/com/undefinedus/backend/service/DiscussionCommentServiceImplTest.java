@@ -9,7 +9,7 @@ import com.undefinedus.backend.domain.entity.DiscussionComment;
 import com.undefinedus.backend.domain.entity.DiscussionParticipant;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.enums.VoteType;
-import com.undefinedus.backend.dto.request.DiscussionCommentsScrollRequestDTO;
+import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentsScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.exception.discussion.DiscussionNotFoundException;
 import com.undefinedus.backend.exception.discussionComment.DiscussionCommentNotFoundException;
@@ -20,7 +20,7 @@ import com.undefinedus.backend.repository.DiscussionParticipantRepository;
 import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentRequestDTO;
-import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentListResponseDTO;
+import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentResponseDTO;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -48,9 +48,72 @@ class DiscussionCommentServiceImplTest {
     @InjectMocks
     private DiscussionCommentServiceImpl discussionCommentService;
 
+    Member member1;
+    Member member2;
+    Discussion discussion;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
+        // Member 객체 생성
+        member1 = Member.builder()
+            .id(1L)
+            .username("user1@example.com")
+            .nickname("User1")
+            .build();
+        member2 = Member.builder()
+            .id(2L)
+            .username("user2@example.com")
+            .nickname("User2")
+            .build();
+
+        // Discussion 객체 생성
+        discussion = Discussion.builder()
+            .id(1L)
+            .title("Test Discussion")
+            .content("This is a test discussion")
+            .member(member1)
+            .build();
+
+        // DiscussionComment 객체 생성
+        DiscussionComment comment1 = DiscussionComment.builder()
+            .id(1L)
+            .discussion(discussion)
+            .member(member1)
+            .content("Comment 1")
+            .voteType(VoteType.AGREE)
+            .build();
+        DiscussionComment comment2 = DiscussionComment.builder()
+            .id(2L)
+            .discussion(discussion)
+            .member(member2)
+            .content("Comment 2")
+            .voteType(VoteType.DISAGREE)
+            .build();
+
+        // CommentLike 객체 생성
+        CommentLike like1 = CommentLike.builder()
+            .id(1L)
+            .comment(comment1)
+            .member(member2)
+            .isLike(true)
+            .build();
+        CommentLike like2 = CommentLike.builder()
+            .id(2L)
+            .comment(comment2)
+            .member(member1)
+            .isLike(false)
+            .build();
+
+        // Repository mocking
+        when(memberRepository.findById(1L)).thenReturn(Optional.of(member1));
+        when(memberRepository.findById(2L)).thenReturn(Optional.of(member2));
+        when(discussionRepository.findById(1L)).thenReturn(Optional.of(discussion));
+        when(discussionCommentRepository.findById(1L)).thenReturn(Optional.of(comment1));
+        when(discussionCommentRepository.findById(2L)).thenReturn(Optional.of(comment2));
+        when(commentLikeRepository.findByCommentAndMember(comment1, member2)).thenReturn(Optional.of(like1));
+        when(commentLikeRepository.findByCommentAndMember(comment2, member1)).thenReturn(Optional.of(like2));
     }
 
     @Test
@@ -127,20 +190,20 @@ class DiscussionCommentServiceImplTest {
         Discussion discussion = new Discussion();
         discussion.changeId(1L); // 토론 ID 설정
 
-        DiscussionComment comment1 = new DiscussionComment();
-        comment1.changeId(1L);
-        comment1.changeDiscussion(discussion);
-        comment1.changeMember(member); // 멤버 설정
-        comment1.changeVoteType(VoteType.AGREE);
-        comment1.changeContent("Test Comment");
-        comment1.setCreatedDate(LocalDateTime.now());
+        DiscussionComment comment1 = DiscussionComment.builder()
+            .id(1L)
+            .discussion(discussion)
+            .member(member)
+            .voteType(VoteType.AGREE)
+            .content("Test Comment")
+            .build();
 
         List<DiscussionComment> commentList = Arrays.asList(comment1);
 
         when(discussionCommentRepository.findDiscussionCommentListWithScroll(any())).thenReturn(commentList);
         when(memberRepository.findById(1L)).thenReturn(Optional.of(member)); // 정확한 멤버 ID로 설정
 
-        ScrollResponseDTO<DiscussionCommentListResponseDTO> result = discussionCommentService.getCommentList(requestDTO);
+        ScrollResponseDTO<DiscussionCommentResponseDTO> result = discussionCommentService.getCommentList(requestDTO);
 
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
@@ -301,5 +364,57 @@ class DiscussionCommentServiceImplTest {
 
         // 반대 상태인 참여자 삭제 확인
         verify(discussionParticipantRepository, times(1)).delete(participant);
+    }
+
+    @Test
+    @DisplayName("댓글 좋아요 수가 많은 상위 3개의 댓글을 조회하는 테스트")
+    void testGetTop3CommentByLikes() {
+        // Given
+        DiscussionComment comment1 = DiscussionComment.builder()
+            .id(1L)
+            .discussion(discussion) // 적절한 토론 객체를 설정
+            .member(member1) // 적절한 멤버 객체를 설정
+            .content("댓글 333")
+            .likes(Arrays.asList(
+                CommentLike.builder().isLike(true).build(),  // 좋아요
+                CommentLike.builder().isLike(true).build(),  // 좋아요
+                CommentLike.builder().isLike(false).build()  // 싫어요
+            ))
+            .build();
+
+        DiscussionComment comment2 = DiscussionComment.builder()
+            .id(2L)
+            .discussion(discussion) // 적절한 토론 객체를 설정
+            .member(member1) // 적절한 멤버 객체를 설정
+            .content("댓글 2")
+            .likes(Arrays.asList(
+                CommentLike.builder().isLike(true).build(),  // 좋아요
+                CommentLike.builder().isLike(false).build(), // 싫어요
+                CommentLike.builder().isLike(false).build()  // 싫어요
+            ))
+            .build();
+
+        DiscussionComment comment3 = DiscussionComment.builder()
+            .id(3L)
+            .discussion(discussion) // 적절한 토론 객체를 설정
+            .member(member2) // 적절한 멤버 객체를 설정
+            .content("댓글 3")
+            .likes(Arrays.asList(
+                CommentLike.builder().isLike(true).build(),  // 좋아요
+                CommentLike.builder().isLike(true).build(),   // 좋아요
+                CommentLike.builder().isLike(true).build(),   // 좋아요
+                CommentLike.builder().isLike(true).build()    // 좋아요
+            ))
+            .build();
+
+        List<DiscussionComment> bestCommentTop3List = Arrays.asList(comment3, comment1, comment2);
+
+        when(discussionCommentRepository.findBest3CommentList(discussion.getId())).thenReturn(
+            Optional.of(bestCommentTop3List));
+
+        List<DiscussionCommentResponseDTO> results = discussionCommentService.getBest3CommentByCommentLikes(discussion.getId());
+        for (DiscussionCommentResponseDTO dto : results) {
+            System.out.println("dto = " + dto);
+        }
     }
 }

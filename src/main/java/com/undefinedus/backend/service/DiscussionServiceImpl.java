@@ -6,7 +6,7 @@ import com.undefinedus.backend.domain.entity.DiscussionParticipant;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
-import com.undefinedus.backend.dto.request.DiscussionScrollRequestDTO;
+import com.undefinedus.backend.dto.request.discussionComment.DiscussionScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.exception.aladinBook.AladinBookNotFoundException;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
@@ -61,7 +61,8 @@ public class DiscussionServiceImpl implements DiscussionService {
         MyBook myBook = myBookRepository.findByMemberIdAndIsbn13(memberId, isbn13)
             .orElseThrow(() -> new BookNotFoundException("해당 책을 찾을 수 없습니다. : " + isbn13));
 
-        Discussion discussion = Discussion.builder().myBook(myBook)  // MyBook 객체
+        Discussion discussion = Discussion.builder()
+            .myBook(myBook)  // MyBook 객체
             .member(member)  // Member 객체
             .title(discussionRegisterRequestDTO.getTitle())
             .content(discussionRegisterRequestDTO.getContent()).status(DiscussionStatus.PROPOSED)
@@ -74,7 +75,7 @@ public class DiscussionServiceImpl implements DiscussionService {
 
         // 상태 변경 작업 스케줄링
         try {
-            quartzConfig.scheduleJobs(savedDiscussion.getStartDate(), savedDiscussion.getId());
+            quartzConfig.scheduleDiscussionJobs(savedDiscussion.getStartDate(), savedDiscussion.getId());
         } catch (SchedulerException e) {
             log.error(
                 "Failed to schedule status change jobs for discussion: " + savedDiscussion.getId(),
@@ -126,6 +127,8 @@ public class DiscussionServiceImpl implements DiscussionService {
             Long views = discussion.getViews();
             Long discussionId = discussion.getId();
             String isbn13 = discussion.getMyBook().getIsbn13();
+            LocalDateTime startDateTime = discussion.getStartDate();
+            LocalDateTime closedAt = discussion.getClosedAt();
 
             AladinBook aladinBook = aladinBookRepository.findByIsbn13(isbn13).orElseThrow(
                 () -> new AladinBookNotFoundException("없는 ISBN13 입니다. : " + isbn13)
@@ -143,12 +146,13 @@ public class DiscussionServiceImpl implements DiscussionService {
                 .agree(agree)
                 .disagree(disagree)
                 .createdDate(createdDate)
+                .startDateTime(startDateTime)
+                .closedAt(closedAt)
                 .views(views)
                 .cover(cover)
                 .status(String.valueOf(discussion.getStatus()))
-                // todo: gpt에게 결과물을 받고 구현 후 꼭 넣어야 함 v
-//                .agreePercent()
-//                .disagreePercent()
+                .agreePercent(discussion.getAgreePercent())
+                .disagreePercent(discussion.getDisagreePercent())
                 .build();
 
             responseDTOList.add(dto);
@@ -202,6 +206,8 @@ public class DiscussionServiceImpl implements DiscussionService {
             .commentCount(savedDiscussion.getComments().stream().count())
             .cover(discussionBook.getCover())
             .status(String.valueOf(savedDiscussion.getStatus()))
+            .agreePercent(savedDiscussion.getAgreePercent())
+            .disagreePercent(savedDiscussion.getDisagreePercent())
             .build();
 
         return discussionDetailResponseDTO;
@@ -235,7 +241,7 @@ public class DiscussionServiceImpl implements DiscussionService {
 
         Discussion save = discussionRepository.save(discussion);
 
-        quartzConfig.scheduleJobs(save.getStartDate(), save.getId());
+        quartzConfig.scheduleDiscussionJobs(save.getStartDate(), save.getId());
 
         return save.getId();
     }

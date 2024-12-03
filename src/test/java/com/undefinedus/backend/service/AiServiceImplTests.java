@@ -33,21 +33,24 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 
 @Disabled("API 키가 필요한 테스트 - 로컬에서 API-KEY로 확인 후 올림, 테스트 application.yml은 키가 없어서 에러남")
 @SpringBootTest
 @Log4j2
 @Transactional
-class ChatGPTServiceImplTests {
+class AiServiceImplTests {
     
     @Autowired
     private ChatClient chatClient;
 
     @Autowired
-    private ChatGPTService chatGPTService;
+    private WebClient webClient;
+
+    @Autowired
+    private AiService aiService;
 
     @Autowired
     private MemberRepository memberRepository;
@@ -188,7 +191,7 @@ class ChatGPTServiceImplTests {
 
         Long memberId = 2L;
 
-        List<AladinApiResponseDTO> booksByIsbn = chatGPTService.getGPTRecommendedBookList(
+        List<AladinApiResponseDTO> booksByIsbn = aiService.getPerplexityRecommendBookList(
             memberId);
 
         System.out.println(booksByIsbn);
@@ -200,10 +203,10 @@ class ChatGPTServiceImplTests {
     public void getDiscussionGPT() throws IOException {
 
         // When
-        chatGPTService.discussionInfoToGPT(testDiscussion.getId());
+        aiService.discussionInfoToGPT(testDiscussion.getId());
 
         // Then
-        DiscussionGPTResponseDTO result = chatGPTService.getDiscussionGPTResult(testDiscussion.getId());
+        DiscussionGPTResponseDTO result = aiService.getDiscussionGPTResult(testDiscussion.getId());
 
         assertNotNull(result);
         System.out.println("result = " + result);

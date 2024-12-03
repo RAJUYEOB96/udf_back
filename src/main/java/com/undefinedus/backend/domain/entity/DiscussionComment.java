@@ -1,5 +1,6 @@
 package com.undefinedus.backend.domain.entity;
 
+import com.undefinedus.backend.domain.enums.DiscussionCommentStatus;
 import com.undefinedus.backend.domain.enums.VoteType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -83,7 +84,12 @@ public class DiscussionComment extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private boolean isSelected = false;  // 채택된 답변인지, 댓글의 최상위로 좋아요 많이 받은 3개를 올리기 위한? 잘 모르겠음
-    
+
+    // === 신고 관련 === //
+    @Column(nullable = false)
+    @Builder.Default
+    private DiscussionCommentStatus discussionCommentStatus = DiscussionCommentStatus.ACTIVE; // 누적 신고 3회 이상시 자동으로 BLOCKED 처리 됨
+
     // === Soft Delete 관련 === //
     @Column(nullable = false)
     @Builder.Default
@@ -104,15 +110,8 @@ public class DiscussionComment extends BaseEntity {
         this.groupId = groupId;
     }
 
-    public void changeMember(Member member) {
-        this.member = member;
-    }
-
-    public void changeVoteType(VoteType voteType) {
-        this.voteType = voteType;
-    }
-
-    public void changeContent(String content) {
-        this.content = content;
+    public void changeDiscussionCommentStatus(
+        DiscussionCommentStatus discussionCommentStatus) {
+        this.discussionCommentStatus = discussionCommentStatus;
     }
 }

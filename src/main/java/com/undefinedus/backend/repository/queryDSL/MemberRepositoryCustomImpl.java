@@ -6,6 +6,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.QFollow;
 import com.undefinedus.backend.domain.entity.QMember;
+import com.undefinedus.backend.domain.enums.MemberType;
+import com.undefinedus.backend.domain.entity.QMyBookmark;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.exception.social.TabConditionNotEqualException;
 import jakarta.persistence.EntityManager;
@@ -31,6 +33,9 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
         // memberId 와 일치 하지 않는 것만 들고 오기 위해 ne (not equal)
         builder.and(member.id.ne(memberId));
         
+        // ADMIN role을 가지고 있지 않는 것만 들고 오기
+        builder.and(member.memberRoleList.contains(MemberType.ADMIN).not());
+
         // 검색어 처리 (닉네임 검색)
         if (StringUtils.hasText(requestDTO.getSearch())) {
             // 검색어로 시작하는 닉네임들만 가져오기
@@ -81,6 +86,9 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
         // memberId 와 일치 하지 않는 것만 들고 오기 위해 ne (not equal)
         builder.and(member.id.ne(memberId));
         
+        // ADMIN role을 가지고 있지 않는 것만 들고 오기
+        builder.and(member.memberRoleList.contains(MemberType.ADMIN).not());
+
         // 검색어 처리 (닉네임 검색)
         if (StringUtils.hasText(requestDTO.getSearch())) {
             // 검색어로 시작하는 닉네임들만 가져오기
@@ -210,4 +218,26 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
         } else {
             throw new TabConditionNotEqualException("해당 TabCondition이 일치하지 않습니다. : " + requestDTO.getTabCondition());
         }    }
+
+
+    // 모든 회원 중 isMessageToKakao = true인 회원들의 id를 가져옴
+    public List<Long> findMessageToKakaoMemberIdList() {
+        QMember member = QMember.member;
+        QMyBookmark myBookmark = QMyBookmark.myBookmark;
+
+        BooleanBuilder builder = new BooleanBuilder();
+
+        builder.and(member.isMessageToKakao.eq(true));
+
+
+        return queryFactory
+            .select(member.id).distinct()
+            .from(member)
+            .join(myBookmark).on(myBookmark.member.eq(member))
+            .where(member.isMessageToKakao.eq(true)
+                .and(myBookmark.phrase.isNotNull())
+                .and(myBookmark.phrase.ne("")))
+            .fetch();
+    }
+
 }

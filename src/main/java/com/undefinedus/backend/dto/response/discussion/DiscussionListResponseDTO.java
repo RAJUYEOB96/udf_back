@@ -24,6 +24,10 @@ public class DiscussionListResponseDTO {
 
     private LocalDateTime createdDate; // BaseEntity 에서 뽑아써야 함
 
+    private LocalDateTime startDateTime; // 토론 시작 시간
+
+    private LocalDateTime closedAt;  // 토론 끝나는 시간
+
     private Long views; // 조회 수
 
     private Long commentCount; // 댓글 수

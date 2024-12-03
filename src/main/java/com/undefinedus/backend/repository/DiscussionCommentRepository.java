@@ -1,9 +1,9 @@
 package com.undefinedus.backend.repository;
 
 import com.undefinedus.backend.domain.entity.DiscussionComment;
-import com.undefinedus.backend.domain.entity.DiscussionParticipant;
 import com.undefinedus.backend.domain.enums.VoteType;
 import com.undefinedus.backend.repository.queryDSL.DiscussionCommentsRepositoryCustom;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -53,4 +53,19 @@ public interface DiscussionCommentRepository extends JpaRepository<DiscussionCom
         + " where d.id = :discussionId"
         + " and dc.voteType = :voteType")
     long countCommentsForDiscussionAndVoteType(@Param("discussionId") Long discussionId, @Param("voteType") VoteType voteType);
+
+    // SUM(CASE WHEN l.isLike = false THEN 1 ELSE 0 END) ASC: l.isLike가 false인 like 수를 계산하여 싫어요 수가 적은 순서로 정렬
+    @Query(nativeQuery = true,
+        value = "SELECT dc.* "
+            + " FROM discussion_comment dc"
+            + " JOIN comment_like l ON dc.id = l.comment_id"
+            + " WHERE dc.discussion_id = :discussionId"
+            + " AND dc.discussion_comment_status = 'ACTIVE'"
+            + " GROUP BY dc.id"
+            + " ORDER BY "
+            + " COUNT(CASE WHEN l.is_like = true THEN 1 ELSE null END) DESC,"
+            + " SUM(CASE WHEN l.is_like = false THEN 1 ELSE 0 END) ASC,"
+            + " dc.created_date ASC"
+            + " LIMIT 3")
+    Optional<List<DiscussionComment>> findBest3CommentList(@Param("discussionId") Long discussionId);
 }

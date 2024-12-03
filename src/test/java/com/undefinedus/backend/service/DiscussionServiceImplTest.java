@@ -19,7 +19,7 @@ import com.undefinedus.backend.domain.entity.DiscussionParticipant;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
-import com.undefinedus.backend.dto.request.DiscussionScrollRequestDTO;
+import com.undefinedus.backend.dto.request.discussionComment.DiscussionScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.repository.AladinBookRepository;
 import com.undefinedus.backend.repository.DiscussionParticipantRepository;
@@ -111,7 +111,7 @@ class DiscussionServiceImplTest {
         when(discussionRepository.save(any(Discussion.class))).thenReturn(discussion);
 
         // Quartz Config Mock
-        doNothing().when(quartzConfig).scheduleJobs(any(LocalDateTime.class), anyLong());
+        doNothing().when(quartzConfig).scheduleDiscussionJobs(any(LocalDateTime.class), anyLong());
 
         // 메서드 호출
         Long discussionId = discussionServiceImpl.discussionRegister(memberId, isbn13,
@@ -122,7 +122,7 @@ class DiscussionServiceImplTest {
         assertEquals(1L, discussionId);  // 반환된 토론 ID가 1L인지 확인
 
         // quartzConfig.scheduleJobs 호출 여부 검증
-        verify(quartzConfig, times(1)).scheduleJobs(any(LocalDateTime.class), anyLong());
+        verify(quartzConfig, times(1)).scheduleDiscussionJobs(any(LocalDateTime.class), anyLong());
 
         // discussionRepository.save 호출 여부 검증
         verify(discussionRepository, times(1)).save(any(Discussion.class));
@@ -183,6 +183,8 @@ class DiscussionServiceImplTest {
             System.out.println("조회수: " + dto.getViews());
             System.out.println("닉네임: " + dto.getMemberName());
             System.out.println("생성일자: " + dto.getCreatedDate());
+            System.out.println("토론 예정 일자 : " + dto.getStartDateTime());
+            System.out.println("토론 끝나는 일자 : " + dto.getClosedAt());
             System.out.println("제목: " + dto.getTitle());
             System.out.println("찬성: " + dto.getAgree());
             System.out.println("반대: " + dto.getDisagree());
@@ -254,7 +256,7 @@ class DiscussionServiceImplTest {
         when(myBookRepository.findByMemberIdAndIsbn13(memberId, isbn13)).thenReturn(java.util.Optional.of(mockMyBook));
         when(discussionRepository.findById(discussionId)).thenReturn(java.util.Optional.of(mockDiscussion));
         when(discussionRepository.save(any(Discussion.class))).thenReturn(mockDiscussion);
-        doNothing().when(quartzConfig).scheduleJobs(any(LocalDateTime.class), anyLong());
+        doNothing().when(quartzConfig).scheduleDiscussionJobs(any(LocalDateTime.class), anyLong());
 
         // 메서드 호출
         Long modifiedDiscussionId = discussionServiceImpl.discussionUpdate(memberId, isbn13, discussionId, requestDTO);
@@ -265,7 +267,7 @@ class DiscussionServiceImplTest {
 
         // Mock 객체 호출 여부 검증
         verify(discussionRepository, times(1)).save(any(Discussion.class));
-        verify(quartzConfig, times(1)).scheduleJobs(any(LocalDateTime.class), anyLong());
+        verify(quartzConfig, times(1)).scheduleDiscussionJobs(any(LocalDateTime.class), anyLong());
 
         // 업데이트된 값 검증
         assertEquals("Updated Title", mockDiscussion.getTitle());

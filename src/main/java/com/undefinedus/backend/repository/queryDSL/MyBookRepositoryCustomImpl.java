@@ -116,4 +116,27 @@ public class MyBookRepositoryCustomImpl implements MyBookRepositoryCustom{
                 .where(builder)
                 .fetchOne();
     }
+
+    // 검색한 연도의 COMPLETED한 책 정보 가져오기
+    @Override
+    public List<MyBook> findCompletedBooksByYear(Integer year, Long memberId) {
+        QMyBook myBook = QMyBook.myBook;
+
+        BooleanBuilder builder = new BooleanBuilder();
+
+        // Member 필터링 - 필수 조건
+        builder.and(myBook.member.id.eq(memberId));
+
+        // 해당 연도 필터링
+        builder.and(myBook.endDate.year().eq(year));
+
+        // 상태가 'COMPLETED'인 책만 필터링
+        builder.and(myBook.status.eq(BookStatus.COMPLETED));
+
+        return queryFactory
+            .selectFrom(myBook)
+            .leftJoin(myBook.aladinBook).fetchJoin()
+            .where(builder)
+            .fetch();
+    }
 }
