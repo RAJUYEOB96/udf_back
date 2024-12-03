@@ -1,5 +1,6 @@
 package com.undefinedus.backend.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.domain.entity.Discussion;
@@ -10,8 +11,8 @@ import com.undefinedus.backend.dto.response.discussion.DiscussionGPTResponseDTO;
 import com.undefinedus.backend.exception.discussion.DiscussionNotFoundException;
 import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MyBookRepository;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,79 +20,111 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 @RequiredArgsConstructor
-public class ChatGPTServiceImpl implements ChatGPTService {
+public class AiServiceImpl implements AiService {
 
     private final MyBookRepository myBookRepository;
     private final ChatClient chatClient;
     private final AladinBookService aladinBookService;
     private final DiscussionRepository discussionRepository;
+    private final WebClient webClient;
 
-    @Value("classpath:/promptTemplates/questionPromptTemplate.st")
-    Resource questionPromptTemplate;
+    private static final String API_URL = "https://api.perplexity.ai/chat/completions";
 
-    @Value("classpath:/promptTemplates/testPromptTemplate.st")
-    Resource testPromptTemplate;
+    @Value("${spring.ai.perplexity.api-key}")
+    private String apiKey;
 
+    // todo: 테스트 코드 만들어야 함
     @Override
-    public List<AladinApiResponseDTO> getGPTRecommendedBookList(Long memberId) {
-        // GPT 추천 ISBN 목록 가져오기
-        List<String> isbnList = getGPTRecommendedBookIsbn13List(memberId);
-
-        // ISBN 리스트에서 각 ISBN에 대해 Aladin API를 호출하여 결과를 합침
+    public List<AladinApiResponseDTO> getPerplexityRecommendBookList(Long memberId) {
         List<AladinApiResponseDTO> allBooks = new ArrayList<>();
-        for (String isbn : isbnList) {
-            // 각 ISBN을 개별적으로 검색
-            List<AladinApiResponseDTO> books = aladinBookService.detailAladinAPI(isbn);
-            if (books != null) {
-                allBooks.addAll(books);
-                if (allBooks.size() >= 5) {
-                    break;
+        List<String> isbnList = new ArrayList<>();
+
+        while (allBooks.size() < 5) {
+            // Perplexity API에서 ISBN 목록 가져오기
+            List<String> isbn13List = memberBookIsbn13ListToPerplexity(memberId);
+
+            isbnList.addAll(isbn13List);
+
+            for (String isbn : isbnList) {
+                List<AladinApiResponseDTO> books = aladinBookService.detailAladinAPI(isbn);
+                if (books != null && !books.isEmpty()) {
+                    allBooks.add(books.get(0));
+                    if (allBooks.size() >= 5) {
+                        break;
+                    }
                 }
-            } // 각 검색 결과를 모두 합침
+            }
+
+            // 이미 처리한 ISBN 제거
+            isbnList.clear();
         }
 
-        return allBooks; // 최종적으로 모든 책을 반환
+        return allBooks.subList(0, Math.min(allBooks.size(), 5));
     }
 
-    private List<String> getGPTRecommendedBookIsbn13List(Long memberId) {
+    // Perplexity는 검색이 가능해서 isbn13을 추천 받을 수 있음
+    private List<String> memberBookIsbn13ListToPerplexity(Long memberId) {
+        List<String> best5Isbn13ByMemberId = myBookRepository.findTop5Isbn13ByMemberId(memberId);
+        String isbn13List = String.join(", ", best5Isbn13ByMemberId);
 
-        List<String> top5Isbn13ByMemberId = myBookRepository.findTop5Isbn13ByMemberId(memberId);
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", "llama-3.1-sonar-small-128k-online");
+        requestBody.put("messages", Arrays.asList(
+            Map.of("role", "user", "content", "Search for books similar to the ones I provide by their ISBN13 numbers, " +
+                "and recommend exactly five different books. " +
+                "The recommended books must be different from the provided books and should not have duplicate ISBN13 numbers among them. " +
+                "Please ensure the books are available on Aladin, focusing specifically on domestic (Korean) publications. " +
+                "If the provided books belong to fewer than five categories, you may select books from available categories " +
+                "and allow 2 to 4 categories to be duplicated to ensure a total of five recommendations " +
+                "while including all categories from the provided books. " +
+                "If the books belong to five or more categories, select one book per category for a total of five recommendations. " +
+                "Output only the ISBN13 numbers of the five recommended books, each on a new line, without any prefixes, explanations, or labels. "
+                + "Please recommend new ISBN numbers different from the provided ISBN13s." +
+                "The isbn13 list is: " + isbn13List)
+        ));
 
-        String isbn13List = String.join(", ", top5Isbn13ByMemberId);
+        System.out.println("isbn13List = " + isbn13List);
 
-        String answerText = chatClient.prompt()
-            .user(
-                userSpec -> userSpec
-                    .text(testPromptTemplate)
-                    .param("isbn13", isbn13List))
-            .call()
-            .content();
+        String response = webClient.post()
+            .uri(API_URL)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+            .bodyValue(requestBody)
+            .retrieve()
+            .bodyToMono(String.class)
+            .block();
 
-        System.out.println("answerText = " + answerText);
+        System.out.println("response = " + response);
 
-        return parseIsbn13FromAnswer(answerText);
+        return parseIsbn13FromAnswer(response);
     }
 
-    private List<String> parseIsbn13FromAnswer(String answerText) {
-        System.out.println("answerText = " + answerText);
-
-        // "isbn :"을 제거하고, 쉼표로 구분된 ISBN 번호만 추출
-        return List.of(answerText.replace("isbn :", "").split("\\s+"))
-            .stream()
-            .map(String::trim)  // 공백 제거
-            .filter(isbn -> !isbn.isEmpty())  // 빈 문자열은 제외
-            .collect(Collectors.toList());
+    private List<String> parseIsbn13FromAnswer(String response) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(response);
+            String content = jsonNode.path("choices").get(0).path("message").path("content").asText();
+            return Arrays.stream(content.split("\n"))
+                .map(String::trim)
+                .filter(isbn -> !isbn.isEmpty())
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("ISBN13 파싱 실패: " + e.getMessage(), e);
+        }
     }
 
 
     @Override
     @Transactional
+    // gpt는 사람의 말을 이해하고 답변하는데 맞추어져 있음
     public void discussionInfoToGPT(Long discussionId) {
         Discussion discussion = discussionRepository.findById(discussionId)
             .orElseThrow(() -> new DiscussionNotFoundException("해당 토론을 찾을 수 없습니다."));
@@ -101,8 +134,6 @@ public class ChatGPTServiceImpl implements ChatGPTService {
             discussion.getMyBook().getAladinBook());
 
         String information = formatAladinBookToJson(aladinBookDTO); // 변환된 DTO를 JSON으로 변환
-
-        System.out.println("information = " + information);
 
         String title = discussion.getTitle();
 

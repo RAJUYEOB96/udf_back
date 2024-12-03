@@ -122,9 +122,6 @@ public class Member extends BaseEntity {
 
     // === 메시지 전송을 위한 token === //
     @Column
-    private String kakaoAccessToken;
-
-    @Column
     private String kakaoRefreshToken;
 
     // 알림 관련은 한달안에 알림 기능까지 넣기는 빡세다고 생각 다음 버전 만들시 추가 예정
@@ -157,11 +154,6 @@ public class Member extends BaseEntity {
     public void setNickname(
         @Size(min = 2, max = 10) String nickname) {
         this.nickname = nickname;
-    }
-
-    // todo: 확인 후 만들기
-    public void updateKakaoAccessToken(String kakaoAccessToken) {
-        this.kakaoAccessToken = kakaoAccessToken;
     }
 
     public void updateKakaoRefreshToken(String kakaoRefreshToken) {

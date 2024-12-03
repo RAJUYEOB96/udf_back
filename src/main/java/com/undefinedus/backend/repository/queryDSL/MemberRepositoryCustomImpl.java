@@ -7,6 +7,7 @@ import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.QFollow;
 import com.undefinedus.backend.domain.entity.QMember;
 import com.undefinedus.backend.domain.enums.MemberType;
+import com.undefinedus.backend.domain.entity.QMyBookmark;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.exception.social.TabConditionNotEqualException;
 import jakarta.persistence.EntityManager;
@@ -34,7 +35,7 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
         
         // ADMIN role을 가지고 있지 않는 것만 들고 오기
         builder.and(member.memberRoleList.contains(MemberType.ADMIN).not());
-        
+
         // 검색어 처리 (닉네임 검색)
         if (StringUtils.hasText(requestDTO.getSearch())) {
             // 검색어로 시작하는 닉네임들만 가져오기
@@ -87,7 +88,7 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
         
         // ADMIN role을 가지고 있지 않는 것만 들고 오기
         builder.and(member.memberRoleList.contains(MemberType.ADMIN).not());
-        
+
         // 검색어 처리 (닉네임 검색)
         if (StringUtils.hasText(requestDTO.getSearch())) {
             // 검색어로 시작하는 닉네임들만 가져오기
@@ -227,10 +228,14 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
 
         builder.and(member.isMessageToKakao.eq(true));
 
+
         return queryFactory
-            .select(member.id) // member의 id만 선택
+            .select(member.id).distinct()
             .from(member)
-            .where(builder)
+            .join(myBookmark).on(myBookmark.member.eq(member))
+            .where(member.isMessageToKakao.eq(true)
+                .and(myBookmark.phrase.isNotNull())
+                .and(myBookmark.phrase.ne("")))
             .fetch();
     }
 
