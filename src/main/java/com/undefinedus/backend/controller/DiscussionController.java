@@ -1,14 +1,14 @@
 package com.undefinedus.backend.controller;
 
 import com.undefinedus.backend.dto.MemberSecurityDTO;
+import com.undefinedus.backend.dto.request.discussion.DiscussionRegisterRequestDTO;
+import com.undefinedus.backend.dto.request.discussion.DiscussionUpdateRequestDTO;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
-import com.undefinedus.backend.exception.discussion.DiscussionException;
-import com.undefinedus.backend.dto.request.discussion.DiscussionUpdateRequestDTO;
-import com.undefinedus.backend.dto.request.discussion.DiscussionRegisterRequestDTO;
 import com.undefinedus.backend.dto.response.discussion.DiscussionDetailResponseDTO;
 import com.undefinedus.backend.dto.response.discussion.DiscussionListResponseDTO;
+import com.undefinedus.backend.exception.discussion.DiscussionException;
 import com.undefinedus.backend.service.DiscussionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -68,7 +68,8 @@ public class DiscussionController {
     public ResponseEntity<ApiResponseDTO<DiscussionDetailResponseDTO>> getDiscussionDetail(
         @RequestParam("discussionId") Long discussionId
     ) {
-        DiscussionDetailResponseDTO discussionDetail = discussionService.getDiscussionDetail(discussionId);
+        DiscussionDetailResponseDTO discussionDetail = discussionService.getDiscussionDetail(
+            discussionId);
 
         return ResponseEntity.ok(ApiResponseDTO.success(discussionDetail));
     }
@@ -120,7 +121,8 @@ public class DiscussionController {
         @RequestBody DiscussionUpdateRequestDTO discussionUpdateRequestDTO) {
 
         try {
-            discussionService.discussionUpdate(memberSecurityDTO.getId(), isbn13,  discussionId, discussionUpdateRequestDTO);
+            discussionService.discussionUpdate(memberSecurityDTO.getId(), isbn13, discussionId,
+                discussionUpdateRequestDTO);
 
         } catch (Exception e) {
 

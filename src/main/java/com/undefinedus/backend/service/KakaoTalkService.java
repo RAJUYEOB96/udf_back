@@ -10,7 +10,12 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.json.JSONObject;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
@@ -28,6 +33,7 @@ public class KakaoTalkService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
+    // 카카오톡으로
     public void sendKakaoTalk() {
 
         List<Long> kakaoMemberIdList = memberRepository.findMessageToKakaoMemberIdList();
@@ -59,6 +65,7 @@ public class KakaoTalkService {
         }
     }
 
+    // 카카오톡 accessToken 재발급
     private String updateKakaoAccessToken(Member member, String refreshToken) {
         String tokenUrl = "https://kauth.kakao.com/oauth/token";
         String restApiKey = "433f010a1fa5963afe5402f4fa79bbb4";
@@ -77,7 +84,8 @@ public class KakaoTalkService {
             HttpEntity<String> entity = new HttpEntity<>(postParams, headers);
 
             // RestTemplate을 사용하여 요청 전송
-            ResponseEntity<String> response = restTemplate.exchange(tokenUrl, HttpMethod.POST, entity, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(tokenUrl, HttpMethod.POST,
+                entity, String.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
                 JSONObject jsonResponse = new JSONObject(response.getBody());
@@ -94,7 +102,8 @@ public class KakaoTalkService {
                 memberRepository.save(member);
                 return newAccessToken;
             } else {
-                log.error("액세스 토큰 갱신 실패. 응답 코드: {}, 응답 본문: {}", response.getStatusCode(), response.getBody());
+                log.error("액세스 토큰 갱신 실패. 응답 코드: {}, 응답 본문: {}", response.getStatusCode(),
+                    response.getBody());
                 return null;
             }
         } catch (HttpClientErrorException.Unauthorized e) {
@@ -102,7 +111,8 @@ public class KakaoTalkService {
             log.error("리프레시 토큰 만료 또는 잘못된 클라이언트 정보일 수 있습니다.");
             return null;
         } catch (HttpClientErrorException e) {
-            log.error("HTTP 클라이언트 오류 (상태 코드: {}): {}", e.getStatusCode(), e.getResponseBodyAsString());
+            log.error("HTTP 클라이언트 오류 (상태 코드: {}): {}", e.getStatusCode(),
+                e.getResponseBodyAsString());
             return null;
         } catch (Exception e) {
             log.error("액세스 토큰 갱신 중 예상치 못한 오류 발생: ", e);

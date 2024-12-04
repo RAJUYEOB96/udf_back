@@ -6,6 +6,7 @@ import com.undefinedus.backend.domain.enums.MemberType;
 import com.undefinedus.backend.domain.enums.PreferencesType;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
+import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.util.JWTUtil;
 import java.util.HashMap;
@@ -33,6 +34,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final MyPageService myPageService;
+    private final KakaoTalkService kakaoTalkService;
+
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -45,10 +49,12 @@ public class MemberServiceImpl implements MemberService {
             kakaoAccessToken);
 
         // 기존에 DB에 회원 정보가 있는 경우 / 없는 경우
-        Optional<Member> isRegister = memberRepository.findByUsername("kakao_" + kakaoInfo.get("kakaoId"));
+        Optional<Member> isRegister = memberRepository.findByUsername(
+            "kakao_" + kakaoInfo.get("kakaoId"));
 
         if (isRegister.isPresent()) {
 
+            isRegister.get().updateKakaoAccessToken(kakaoAccessToken);
             isRegister.get().updateKakaoRefreshToken(kakaoRefreshToken);
 
             MemberSecurityDTO memberSecurityDTO = entityToDTOWithSocial(isRegister.get());
@@ -64,14 +70,21 @@ public class MemberServiceImpl implements MemberService {
 
             claims.put("accessToken", accessToken);
             claims.put("refreshToken", refreshToken);
+            claims.put("kakaoRefreshToken", kakaoRefreshToken);
+            claims.put("kakaoAccessToken", kakaoAccessToken);
 
             result.put("result", "exists");
             result.put("member", claims);
+
             return result;
         }
 
         result.put("kakaoId", kakaoInfo.get("kakaoId"));
+        result.put("kakaoAccessToken", kakaoAccessToken);
+        result.put("kakaoRefreshToken", kakaoRefreshToken);
         result.put("result", "new");
+
+
 
         return result;
     }
@@ -81,10 +94,15 @@ public class MemberServiceImpl implements MemberService {
 
         Member socialMember = makeSocialMember(requestDTO);
 
+        // 회원 가입 시 토큰 저장
+        socialMember.updateKakaoAccessToken(requestDTO.getKakaoAccessToken());
+        socialMember.updateKakaoRefreshToken(requestDTO.getKakaoRefreshToken());
+
+
         Member savedMember = memberRepository.save(socialMember);
+        myPageService.checkMessagePermission(savedMember.getId());
 
         return entityToDTOWithSocial(savedMember);
-
     }
 
     @Override

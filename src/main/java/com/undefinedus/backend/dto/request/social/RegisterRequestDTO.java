@@ -27,4 +27,9 @@ public class RegisterRequestDTO {
     @Builder.Default
     private List<String> preferences = new ArrayList<>();
 
+    // 카카오 토큰
+    private String kakaoAccessToken;
+
+    private String kakaoRefreshToken;
+
 }

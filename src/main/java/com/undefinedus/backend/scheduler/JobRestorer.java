@@ -28,7 +28,7 @@ public class JobRestorer {
     private Scheduler scheduler; // Quartz Scheduler
 
     @Autowired
-    private QuartzTriggerRepository quartzTriggerRepository; // QuartzTrigger Repository
+    private QuartzTriggerRepository quartzTriggerRepository;
 
     @PostConstruct
     public void restoreJobs() {

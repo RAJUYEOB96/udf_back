@@ -1,6 +1,6 @@
 package com.undefinedus.backend.domain.enums;
 
 public enum ReportTargetType {
-    DISCUSSION,
-    DISCUSSION_COMMENT
+    DISCUSSION, // 토론
+    DISCUSSION_COMMENT  // 토론 댓글, 답글
 }
