@@ -7,6 +7,7 @@ import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentResponseDTO;
 import com.undefinedus.backend.service.DiscussionCommentService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -34,7 +35,7 @@ public class DiscussionCommentController {
     public ResponseEntity<ApiResponseDTO<Void>> writeComment(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @PathVariable(name = "discussionId") Long discussionId,
-        @RequestBody DiscussionCommentRequestDTO discussionCommentRequestDTO
+        @Valid @RequestBody DiscussionCommentRequestDTO discussionCommentRequestDTO
     ) {
 
         Long memberId = memberSecurityDTO.getId();
@@ -51,7 +52,7 @@ public class DiscussionCommentController {
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @PathVariable(name = "discussionId") Long discussionId,
         @PathVariable(name = "discussionCommentId") Long discussionCommentId,
-        @RequestBody DiscussionCommentRequestDTO discussionCommentRequestDTO
+        @Valid @RequestBody DiscussionCommentRequestDTO discussionCommentRequestDTO
     ) {
 
         Long memberId = memberSecurityDTO.getId();

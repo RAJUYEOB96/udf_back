@@ -10,6 +10,7 @@ import com.undefinedus.backend.dto.response.discussion.DiscussionDetailResponseD
 import com.undefinedus.backend.dto.response.discussion.DiscussionListResponseDTO;
 import com.undefinedus.backend.exception.discussion.DiscussionException;
 import com.undefinedus.backend.service.DiscussionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,7 @@ public class DiscussionController {
     public ResponseEntity<ApiResponseDTO<Void>> discussionRegister(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @RequestParam(name = "isbn13") String isbn13,
-        @RequestBody DiscussionRegisterRequestDTO discussionRegisterRequestDTO) {
+        @Valid @RequestBody DiscussionRegisterRequestDTO discussionRegisterRequestDTO) {
 
         Long memberId = memberSecurityDTO.getId();
 
@@ -118,7 +119,7 @@ public class DiscussionController {
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @RequestParam("isbn13") String isbn13,
         @RequestParam("discussionId") Long discussionId,
-        @RequestBody DiscussionUpdateRequestDTO discussionUpdateRequestDTO) {
+        @Valid @RequestBody DiscussionUpdateRequestDTO discussionUpdateRequestDTO) {
 
         try {
             discussionService.discussionUpdate(memberSecurityDTO.getId(), isbn13, discussionId,
