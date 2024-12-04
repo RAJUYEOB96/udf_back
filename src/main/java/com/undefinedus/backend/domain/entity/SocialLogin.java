@@ -17,31 +17,31 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(
-        name = "social_login",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_social_login_provider",
-                        columnNames = {"provider", "provider_id"}
-                )
-        }
+    name = "social_login",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_social_login_provider",
+            columnNames = {"provider", "provider_id"}
+        )
+    }
 )
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class SocialLogin extends BaseEntity {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
-    
+
     @Column(length = 20, nullable = false)
     private String provider;    // GOOGLE, KAKAO 등
-    
+
     @Column(name = "provider_id", length = 50, nullable = false)
     private String providerId;  // 소셜 로그인 제공자의 식별자 (우리가 username에 넣는 kakaoID)
 }

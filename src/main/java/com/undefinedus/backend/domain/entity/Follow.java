@@ -17,28 +17,28 @@ import lombok.NoArgsConstructor;
 // Follow 엔티티 생성 (중간 테이블을 엔티티로)
 @Entity
 @Table(
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        columnNames = {"follower_id", "following_id"}
-                )
-        }
+    uniqueConstraints = {
+        @UniqueConstraint(
+            columnNames = {"follower_id", "following_id"}
+        )
+    }
 )
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Follow extends BaseEntity {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "following_id")
     private Member following;   // 팔로우 당하는 사람 (내가 남을)
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "follower_id")
     private Member follower;    // 팔로우 하는 사람 (남이 나를)
-    
+
 }

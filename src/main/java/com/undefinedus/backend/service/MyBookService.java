@@ -12,19 +12,21 @@ public interface MyBookService {
 
     boolean existsBook(Long memberId, String isbn13);
 
-    void insertNewBookByStatus(Long memberId, AladinBook savedAladinBook, BookStatusRequestDTO requestDTO);
-    
+    void insertNewBookByStatus(Long memberId, AladinBook savedAladinBook,
+        BookStatusRequestDTO requestDTO);
+
     void updateMyBookStatus(Long memberId, Long bookId, BookStatusRequestDTO requestDTO);
-    
+
     ScrollResponseDTO<MyBookResponseDTO> getMyBookList(Long memberId, ScrollRequestDTO requestDTO);
-    
+
     MyBookResponseDTO getMyBook(Long memberId, Long bookId);
-    
+
     void deleteMyBook(Long id, Long bookId);
-    
-    ScrollResponseDTO<MyBookResponseDTO> getOtherMemberBookList(Long loginMemberId, Long targetMemberId, ScrollRequestDTO requestDTO);
-    
+
+    ScrollResponseDTO<MyBookResponseDTO> getOtherMemberBookList(Long loginMemberId,
+        Long targetMemberId, ScrollRequestDTO requestDTO);
+
     MyBookResponseDTO getOtherMemberBook(Long loginMemberId, Long targetMemberId, Long myBookId);
-    
+
     void insertNewBookByWish(Long loginMemberId, Long targetMyBookId);
 }

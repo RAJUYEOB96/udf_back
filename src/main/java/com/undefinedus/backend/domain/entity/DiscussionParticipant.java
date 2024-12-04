@@ -18,12 +18,12 @@ import lombok.ToString;
 
 @Entity
 @Table(
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_discussion_participant", // 제약조건 이름 지정
-                        columnNames = {"discussion_id", "member_id"} // 한 토론에 한 멤버는 한번만 참여 가능
-                )
-        }
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_discussion_participant", // 제약조건 이름 지정
+            columnNames = {"discussion_id", "member_id"} // 한 토론에 한 멤버는 한번만 참여 가능
+        )
+    }
 )
 @Getter
 @NoArgsConstructor
@@ -31,19 +31,19 @@ import lombok.ToString;
 @Builder
 @ToString(exclude = {"discussion", "member"})  // 순환참조 방지
 public class DiscussionParticipant {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "discussion_id", nullable = false)
     private Discussion discussion;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
-    
+
     @Column(nullable = false)
     private boolean isAgree;  // true: 찬성, false: 반대
 

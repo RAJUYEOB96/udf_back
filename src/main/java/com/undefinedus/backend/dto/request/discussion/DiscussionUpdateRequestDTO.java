@@ -10,8 +10,8 @@ public class DiscussionUpdateRequestDTO {
 
     private String title;    // 토론 제목
 
-    private String content;
+    private String content;     // 토론 주제 글
 
-    private LocalDateTime modifyStartTime;
+    private LocalDateTime modifyStartTime;      // 수정한 토론 시작 시간
 
 }

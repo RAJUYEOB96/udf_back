@@ -118,9 +118,16 @@ public class Member extends BaseEntity {
 
     @Column(nullable = false)
     @Builder.Default
+    private boolean KakaoMessageIsAgree = false;   // 카카오의 권한 설정을 했는지 안했는지 확인
+
+    @Column(nullable = false)
+    @Builder.Default
     private String honorific = "초보리더"; // 칭호 // version.1 에서는 기본 칭호를 유지할 예정
 
     // === 메시지 전송을 위한 token === //
+    @Column
+    private String kakaoAccessToken;
+
     @Column
     private String kakaoRefreshToken;
 
@@ -158,5 +165,17 @@ public class Member extends BaseEntity {
 
     public void updateKakaoRefreshToken(String kakaoRefreshToken) {
         this.kakaoRefreshToken = kakaoRefreshToken;
+    }
+
+    public void updateKakaoAccessToken(String kakaoAccessToken) {
+        this.kakaoAccessToken = kakaoAccessToken;
+    }
+
+    public void updateMessageToKakao(boolean messageToKakao) {
+        isMessageToKakao = messageToKakao;
+    }
+
+    public void updateKakaoMessageIsAgree(boolean kakaoMessageIsAgree) {
+        KakaoMessageIsAgree = kakaoMessageIsAgree;
     }
 }

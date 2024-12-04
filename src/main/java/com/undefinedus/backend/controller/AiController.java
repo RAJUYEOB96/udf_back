@@ -28,8 +28,6 @@ public class AiController {
 
         Long memberId = memberSecurityDTO.getId();
 
-        System.out.println("memberId : " + memberId);
-
         List<AladinApiResponseDTO> perplexityRecommendBookList = aiService.getPerplexityRecommendBookList(
             memberId);
 

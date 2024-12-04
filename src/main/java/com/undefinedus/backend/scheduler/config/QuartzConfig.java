@@ -36,12 +36,11 @@ public class QuartzConfig {
     private final DataSource dataSource;
     private final Scheduler scheduler;
 
-    public void scheduleDiscussionJobs(LocalDateTime targetTime, Long discussionId) throws Exception {
-        System.out.println("시간 : " + targetTime.toString());
+    public void scheduleDiscussionJobs(LocalDateTime targetTime, Long discussionId)
+        throws Exception {
 
         // PROPOSED -> SCHEDULED (시작 3시간 전)
-//        LocalDateTime startDateTime = targetTime.minusHours(3);
-        LocalDateTime startDateTime = targetTime.minusMinutes(2);
+        LocalDateTime startDateTime = targetTime.minusHours(3);
         Date startDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
         JobDetail scheduleDetail = JobBuilder.newJob(Scheduled.class)
@@ -72,8 +71,7 @@ public class QuartzConfig {
         saveQuartzDiscussionTrigger(discussionId, startDate, DiscussionStatus.IN_PROGRESS);
 
         // IN_PROGRESS -> ANALYZING (시작 24시간 후)
-//        startDateTime = targetTime.plusHours(24);
-        startDateTime = targetTime.plusSeconds(30);
+        startDateTime = targetTime.plusHours(24);
         startDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
         JobDetail analyzingDetail = JobBuilder.newJob(Analyzing.class)
@@ -89,8 +87,7 @@ public class QuartzConfig {
         saveQuartzDiscussionTrigger(discussionId, startDate, DiscussionStatus.ANALYZING);
 
         // ANALYZING -> COMPLETED (시작 25시간 후, 분석에 1시간 가정)
-//        startDateTime = targetTime.plusHours(25);
-        startDateTime = targetTime.plusSeconds(30);
+        startDateTime = targetTime.plusHours(25);
         startDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
         JobDetail completedDetail = JobBuilder.newJob(Completed.class)
