@@ -64,7 +64,8 @@ public class DiscussionServiceImpl implements DiscussionService {
             .myBook(myBook)  // MyBook 객체
             .member(member)  // Member 객체
             .title(discussionRegisterRequestDTO.getTitle())
-            .content(discussionRegisterRequestDTO.getContent()).status(DiscussionStatus.PROPOSED)
+            .content(discussionRegisterRequestDTO.getContent())
+            .status(DiscussionStatus.PROPOSED)
             .startDate(discussionRegisterRequestDTO.getStartDate())
             .closedAt(discussionRegisterRequestDTO.getStartDate().plusDays(1)) // 하루 뒤 토론 마감
             .build();
