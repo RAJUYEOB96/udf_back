@@ -8,6 +8,8 @@ import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.util.JWTUtil;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -33,7 +36,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class MemberServiceImpl implements MemberService {
     
     private final MemberRepository memberRepository;
-    
+    private final S3Service s3Service;
+    private final S3ServiceImpl s3ServiceImpl;
     private final PasswordEncoder passwordEncoder;
     
     @Override
@@ -134,7 +138,7 @@ public class MemberServiceImpl implements MemberService {
         }
         
     }
-    
+
     private Member makeSocialMember(RegisterRequestDTO requestDTO) {
         
         // 소셜 로그인 비밀번호는 사용자가 사용하진 않지만 최소한의 보안은 하도록 아래처럼
