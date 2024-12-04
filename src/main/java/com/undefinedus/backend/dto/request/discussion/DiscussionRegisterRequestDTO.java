@@ -14,7 +14,7 @@ public class DiscussionRegisterRequestDTO {
 
     private String title;    // 토론 제목
 
-    private String content;
+    private String content;      // 토론 주제 글
 
     private int agree; // 토론 찬성 반대 참여자 수를 세기 위해 필요 예(찬성 2)
 

@@ -2,17 +2,18 @@ package com.undefinedus.backend.service;
 
 import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
-import com.undefinedus.backend.dto.request.discussionComment.DiscussionScrollRequestDTO;
-import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.request.discussion.DiscussionRegisterRequestDTO;
 import com.undefinedus.backend.dto.request.discussion.DiscussionUpdateRequestDTO;
+import com.undefinedus.backend.dto.request.discussionComment.DiscussionScrollRequestDTO;
+import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.discussion.DiscussionDetailResponseDTO;
 import com.undefinedus.backend.dto.response.discussion.DiscussionListResponseDTO;
 import org.quartz.SchedulerException;
 
 public interface DiscussionService {
 
-    Long discussionRegister(Long memberId, String isbn13, DiscussionRegisterRequestDTO discussionRegisterRequestDTO);
+    Long discussionRegister(Long memberId, String isbn13,
+        DiscussionRegisterRequestDTO discussionRegisterRequestDTO);
 
     Discussion changeStatus(Long discussionId, DiscussionStatus discussionStatus);
 

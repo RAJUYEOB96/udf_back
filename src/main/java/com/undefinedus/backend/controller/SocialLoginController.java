@@ -3,6 +3,7 @@ package com.undefinedus.backend.controller;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
 import com.undefinedus.backend.service.MemberService;
+import com.undefinedus.backend.service.MyPageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SocialLoginController {
 
     private final MemberService memberService;
+    private final MyPageService myPageService;
 
     @Operation(
         summary = "카카오 회원 정보 조회",
@@ -74,11 +76,7 @@ public class SocialLoginController {
         @RequestParam String accessToken,
         @RequestParam(required = false) String refreshToken) {
 
-        log.info("Kakao accessToken : " + accessToken);
-        log.info("Kakao refreshToken : " + refreshToken);
-
         return memberService.getKakaoInfo(accessToken, refreshToken);
-
     }
 
     // /api/member/kakao 에서 리턴받은 값을 각각 username, nickname 변수에 담아서 보내기

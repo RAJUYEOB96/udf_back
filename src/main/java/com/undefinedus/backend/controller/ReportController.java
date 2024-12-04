@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -29,9 +28,10 @@ public class ReportController {
     private final ReportService reportService;
 
     @PostMapping("/reportDiscussionAndComment")
-    public ResponseEntity<ApiResponseDTO<Void>> report(@AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+    public ResponseEntity<ApiResponseDTO<Void>> report(
+        @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @RequestBody ReportRequestDTO reportRequestDTO
-        ) {
+    ) {
 
         Long memberId = memberSecurityDTO.getId();
 
@@ -40,40 +40,40 @@ public class ReportController {
         return ResponseEntity.status(HttpStatus.OK)
             .body(ApiResponseDTO.success(null));
     }
-    
+
     @GetMapping
     public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<ReportResponseDTO>>> getReportList(
-            @ModelAttribute ScrollRequestDTO requestDTO) {  // 신고에서는 lastId, size, sort, tabCondition만 사용
-        
+        @ModelAttribute ScrollRequestDTO requestDTO) {  // 신고에서는 lastId, size, sort, tabCondition만 사용
+
         ScrollResponseDTO<ReportResponseDTO> response = reportService.getReportList(requestDTO);
 
         return ResponseEntity.ok(ApiResponseDTO.success(response));
     }
-    
+
     @GetMapping("/{reportId}")
     public ResponseEntity<ApiResponseDTO<ReportResponseDTO>> getReportDetail(
-            @PathVariable("reportId") Long reportId) {
-        
+        @PathVariable("reportId") Long reportId) {
+
         ReportResponseDTO result = reportService.getReportDetail(reportId);
-        
+
         return ResponseEntity.ok(ApiResponseDTO.success(result));
     }
-    
+
     @PatchMapping("/reject/{reportId}")
     public ResponseEntity<ApiResponseDTO<Void>> rejectReport(
-            @PathVariable("reportId") Long reportId) {
-        
+        @PathVariable("reportId") Long reportId) {
+
         reportService.rejectReport(reportId);
-        
+
         return ResponseEntity.ok(ApiResponseDTO.success(null));
     }
-    
+
     @PatchMapping("/approval/{reportId}")
     public ResponseEntity<ApiResponseDTO<Void>> approvalReport(
-            @PathVariable("reportId") Long reportId) {
-        
+        @PathVariable("reportId") Long reportId) {
+
         reportService.approvalReport(reportId);
-        
+
         return ResponseEntity.ok(ApiResponseDTO.success(null));
     }
 

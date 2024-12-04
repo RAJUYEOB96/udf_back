@@ -1,6 +1,6 @@
 package com.undefinedus.backend.domain.enums;
 
 public enum VoteType {
-    AGREE,
-    DISAGREE
+    AGREE,  // 찬성
+    DISAGREE    // 반대
 }

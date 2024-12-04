@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Temporal;
@@ -92,7 +93,8 @@ public class Discussion extends BaseEntity {
     @Column
     private Integer disagreePercent; // 여긴 반대 우리가 계산해서 넣기 (100 - agreePercent)
 
-    @Column(length = 1000)
+    @Column(columnDefinition = "LONGTEXT")
+    @Lob
     private String reasoning;  // AI의 결과 도출 근거
 
     // === 조회수 관련 === //
@@ -131,6 +133,7 @@ public class Discussion extends BaseEntity {
     public void changeDeleted(boolean b) {
         isDeleted = b;
     }
+
     public void changeDeletedAt(LocalDateTime localDateTime) {
         deletedAt = localDateTime;
     }

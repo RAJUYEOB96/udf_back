@@ -41,7 +41,6 @@ public class AiServiceImpl implements AiService {
     @Value("${spring.ai.perplexity.api-key}")
     private String apiKey;
 
-    // todo: 테스트 코드 만들어야 함
     @Override
     public List<AladinApiResponseDTO> getPerplexityRecommendBookList(Long memberId) {
         List<AladinApiResponseDTO> allBooks = new ArrayList<>();
