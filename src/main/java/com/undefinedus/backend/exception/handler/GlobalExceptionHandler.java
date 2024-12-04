@@ -40,12 +40,15 @@ public class GlobalExceptionHandler {
             .body(new ErrorResponse(e.getMessage()));
     }
 
-    // @Valid 에서 에러난 후 처리
+    // @Valid에서 에러가 발생한 후 처리
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<?> handleMethodArgumentNotValidException(
         MethodArgumentNotValidException e) {
+        // FieldError에서 비속어 메시지만 추출
+        String errorMessage = e.getBindingResult()
+            .getFieldError().getDefaultMessage(); // "부적절한 표현이 포함되어 있습니다"만 추출
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
-            .body(new ErrorResponse(e.getMessage()));
+            .body(new ErrorResponse(errorMessage));
     }
 
     @ExceptionHandler(CustomJWTException.class)
