@@ -2,7 +2,7 @@ package com.undefinedus.backend.controller;
 
 import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
-import com.undefinedus.backend.dto.response.statistics.StatisticsCategoryBookCountResponseDTO;
+import com.undefinedus.backend.dto.response.statistics.StatisticsCategoryByYearResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsCategoryResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsResponseDTO;
 import com.undefinedus.backend.dto.response.statistics.StatisticsYearsBookInfoResponseDTO;
@@ -38,6 +38,18 @@ public class StatisticsController {
         return ResponseEntity.ok(ApiResponseDTO.success((categoryAndBookCount)));
     }
 
+    @GetMapping("/yearly") // 연도 별의 카테고리 별 다 읽은 책 권 수
+    public ResponseEntity<ApiResponseDTO<List<StatisticsCategoryByYearResponseDTO>>> getCategoryAndBookCountByYearList(
+        @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO
+    ) {
+        Long memberId = memberSecurityDTO.getId();
+
+        List<StatisticsCategoryByYearResponseDTO> completedBooksGroupedByYear = statisticsService.getCompletedBooksGroupedByYears(
+            memberId);
+
+        return ResponseEntity.ok(ApiResponseDTO.success((completedBooksGroupedByYear)));
+    }
+
     @GetMapping("/totalYearly") // 연도별 총 권 수, 월 평균 권 수, 총 페이지 수
     public ResponseEntity<ApiResponseDTO<StatisticsYearsBookInfoResponseDTO>> getTotalStatisticsYearsBookInfo(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO
@@ -63,6 +75,7 @@ public class StatisticsController {
         return ResponseEntity.ok(ApiResponseDTO.success(result));
     }
 
+    // 검색한 연도의 다 읽은 책의 권 수, 평규 권 수, 총 페이지 수
     @GetMapping("/years")
     public ResponseEntity<ApiResponseDTO<Set<Integer>>> getMemberYears(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO

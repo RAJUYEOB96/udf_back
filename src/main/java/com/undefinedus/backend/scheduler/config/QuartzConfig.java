@@ -1,6 +1,7 @@
 package com.undefinedus.backend.scheduler.config;
 
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
+import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.scheduler.entity.QuartzJobDetail;
 import com.undefinedus.backend.scheduler.entity.QuartzTrigger;
 import com.undefinedus.backend.scheduler.job.Analyzing;
@@ -10,6 +11,7 @@ import com.undefinedus.backend.scheduler.job.KakaoTalkJob;
 import com.undefinedus.backend.scheduler.job.Scheduled;
 import com.undefinedus.backend.scheduler.repository.QuartzJobDetailRepository;
 import com.undefinedus.backend.scheduler.repository.QuartzTriggerRepository;
+import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -30,6 +32,7 @@ public class QuartzConfig {
 
     private final QuartzJobDetailRepository quartzJobDetailRepository;
     private final QuartzTriggerRepository quartzTriggerRepository;
+    private final MemberRepository memberRepository;
     private final DataSource dataSource;
     private final Scheduler scheduler;
 
@@ -103,33 +106,20 @@ public class QuartzConfig {
         saveQuartzDiscussionTrigger(discussionId, startDate, DiscussionStatus.COMPLETED);
 
 
-        // 카카오 톡으로 메시지 보내기
-        JobDetail KakaotalkDetail = JobBuilder.newJob(KakaoTalkJob.class)
-            .withIdentity("Kakaotalk_" + discussionId.toString())
-            .usingJobData("memberEmail", discussionId.toString()).build();
-
-        Trigger repeatTrigger  = TriggerBuilder.newTrigger()
-            .withIdentity("kakaocronTrigger_" + discussionId)
-            .withSchedule(CronScheduleBuilder.cronSchedule("0 0 12 * * ?")) // 매일 정오 12시에 실행.
-            .build();
-
-        scheduler.scheduleJob(KakaotalkDetail, repeatTrigger);
     }
 
-    // todo: 카카오 톡을 받는 기능 필요
-    public void scheduleKakaoTalkJob(String username) throws Exception {
-
-        // 카카오 톡으로 메시지 보내기
-        JobDetail KakaotalkDetail = JobBuilder.newJob(KakaoTalkJob.class)
-            .withIdentity("KakaoTalk_" + username.toString())
-            .usingJobData("memberEmail_", username.toString()).build();
-
-        Trigger repeatTrigger  = TriggerBuilder.newTrigger()
-            .withIdentity("KakaoTalkCronTrigger_" + username)
-            .withSchedule(CronScheduleBuilder.cronSchedule("0 0 12 * * ?")) // 매일 정오 12시에 실행.
+    @PostConstruct
+    public void scheduleKakaoTalkJob() throws Exception {
+        JobDetail kakaoTalkDetail = JobBuilder.newJob(KakaoTalkJob.class)
+            .withIdentity("KakaoTalk")
             .build();
 
-        scheduler.scheduleJob(KakaotalkDetail, repeatTrigger);
+        Trigger repeatTrigger = TriggerBuilder.newTrigger()
+            .withIdentity("KakaoTalkCronTrigger")
+            .withSchedule(CronScheduleBuilder.cronSchedule("0 0 12 * * ?")) // 오후 12시
+            .build();
+
+        scheduler.scheduleJob(kakaoTalkDetail, repeatTrigger);
     }
 
     private void saveQuartzDiscussionJobDetail(Long discussionId, DiscussionStatus newStatus) {

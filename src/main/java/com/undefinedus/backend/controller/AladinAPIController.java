@@ -27,6 +27,7 @@ public class AladinAPIController {
 
     private final AladinBookService aladinBookService;
 
+    // 키워드 검색
     @GetMapping("/keyword")
     public ResponseEntity<ApiResponseDTO<Map<String, Object>>> getKeywordAladinAPIList(
         @RequestParam(name = "page") Integer page,
@@ -40,6 +41,7 @@ public class AladinAPIController {
         return ResponseEntity.ok(ApiResponseDTO.success(result));
     }
 
+    // 베스트 셀러
     @GetMapping("/bestseller")
     public ResponseEntity<ApiResponseDTO<List<AladinApiResponseDTO>>> getBestsellerAladinAPIList() {
 
@@ -48,6 +50,7 @@ public class AladinAPIController {
         return ResponseEntity.ok(ApiResponseDTO.success(bestsellerAladinAPIList));
     }
 
+    // 회원의 카테고리에 따라 추천(에디터 추천 api)
     @GetMapping("/editorChoice")
     public ResponseEntity<ApiResponseDTO<Map<String, List<AladinApiResponseDTO>>>> getEditorChoiceAladinAPIList(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO) {
@@ -60,6 +63,7 @@ public class AladinAPIController {
         return ResponseEntity.ok(ApiResponseDTO.success(editorChoiceAladinAPIList));
     }
 
+    // 책 상세
     @GetMapping("/detail")
     public ResponseEntity<ApiResponseDTO<List<AladinApiResponseDTO>>> getDetailAladinAPI(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,

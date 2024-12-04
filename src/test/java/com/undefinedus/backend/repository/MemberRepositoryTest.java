@@ -8,13 +8,22 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.domain.entity.Follow;
 import com.undefinedus.backend.domain.entity.Member;
+import com.undefinedus.backend.domain.entity.MyBook;
+import com.undefinedus.backend.domain.entity.MyBookmark;
+import com.undefinedus.backend.domain.enums.BookStatus;
+import com.undefinedus.backend.domain.enums.MemberType;
+import com.undefinedus.backend.domain.enums.PreferencesType;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.exception.social.TabConditionNotEqualException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
@@ -33,9 +42,18 @@ class MemberRepositoryTest {
     
     @Autowired
     private MemberRepository memberRepository;
+
+    @Autowired
+    private MyBookRepository myBookRepository;
+
+    @Autowired
+    private MyBookmarkRepository myBookmarkRepository;
     
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AladinBookRepository aladinBookRepository;
     
     @Autowired
     private EntityManager em;
@@ -589,5 +607,159 @@ class MemberRepositoryTest {
             }
         }
         return true;
+    }
+
+    @Test
+    @DisplayName("findMessageToKakaoMemberIdList 메서드 테스트")
+    void testFindMessageToKakaoMemberIdList() {
+        // Given
+        Member member1 = Member.builder()
+            .username("user10@test.com")
+            .password("password1")
+            .nickname("user1")
+            .profileImage("https://example.com/profile1.jpg")
+            .introduction("안녕하세요, user1입니다.")
+            .birth(LocalDate.of(1990, 1, 1))
+            .gender("남성")
+            .memberRoleList(List.of(MemberType.USER))
+            .preferences(new HashSet<>(Arrays.asList(PreferencesType.만화, PreferencesType.과학)))
+            .isPublic(true)
+            .isMessageToKakao(true)
+            .honorific("초보리더")
+            .build();
+
+        memberRepository.save(member1);
+
+        Member member2 = Member.builder()
+            .username("user11@test.com")
+            .password("password2")
+            .nickname("user2")
+            .profileImage("https://example.com/profile2.jpg")
+            .introduction("안녕하세요, user2입니다.")
+            .birth(LocalDate.of(1995, 5, 5))
+            .gender("여성")
+            .memberRoleList(List.of(MemberType.USER))
+            .preferences(new HashSet<>(Arrays.asList(PreferencesType.경제경영, PreferencesType.사회과학)))
+            .isPublic(true)
+            .isMessageToKakao(false)
+            .honorific("초보리더")
+            .build();
+
+        memberRepository.save(member2);
+
+        Member member3 = Member.builder()
+            .username("user12@test.com")
+            .password("password3")
+            .nickname("user3")
+            .profileImage("https://example.com/profile3.jpg")
+            .introduction("안녕하세요, user3입니다.")
+            .birth(LocalDate.of(1988, 8, 8))
+            .gender("남성")
+            .memberRoleList(List.of(MemberType.USER))
+            .preferences(new HashSet<>(Arrays.asList(PreferencesType.가정_요리_뷰티, PreferencesType.만화)))
+            .isPublic(true)
+            .isMessageToKakao(true)
+            .honorific("초보리더")
+            .build();
+
+        memberRepository.save(member3);
+
+        // AladinBook 생성
+        AladinBook aladinBook = AladinBook.builder()
+            .isbn13("9788901234567")
+            .title("테스트 책")
+            .author("테스트 저자")
+            .link("https://example.com/book")
+            .cover("https://example.com/cover.jpg")
+            .fullDescription("책 설명입니다.")
+            .fullDescription2("출판사 제공 책 설명입니다.")
+            .publisher("테스트 출판사")
+            .categoryName("소설/시/희곡")
+            .customerReviewRank(4.5)
+            .itemPage(300)
+            .build();
+
+        aladinBookRepository.save(aladinBook);
+
+        // MyBook 생성 및 저장
+        MyBook myBook1 = MyBook.builder()
+            .member(member1)
+            .aladinBook(aladinBook)
+            .isbn13("9788901234567")
+            .status(BookStatus.READING)
+            .myRating(4.0)
+            .oneLineReview("좋은 책입니다.")
+            .currentPage(150)
+            .updateCount(1)
+            .startDate(LocalDate.now().minusDays(7))
+            .build();
+        myBookRepository.save(myBook1);
+
+        MyBook myBook2 = MyBook.builder()
+            .member(member2)
+            .aladinBook(aladinBook)
+            .isbn13("9788901234567")
+            .status(BookStatus.COMPLETED)
+            .myRating(5.0)
+            .oneLineReview("훌륭한 책이에요.")
+            .currentPage(300)
+            .updateCount(2)
+            .startDate(LocalDate.now().minusDays(14))
+            .endDate(LocalDate.now())
+            .build();
+        myBookRepository.save(myBook2);
+
+        MyBook myBook3 = MyBook.builder()
+            .member(member3)
+            .aladinBook(aladinBook)
+            .isbn13("9788901234557")
+            .status(BookStatus.COMPLETED)
+            .myRating(5.0)
+            .oneLineReview("훌륭한 책이에요.")
+            .currentPage(300)
+            .updateCount(2)
+            .startDate(LocalDate.now().minusDays(14))
+            .endDate(LocalDate.now())
+            .build();
+        myBookRepository.save(myBook3);
+
+// MyBookmark 생성 및 저장
+        MyBookmark bookmark1 = MyBookmark.builder()
+            .aladinBook(aladinBook)
+            .member(member1)
+            .phrase("유효한 북마크 문구")
+            .pageNumber(50)
+            .build();
+        myBookmarkRepository.save(bookmark1);
+
+        MyBookmark bookmark2 = MyBookmark.builder()
+            .aladinBook(aladinBook)
+            .member(member2)
+            .phrase("유효한 북마크 문구")
+            .pageNumber(100)
+            .build();
+        myBookmarkRepository.save(bookmark2);
+
+        MyBookmark bookmark3 = MyBookmark.builder()
+            .aladinBook(aladinBook)
+            .member(member3)
+            .phrase("")  // 빈 문자열
+            .pageNumber(0)
+            .build();
+        myBookmarkRepository.save(bookmark3);
+
+        // When
+        List<Long> result = memberRepository.findMessageToKakaoMemberIdList();
+
+        System.out.println("result = " + result);
+
+        // Then
+        assertAll(
+            () -> assertNotNull(result),
+            () -> assertEquals(1, result.size()),
+            () -> assertTrue(result.contains(member1.getId())),
+            () -> assertFalse(result.contains(member2.getId())),
+            () -> assertFalse(result.contains(member3.getId()))
+        );
     }
 }

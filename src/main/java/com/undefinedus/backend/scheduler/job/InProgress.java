@@ -4,13 +4,12 @@ import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.exception.discussion.DiscussionNotFoundException;
 import com.undefinedus.backend.repository.DiscussionRepository;
-import com.undefinedus.backend.service.ChatGPTService;
+import com.undefinedus.backend.service.AiService;
 import lombok.RequiredArgsConstructor;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,7 +17,7 @@ import org.springframework.stereotype.Component;
 public class InProgress implements Job {
 
     private final DiscussionRepository discussionRepository;
-    private final ChatGPTService chatGPTService;
+    private final AiService aiService;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {

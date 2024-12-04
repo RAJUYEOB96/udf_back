@@ -27,7 +27,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
@@ -121,6 +120,10 @@ public class Member extends BaseEntity {
     @Builder.Default
     private String honorific = "초보리더"; // 칭호 // version.1 에서는 기본 칭호를 유지할 예정
 
+    // === 메시지 전송을 위한 token === //
+    @Column
+    private String kakaoRefreshToken;
+
     // 알림 관련은 한달안에 알림 기능까지 넣기는 빡세다고 생각 다음 버전 만들시 추가 예정
     
     // === Soft Delete 관련 === //
@@ -151,5 +154,9 @@ public class Member extends BaseEntity {
     public void setNickname(
         @Size(min = 2, max = 10) String nickname) {
         this.nickname = nickname;
+    }
+
+    public void updateKakaoRefreshToken(String kakaoRefreshToken) {
+        this.kakaoRefreshToken = kakaoRefreshToken;
     }
 }

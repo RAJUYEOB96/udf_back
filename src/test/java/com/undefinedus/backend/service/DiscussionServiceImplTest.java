@@ -183,6 +183,8 @@ class DiscussionServiceImplTest {
             System.out.println("조회수: " + dto.getViews());
             System.out.println("닉네임: " + dto.getMemberName());
             System.out.println("생성일자: " + dto.getCreatedDate());
+            System.out.println("토론 예정 일자 : " + dto.getStartDateTime());
+            System.out.println("토론 끝나는 일자 : " + dto.getClosedAt());
             System.out.println("제목: " + dto.getTitle());
             System.out.println("찬성: " + dto.getAgree());
             System.out.println("반대: " + dto.getDisagree());
