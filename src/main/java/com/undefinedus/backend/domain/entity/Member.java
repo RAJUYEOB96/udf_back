@@ -37,7 +37,8 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@SQLDelete(sql = "UPDATE member SET is_deleted = true, deleted_at = NOW() WHERE id = ?")  // soft delete 쿼리 설정
+@SQLDelete(sql = "UPDATE member SET is_deleted = true, deleted_at = NOW() WHERE id = ?")
+// soft delete 쿼리 설정
 // @SQLRestriction은 Spring Data JPA Repository 메서드 사용시에만 자동 적용
 // JPQL이나 QueryDSL 사용시에는 조건을 직접 추가해야 함:
 @SQLRestriction("is_deleted = false")  // @Where 대신 @SQLRestriction 사용
@@ -158,13 +159,30 @@ public class Member extends BaseEntity {
         this.id = id;
     }
 
+    public void updateBirth(LocalDate birth) {
+        this.birth = birth;
+    }
+
+    public void updateGender(String gender) {
+        this.gender = gender;
+    }
+
     public void setNickname(
         @Size(min = 2, max = 10) String nickname) {
         this.nickname = nickname;
     }
 
-    public void updateProfileImage(String profileImage){
+    public void updateProfileImage(String profileImage) {
         this.profileImage = profileImage;
+    }
+
+    // 취향 업데이트 시 기존 취향 초기화용
+    public void clearPreferences() {
+        this.preferences = new HashSet<>();
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
     }
 
     public void updateKakaoRefreshToken(String kakaoRefreshToken) {

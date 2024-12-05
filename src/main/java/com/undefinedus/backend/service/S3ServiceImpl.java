@@ -1,20 +1,16 @@
 package com.undefinedus.backend.service;
 
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
-import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Service
@@ -24,13 +20,24 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 public class S3ServiceImpl implements S3Service {
 
     private final S3Client s3Client;
-    private final String bucketName;
-    private final String region;
 
+    @Value("${cloud.aws.credentials.accessKey}")
+    private String accessKey;
+
+    @Value("${cloud.aws.credentials.secretKey}")
+    private String secretKey;
+
+    @Value("${cloud.aws.region.static}")
+    private String region;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucketName;
+
+    // 파일 업로드
     @Override
     public String uploadFile(String key, MultipartFile file) {
 
-        try{
+        try {
             byte[] fileData = file.getBytes();
 
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
@@ -47,11 +54,7 @@ public class S3ServiceImpl implements S3Service {
         return getFileUrl(key);
     }
 
-//    @Override
-//    public byte[] downloadFile(String key) {
-//        return new byte[0];
-//    }
-
+    // 파일 삭제
     @Override
     public void deleteFile(String key) {
         DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
@@ -62,11 +65,14 @@ public class S3ServiceImpl implements S3Service {
         s3Client.deleteObject(deleteObjectRequest);
     }
 
+    // 파일 경로 얻는 메서드
     @Override
     public String getFileUrl(String key) {
         return String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, key);
     }
 
+    // 파일이름 + UUID 로 중복없는 key 생성
+    @Override
     public String generateFileKey(String originalFilename) {
         String extension = "";
         int dotIndex = originalFilename.lastIndexOf('.');
@@ -76,30 +82,31 @@ public class S3ServiceImpl implements S3Service {
         return UUID.randomUUID().toString() + extension;
     }
 
-    // 파일의 메타데이터(ETag) 추출
-    public String getS3ETag(String s3Url) {
-        String key = extractKeyFromUrl(s3Url);
-
-        HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
-            .bucket(bucketName)
-            .key(key)
-            .build();
-
-        HeadObjectResponse headObjectResponse = s3Client.headObject(headObjectRequest);
-        return headObjectResponse.eTag();
-    }
-
-    // 기존 파일과 새로운 파일의 ETag 비교
-    public boolean isSameFile(MultipartFile newFile, String existingETag) throws IOException, NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("MD5");
-        byte[] hashBytes = digest.digest(newFile.getBytes());
-        String newFileHash = Base64.getEncoder().encodeToString(hashBytes);
-
-        return newFileHash.equals(existingETag);
-    }
+//    // 파일의 메타데이터(ETag) 추출
+//    public String getS3ETag(String s3Url) {
+//        String key = extractKeyFromUrl(s3Url);
+//
+//        HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+//            .bucket(bucketName)
+//            .key(key)
+//            .build();
+//
+//        HeadObjectResponse headObjectResponse = s3Client.headObject(headObjectRequest);
+//        return headObjectResponse.eTag();
+//    }
+//
+//    // 기존 파일과 새로운 파일의 ETag 비교
+//    public boolean isSameFile(MultipartFile newFile, String existingETag) throws IOException, NoSuchAlgorithmException {
+//        MessageDigest digest = MessageDigest.getInstance("MD5");
+//        byte[] hashBytes = digest.digest(newFile.getBytes());
+//        String newFileHash = Base64.getEncoder().encodeToString(hashBytes);
+//
+//        return newFileHash.equals(existingETag);
+//    }
 
     // S3 URL에서 Key를 추출하는 메서드
-    private String extractKeyFromUrl(String s3Url) {
+    @Override
+    public String extractKeyFromUrl(String s3Url) {
         // URL 형식: https://<bucket-name>.s3.<region>.amazonaws.com/<key>
         int index = s3Url.indexOf(".amazonaws.com/");
         if (index == -1) {

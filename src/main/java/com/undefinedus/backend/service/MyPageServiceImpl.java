@@ -1,15 +1,17 @@
 package com.undefinedus.backend.service;
 
 import com.undefinedus.backend.domain.entity.Member;
+import com.undefinedus.backend.domain.enums.PreferencesType;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.MemberRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpEntity;
@@ -17,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,7 +32,7 @@ public class MyPageServiceImpl implements MyPageService {
 
     private final MemberRepository memberRepository;
     private final S3Service s3Service;
-    private final S3ServiceImpl s3ServiceImpl;
+    private final PasswordEncoder passwordEncoder;
 
     // 카카오 회원이 카카오톡 메시지 권한을 허용했는지 체크
     public Boolean checkMessagePermission(Long memberId) {
@@ -165,33 +168,123 @@ public class MyPageServiceImpl implements MyPageService {
     // 프로필 변경(프로필 사진, 닉네임)
     // 닉네임 유효성 체킹은 프론트에서 함
     @Override
-    public void updateNicknameAndProfileImage(Long memberId, String nickname, MultipartFile profileImage)
+    public Map<String, String> updateNicknameAndProfileImage(Long memberId, String nickname,
+        MultipartFile profileImage)
         throws IOException, NoSuchAlgorithmException {
-        Optional<Member> op = memberRepository.findById(memberId);
-        if(op.isPresent()){
-            Member member = op.get();
-            String prevNickname = member.getNickname();
-            String prevProfileImage = member.getProfileImage();
 
-            // 닉네임이 변경됐을 시
-            if(!prevNickname.equals(nickname)){
-                member.setNickname(nickname);
+        boolean isUpdated = false;
+        Map<String, String> result = new HashMap<>();
+
+        // 유저 찾기
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new EntityNotFoundException("Member Not Found"));
+
+        // 닉네임 변경
+        if (nickname != null && !member.getNickname().equals(nickname)) {
+            member.setNickname(nickname);
+            result.put("nickname", "success");
+
+            isUpdated = true;
+        }
+
+        // 프로필 변경
+        if (profileImage != null) {
+            String currentProfileImage = member.getProfileImage();
+
+            if (!"defaultProfileImage.jpg".equals(currentProfileImage)) {
+                String prevKey = s3Service.extractKeyFromUrl(currentProfileImage);
+                s3Service.deleteFile(prevKey);
+                result.put("deletePrevProfileImage", "success");
             }
-            if(profileImage == null){
-                return;
-            }else {
-                String key = s3ServiceImpl.generateFileKey(profileImage.getOriginalFilename());
-                if(prevProfileImage.equals("defaultProfileImage.jpg")){
-                    String newProfileImage = s3Service.uploadFile(key, profileImage);
-                    member.updateProfileImage(newProfileImage);
-                } else {
-                    String prevETag = s3ServiceImpl.getS3ETag(prevProfileImage);
-                    if(!s3ServiceImpl.isSameFile(profileImage, prevETag)){
-                        String newProfileImage = s3Service.uploadFile(key, profileImage);
-                        member.updateProfileImage(newProfileImage);
-                    }
-                }
+
+            String key = s3Service.generateFileKey(profileImage.getOriginalFilename());
+            String newProfileImage = s3Service.uploadFile(key, profileImage);
+            member.updateProfileImage(newProfileImage);
+            result.put("profileImage", "success");
+
+            isUpdated = true;
+        }
+
+        if (isUpdated) {
+            memberRepository.save(member);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Map<String, String> updateBirthAndGender(Long memberId, LocalDate birth, String gender) {
+
+        boolean isUpdated = false;
+        Map<String, String> result = new HashMap<>();
+
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new EntityNotFoundException("Member Not Found"));
+
+        if (birth != null && !birth.equals(member.getBirth())) {
+            member.updateBirth(birth);
+            isUpdated = true;
+            result.put("birth", "success");
+        }
+
+        if (gender != null && !gender.equals(member.getGender())) {
+            member.updateGender(gender);
+            isUpdated = true;
+            result.put("gender", "success");
+        }
+
+        if (isUpdated) {
+            memberRepository.save(member);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Map<String, String> updatePreferences(Long memberId, List<String> preferences) {
+        if (preferences == null || preferences.isEmpty()) {
+            throw new IllegalStateException("취향이 선택되어지지 않았습니다.");
+        }
+
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new EntityNotFoundException("Member Not Found"));
+
+        member.clearPreferences();
+
+        for (String preference : preferences) {
+            try {
+                member.getPreferences().add(PreferencesType.valueOf(preference));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalStateException("잘못된 취향 값: " + preference, e);
             }
         }
+
+        memberRepository.save(member);
+
+        return Map.of("preferences", "success");
+    }
+
+    @Override
+    public boolean checkSamePassword(Long memberId, String password) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new EntityNotFoundException("Member Not Found"));
+
+        String prevPassword = member.getPassword();
+
+        return passwordEncoder.matches(password, prevPassword);
+    }
+
+    @Override
+    public Map<String, String> updatePassword(Long memberId, String password) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new EntityNotFoundException("Member Not Found"));
+
+        if (checkSamePassword(memberId, password)) {
+            return Map.of("password", "duplicated");
+        } else {
+            member.updatePassword(passwordEncoder.encode(password));
+        }
+
+        return Map.of("password", "success");
     }
 }

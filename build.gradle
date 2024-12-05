@@ -28,7 +28,6 @@ repositories {
 // chat gpt
 ext {
     set('springAiVersion', "1.0.0-M3")
-    set('awsCloudVersion', '3.2.1')
 }
 
 dependencies {
@@ -84,21 +83,20 @@ dependencies {
     // 테스트용 H2 DB
     testRuntimeOnly 'com.h2database:h2'
 
+//    // AWS SDK v2 S3 라이브러리
+//    implementation 'software.amazon.awssdk:s3:2.26.31'
+//    // AWS SDK v2 코어 라이브러리
+//    implementation 'software.amazon.awssdk:core:2.26.31'
+
     // AWS S3 지원
-    implementation 'io.awspring.cloud:spring-cloud-aws-starter'
-
-    // AWS SDK v2 S3 라이브러리
-    implementation 'software.amazon.awssdk:s3'
-
-    // AWS SDK v2 코어 라이브러리
-    implementation 'software.amazon.awssdk:core'
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter:3.2.1'
+    implementation 'software.amazon.awssdk:s3:2.29.9'
 }
 
 // chat gpt
 dependencyManagement {
     imports {
         mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
-        mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:${awsCloudVersion}"
     }
 }
 

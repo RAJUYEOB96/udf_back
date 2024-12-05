@@ -5,8 +5,11 @@ import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.service.MemberService;
 import com.undefinedus.backend.service.MyPageService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -60,8 +64,55 @@ public class MyPageController {
     ) throws IOException, NoSuchAlgorithmException {
         Long memberId = memberSecurityDTO.getId();
 
-        memberService.updateNicknameAndProfileImage(memberId, nickname, profileImage);
+        Map<String, String> result = myPageService.updateNicknameAndProfileImage(memberId, nickname,
+            profileImage);
+
+        return result;
+    }
+
+    @PatchMapping("/userInfo")
+    public Map<String, String> updateUserInfo(
+        @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+        @RequestParam(value = "birth", required = false) LocalDate birth,
+        @RequestParam(value = "gender", required = false) String gender) {
+        Long memberId = memberSecurityDTO.getId();
+
+        Map<String, String> result = myPageService.updateBirthAndGender(memberId, birth, gender);
+
+        return result;
+    }
+
+    @PatchMapping("/preferences")
+    public Map<String, String> updatePreferences(
+        @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+        @RequestBody List<String> preferences
+    ) {
+        Long memberId = memberSecurityDTO.getId();
+
+        Map<String, String> result = myPageService.updatePreferences(memberId, preferences);
+
+        return result;
+    }
+
+    @GetMapping("/checkPassword")
+    public Map<String, String> checkSamePassword(
+        @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+        @RequestBody String password
+    ) {
+        Long memberId = memberSecurityDTO.getId();
 
         return Map.of();
+    }
+
+    @PatchMapping("/password")
+    public Map<String, String> updatePassword(
+        @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+        @RequestBody String password
+    ) {
+        Long memberId = memberSecurityDTO.getId();
+
+        Map<String, String> result = myPageService.updatePassword(memberId, password);
+
+        return result;
     }
 }
