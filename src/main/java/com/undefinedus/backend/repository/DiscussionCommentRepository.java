@@ -15,10 +15,10 @@ public interface DiscussionCommentRepository extends JpaRepository<DiscussionCom
     DiscussionCommentsRepositoryCustom {
 
     @Query(nativeQuery = true,
-        value = "SELECT dc.comment_order FROM discussion_comment dc " +
+        value = "SELECT dc.group_order FROM discussion_comment dc " +
             "WHERE dc.discussion_id = :discussionId " +
             "AND dc.parent_id = :discussionCommentId " +
-            "ORDER BY dc.comment_order DESC " +
+            "ORDER BY dc.group_order DESC " +
             "LIMIT 1")
     Optional<Long> findTopOrder(@Param("discussionId") Long discussionId,
         @Param("discussionCommentId") Long discussionCommentId);
