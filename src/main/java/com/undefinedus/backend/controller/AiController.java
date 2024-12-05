@@ -23,7 +23,7 @@ public class AiController {
 
     // 회원이 읽은 책들 기반 gpt 추천 도서 목록(gpt가 추천 책의 isbn13을 출력하지 않음)
     @GetMapping("/recommended")
-    public ResponseEntity<ApiResponseDTO<List<AladinApiResponseDTO>>> getGPTRecommendedBookLIst(
+    public ResponseEntity<ApiResponseDTO<List<AladinApiResponseDTO>>> getPerplexityRecommendedBookList(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO) {
 
         Long memberId = memberSecurityDTO.getId();

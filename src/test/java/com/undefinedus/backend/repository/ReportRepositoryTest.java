@@ -16,7 +16,6 @@ import com.undefinedus.backend.domain.enums.ReportStatus;
 import com.undefinedus.backend.domain.enums.ReportTargetType;
 import com.undefinedus.backend.domain.enums.VoteType;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
-import com.undefinedus.backend.exception.social.TabConditionNotEqualException;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
-import org.assertj.core.api.Assertions;
 import org.hibernate.Hibernate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -164,7 +162,7 @@ class ReportRepositoryTest {
             .member(reported)
             .groupId(1L)
             .parentId(0L)
-            .order(1L)
+            .groupOrder(1L)
             .isChild(false)
             .totalOrder(1L)
             .voteType(VoteType.AGREE)
@@ -182,7 +180,7 @@ class ReportRepositoryTest {
             .member(reported)
             .groupId(1L)
             .parentId(0L)
-            .order(2L)
+            .groupOrder(2L)
             .isChild(false)
             .totalOrder(2L)
             .voteType(VoteType.DISAGREE)
@@ -200,7 +198,7 @@ class ReportRepositoryTest {
             .member(reporter)
             .groupId(2L)
             .parentId(1L)
-            .order(1L)
+            .groupOrder(1L)
             .isChild(true)
             .totalOrder(3L)
             .voteType(VoteType.AGREE)
@@ -408,7 +406,7 @@ class ReportRepositoryTest {
                 .member(reported)
                 .groupId(2L)
                 .parentId(0L)
-                .order(1L)
+                .groupOrder(1L)
                 .isChild(false)
                 .totalOrder(1L)
                 .voteType(VoteType.AGREE)

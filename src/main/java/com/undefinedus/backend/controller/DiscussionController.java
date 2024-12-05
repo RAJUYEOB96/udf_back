@@ -76,7 +76,7 @@ public class DiscussionController {
     }
 
     // 발의글에 찬성으로 참여하기
-    @GetMapping("/joinAgree")
+    @PostMapping("/joinAgree")
     public ResponseEntity<ApiResponseDTO<Void>> joinAgree(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @RequestParam("discussionId") Long discussionId
@@ -95,7 +95,7 @@ public class DiscussionController {
     }
 
     // 발의글에 반대로 참석하기
-    @GetMapping("/joinDisagree")
+    @PostMapping("/joinDisagree")
     public ResponseEntity<ApiResponseDTO<Void>> joinDisagree(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @RequestParam("discussionId") Long discussionId

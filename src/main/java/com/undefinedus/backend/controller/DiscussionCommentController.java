@@ -74,6 +74,7 @@ public class DiscussionCommentController {
         return ResponseEntity.ok(ApiResponseDTO.success(best3CommentByCommentLikes));
     }
 
+    // 댓글 리스트
     @GetMapping
     public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<DiscussionCommentResponseDTO>>> getCommentList(
         @ModelAttribute DiscussionCommentsScrollRequestDTO requestDTO
