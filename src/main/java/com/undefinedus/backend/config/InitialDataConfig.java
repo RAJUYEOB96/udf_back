@@ -773,30 +773,29 @@ public class InitialDataConfig {
     
     private List<DiscussionComment> createDiscussionComments(Discussion discussion, List<Member> members) {
         List<DiscussionComment> comments = new ArrayList<>();
-        Long groupId = 1L;
         Long totalOrder = 1L;
         
         // 찬성 댓글 1
         DiscussionComment agreeComment1 = createComment(discussion, members.get(0), VoteType.AGREE,
                 "이 책의 주제에 대해 전적으로 동의합니다. 저자의 통찰력이 돋보이는 작품이라고 생각합니다.",
-                null, groupId, 0L, false, totalOrder++);
+                null, 1L, 0L, false, totalOrder++);
         comments.add(agreeComment1);
         
         // 찬성 댓글 2
         comments.add(createComment(discussion, members.get(1), VoteType.AGREE,
                 "저도 같은 생각입니다. 특히 3장에서 다룬 내용이 현대 사회의 문제를 정확히 짚어내고 있어 인상 깊었어요.",
-                null, groupId, 0L, false, totalOrder++));
+                null, 2L, 0L, false, totalOrder++));
         
         // 반대 댓글 1
         DiscussionComment disagreeComment1 = createComment(discussion, members.get(2), VoteType.DISAGREE,
                 "저자는 너무 비관적인 시각에서 문제를 바라보고 있는 것 같습니다. 해결책이 비현실적이에요.",
-                null, groupId, 0L, false, totalOrder++);
+                null, 3L, 0L, false, totalOrder++);
         comments.add(disagreeComment1);
         
         // 반대 댓글 2
         comments.add(createComment(discussion, members.get(3), VoteType.DISAGREE,
                 "동감합니다. 특히 저자가 제시한 해결책은 현실에서 적용하기 힘들 것 같아요.",
-                null, groupId, 0L, false, totalOrder++));
+                null, 4L, 0L, false, totalOrder++));
         
         return comments;
     }

@@ -63,6 +63,8 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId));
 
+        Long groupId = discussionCommentRepository.findMaxGroupId() + 1;
+
         Long topTotalOrder =
             discussionCommentRepository.findTopTotalOrder(discussionId).orElse(0L) + 1;
 
@@ -72,14 +74,12 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             .isChild(false)
             .groupOrder(0L)
             .totalOrder(topTotalOrder)
+            .groupId(groupId)
             .voteType(voteType)
             .content(discussionCommentRequestDTO.getContent())
             .build();
 
-        DiscussionComment savedDiscussionComment = discussionCommentRepository.save(discussionComment);
-        Long savedGroupId = savedDiscussionComment.getId();
-        savedDiscussionComment.changeGroupId(savedGroupId);
-        discussionCommentRepository.save(savedDiscussionComment);
+        discussionCommentRepository.save(discussionComment);
 
         DiscussionParticipant savedDiscussionParticipant = discussionParticipantRepository.findByDiscussionAndMember(
             discussion, member).orElse(null);
