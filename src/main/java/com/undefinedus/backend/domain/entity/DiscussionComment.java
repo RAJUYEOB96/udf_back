@@ -56,8 +56,8 @@ public class DiscussionComment extends BaseEntity {
     @Column
     private Long parentId; // 부모Id // 고유 아이디는 id로 사용
     
-    @Column(name = "comment_order")  // 'order' 대신 'comment_order' 사용
-    private Long order;
+    @Column
+    private Long groupOrder;
 
     @Column
     @Builder.Default

@@ -35,6 +35,7 @@ public class MyPageServiceImpl implements MyPageService {
     private final PasswordEncoder passwordEncoder;
 
     // 카카오 회원이 카카오톡 메시지 권한을 허용했는지 체크
+    @Override
     public Boolean checkMessagePermission(Long memberId) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
@@ -63,7 +64,7 @@ public class MyPageServiceImpl implements MyPageService {
                 }
 
                 member.updateKakaoMessageIsAgree(isMessageToKakao);
-                member.updateMessageToKakao(isMessageToKakao);
+                member.updateIsMessageToKakao(isMessageToKakao);
             }
             return isMessageToKakao;
         } else {
@@ -72,6 +73,7 @@ public class MyPageServiceImpl implements MyPageService {
     }
 
     // 카카오톡 메시지를 받을지 회원이 체크하는 메서드
+    @Override
     public boolean updateMessageToKakao(Long memberId) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
@@ -80,73 +82,76 @@ public class MyPageServiceImpl implements MyPageService {
 
         if (KakaoMessageIsAgree != null) {
 
-            member.updateMessageToKakao(!KakaoMessageIsAgree);
-            removeMessagePermission(memberId);
+            member.updateIsMessageToKakao(!KakaoMessageIsAgree);
+//            if (!member.isMessageToKakao()) {
+//
+//                removeMessagePermission(memberId);
+//            }
         }
 
         return member.isMessageToKakao();
     }
 
     // 카카오톡 권한 철회
-    private void removeMessagePermission(Long memberId) {
+//    private void removeMessagePermission(Long memberId) {
+//
+//        Member member = memberRepository.findById(memberId)
+//            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
+//
+//        String kakaoAccessToken = member.getKakaoAccessToken();
+//
+//        // getRevocableScopes 메서드를 사용하여 철회 가능한 권한 목록을 가져옴
+//        List<String> revocableScopes = getRevocableScopes(memberId);
+//
+//        // 철회할 권한이 없으면 종료
+//        if (revocableScopes.isEmpty()) {
+//            System.out.println("철회할 권한이 없습니다.");
+//            return;
+//        }
+//
+//        String url = "https://kapi.kakao.com/v2/user/revoke/scopes";
+//
+//        // 헤더 설정
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.add("Authorization", "Bearer " + kakaoAccessToken);
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//
+//        // 바디 설정
+//        Map<String, Object> body = new HashMap<>();
+//        body.put("scopes", revocableScopes);
+//
+//        // 요청 엔티티 생성
+//        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+//
+//        // RestTemplate 호출
+//        RestTemplate restTemplate = new RestTemplate();
+//        ResponseEntity<String> response = restTemplate.exchange(
+//            url,
+//            HttpMethod.POST,
+//            requestEntity,
+//            String.class
+//        );
+//
+//        // 응답 처리
+//        System.out.println("Response: " + response.getBody());
+//
+//    }
 
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
-
-        String kakaoAccessToken = member.getKakaoAccessToken();
-
-        // getRevocableScopes 메서드를 사용하여 철회 가능한 권한 목록을 가져옴
-        List<String> revocableScopes = getRevocableScopes(memberId);
-
-        // 철회할 권한이 없으면 종료
-        if (revocableScopes.isEmpty()) {
-            System.out.println("철회할 권한이 없습니다.");
-            return;
-        }
-
-        String url = "https://kapi.kakao.com/v2/user/revoke/scopes";
-
-        // 헤더 설정
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + kakaoAccessToken);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        // 바디 설정
-        Map<String, Object> body = new HashMap<>();
-        body.put("scopes", revocableScopes);
-
-        // 요청 엔티티 생성
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-        // RestTemplate 호출
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.exchange(
-            url,
-            HttpMethod.POST,
-            requestEntity,
-            String.class
-        );
-
-        // 응답 처리
-        System.out.println("Response: " + response.getBody());
-
-    }
-
-    public List<String> getRevocableScopes(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
-
-        String accessToken = member.getKakaoAccessToken(); // 저장된 Kakao Access Token
-
-        Map<String, Object> scopesResponse = getKakaoScopes(accessToken);
-        List<Map<String, Object>> scopes = (List<Map<String, Object>>) scopesResponse.get("scopes");
-
-        // revocable이 true인 항목의 id를 리스트로 수집
-        return scopes.stream()
-            .filter(scope -> (Boolean) scope.get("revocable")) // 철회 가능한 항목만 필터링
-            .map(scope -> (String) scope.get("id")) // id 값 추출
-            .toList(); // 리스트로 변환
-    }
+//    public List<String> getRevocableScopes(Long memberId) {
+//        Member member = memberRepository.findById(memberId)
+//            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
+//
+//        String accessToken = member.getKakaoAccessToken(); // 저장된 Kakao Access Token
+//
+//        Map<String, Object> scopesResponse = getKakaoScopes(accessToken);
+//        List<Map<String, Object>> scopes = (List<Map<String, Object>>) scopesResponse.get("scopes");
+//
+//        // revocable이 true인 항목의 id를 리스트로 수집
+//        return scopes.stream()
+//            .filter(scope -> (Boolean) scope.get("revocable")) // 철회 가능한 항목만 필터링
+//            .map(scope -> (String) scope.get("id")) // id 값 추출
+//            .toList(); // 리스트로 변환
+//    }
 
     // 카카오 API 호출 로직을 별도로 분리
     private Map<String, Object> getKakaoScopes(String accessToken) {

@@ -194,6 +194,7 @@ public class DiscussionServiceImpl implements DiscussionService {
         Discussion savedDiscussion = discussionRepository.save(discussion);
 
         DiscussionDetailResponseDTO discussionDetailResponseDTO = DiscussionDetailResponseDTO.builder()
+            .discussionId(discussionId)
             .bookTitle(discussionBook.getTitle())
             .memberName(discussion.getMember().getNickname())
             .title(savedDiscussion.getTitle())
@@ -260,25 +261,28 @@ public class DiscussionServiceImpl implements DiscussionService {
         DiscussionParticipant savedParticipant = discussionParticipantRepository.findByDiscussionAndMember(
             discussion, member).orElse(null);
 
-        if (savedParticipant == null) {
-            DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
-                .discussion(discussion)
-                .member(member)
-                .isAgree(true)
-                .build();
+        if (discussion.getStatus() == DiscussionStatus.PROPOSED) {
 
-            discussionParticipantRepository.save(discussionParticipant);
-        } else {
-            if (!savedParticipant.isAgree()) {
-
-                discussionParticipantRepository.deleteById(savedParticipant.getId());
-
+            if (savedParticipant == null) {
                 DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
                     .discussion(discussion)
                     .member(member)
                     .isAgree(true)
                     .build();
+
                 discussionParticipantRepository.save(discussionParticipant);
+            } else {
+                if (!savedParticipant.isAgree()) {
+
+                    discussionParticipantRepository.deleteById(savedParticipant.getId());
+
+                    DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
+                        .discussion(discussion)
+                        .member(member)
+                        .isAgree(true)
+                        .build();
+                    discussionParticipantRepository.save(discussionParticipant);
+                }
             }
         }
     }
@@ -296,19 +300,8 @@ public class DiscussionServiceImpl implements DiscussionService {
         DiscussionParticipant savedParticipant = discussionParticipantRepository.findByDiscussionAndMember(
             discussion, member).orElse(null);
 
-        if (savedParticipant == null) {
-            DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
-                .discussion(discussion)
-                .member(member)
-                .isAgree(false)
-                .build();
-
-            discussionParticipantRepository.save(discussionParticipant);
-        } else {
-            if (savedParticipant.isAgree()) {
-
-                discussionParticipantRepository.deleteById(savedParticipant.getId());
-
+        if (discussion.getStatus() == DiscussionStatus.PROPOSED) {
+            if (savedParticipant == null) {
                 DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
                     .discussion(discussion)
                     .member(member)
@@ -316,6 +309,19 @@ public class DiscussionServiceImpl implements DiscussionService {
                     .build();
 
                 discussionParticipantRepository.save(discussionParticipant);
+            } else {
+                if (savedParticipant.isAgree()) {
+
+                    discussionParticipantRepository.deleteById(savedParticipant.getId());
+
+                    DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
+                        .discussion(discussion)
+                        .member(member)
+                        .isAgree(false)
+                        .build();
+
+                    discussionParticipantRepository.save(discussionParticipant);
+                }
             }
         }
     }

@@ -8,10 +8,7 @@ import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.enums.BookStatus;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.domain.enums.VoteType;
-import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentResponseDTO;
 import jakarta.persistence.EntityManager;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -186,47 +183,6 @@ class DiscussionCommentRepositoryTest {
     @DisplayName("연결 확인")
     void testConnection() {
         assertNotNull(discussionCommentRepository);
-    }
-
-    @Test
-    @DisplayName("findTopOrder 메서드 테스트")
-    void testFindTopOrder() {
-        // 댓글을 두 개 추가
-        DiscussionComment parentComment = DiscussionComment.builder()
-            .discussion(discussion)
-            .member(member1)
-            .parentId(null)
-            .order(1L)
-            .voteType(VoteType.AGREE)
-            .content("Parent Comment")
-            .build();
-        discussionCommentRepository.save(parentComment);
-
-        DiscussionComment childComment1 = DiscussionComment.builder()
-            .discussion(discussion)
-            .member(member2)
-            .parentId(parentComment.getId())
-            .order(1L)
-            .voteType(VoteType.DISAGREE)
-            .content("Child Comment 1")
-            .build();
-        discussionCommentRepository.save(childComment1);
-
-        DiscussionComment childComment2 = DiscussionComment.builder()
-            .discussion(discussion)
-            .member(member3)
-            .parentId(parentComment.getId())
-            .order(2L)
-            .voteType(VoteType.DISAGREE)
-            .content("Child Comment 2")
-            .build();
-        discussionCommentRepository.save(childComment2);
-
-        // 메소드 실행
-        Long topOrder = discussionCommentRepository.findTopOrder(discussion.getId(), parentComment.getId()).orElse(0L) + 1;
-
-        // 검증
-        assertThat(topOrder).isEqualTo(3L); // 가장 최근의 자식 댓글 order 값이 3이어야 함
     }
 
     @Test

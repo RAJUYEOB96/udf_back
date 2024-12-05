@@ -818,7 +818,7 @@ public class InitialDataConfig {
                 .content(content)
                 .parentId(parentId)
                 .groupId(groupId)
-                .order(order)
+                .groupOrder(order)
                 .isChild(isChild)
                 .totalOrder(totalOrder)
                 .build();

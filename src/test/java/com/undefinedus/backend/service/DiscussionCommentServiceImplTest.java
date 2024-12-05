@@ -117,30 +117,45 @@ class DiscussionCommentServiceImplTest {
     }
 
     @Test
-    @DisplayName("토론에 댓글을 작성하는 테스트")
+    @DisplayName("댓글 작성 테스트")
     void testWriteComment() {
+        // Given
         Long discussionId = 1L;
         Long memberId = 1L;
-
         DiscussionCommentRequestDTO requestDTO = DiscussionCommentRequestDTO.builder()
-            .voteType(String.valueOf(VoteType.DISAGREE))
-            .content("Test Comment")
+            .voteType(String.valueOf(VoteType.AGREE))
+            .content("테스트 댓글")
             .build();
 
-        Discussion discussion = new Discussion();
-        Member member = new Member();
+        Discussion discussion = Discussion.builder()
+            .id(discussionId)
+            .build();
+        Member member = Member.builder()
+            .id(memberId)
+            .build();
+        DiscussionComment savedComment = DiscussionComment.builder()
+            .id(1L)
+            .discussion(discussion)
+            .member(member)
+            .voteType(VoteType.AGREE)
+            .content("테스트 댓글")
+            .build();
 
-        // Mocking the repository methods
         when(discussionRepository.findById(discussionId)).thenReturn(Optional.of(discussion));
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
-        when(discussionCommentRepository.findMaxGroupId()).thenReturn(1L);
-        when(discussionCommentRepository.findTopTotalOrder(discussionId)).thenReturn(Optional.of(1L));
-        when(discussionParticipantRepository.findByDiscussionAndMember(discussion, member)) // Mocking the call to discussionParticipantRepository
-            .thenReturn(Optional.of(new DiscussionParticipant())); // 필요한 리턴값 설정
+        when(discussionCommentRepository.findTopTotalOrder(discussionId)).thenReturn(Optional.of(0L));
+        when(discussionCommentRepository.save(any(DiscussionComment.class))).thenReturn(savedComment);
 
+        // When
         discussionCommentService.writeComment(discussionId, memberId, requestDTO);
 
-        verify(discussionCommentRepository, times(1)).save(any(DiscussionComment.class));
+        // Then
+        verify(discussionRepository).findById(discussionId);
+        verify(memberRepository).findById(memberId);
+        verify(discussionCommentRepository).findTopTotalOrder(discussionId);
+        verify(discussionCommentRepository, times(2)).save(any(DiscussionComment.class));
+        verify(discussionParticipantRepository).findByDiscussionAndMember(discussion, member);
+        verify(discussionParticipantRepository).save(any(DiscussionParticipant.class));
     }
 
     @Test
