@@ -22,7 +22,7 @@ public class DiscussionCommentResponseDTO {
 
     private Long groupId;
 
-    private Long order;
+    private Long groupOrder;
 
     private Long totalOrder;
 
