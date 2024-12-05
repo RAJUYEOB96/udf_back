@@ -63,8 +63,6 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId));
 
-        Long groupId = discussionCommentRepository.findMaxGroupId() + 1;
-
         Long topTotalOrder =
             discussionCommentRepository.findTopTotalOrder(discussionId).orElse(0L) + 1;
 
@@ -72,14 +70,16 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             .discussion(discussion)
             .member(member)
             .isChild(false)
-            .order(0L)
+            .groupOrder(0L)
             .totalOrder(topTotalOrder)
-            .groupId(groupId)
             .voteType(voteType)
             .content(discussionCommentRequestDTO.getContent())
             .build();
 
-        discussionCommentRepository.save(discussionComment);
+        DiscussionComment savedDiscussionComment = discussionCommentRepository.save(discussionComment);
+        Long savedGroupId = savedDiscussionComment.getId();
+        savedDiscussionComment.changeGroupId(savedGroupId);
+        discussionCommentRepository.save(savedDiscussionComment);
 
         DiscussionParticipant savedDiscussionParticipant = discussionParticipantRepository.findByDiscussionAndMember(
             discussion, member).orElse(null);
@@ -149,7 +149,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             .parentId(parentId)
             .groupId(groupIdFromParent)
             .isChild(true)
-            .order(topOrder)
+            .groupOrder(topOrder)
             .totalOrder(topTotalOrderFromChild)
             .voteType(voteType)
             .content(discussionCommentRequestDTO.getContent())
@@ -211,11 +211,12 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
         for (DiscussionComment discussionComment : discussionCommentList) {
             // 각 토론 댓글의 관련 정보를 추출
 
+            Long groupId = discussionComment.getGroupId();
             Long commentId = discussionComment.getId();
             Long discussionId = discussionComment.getDiscussion().getId();
             Long memberId = discussionComment.getMember().getId();
             Long parentId = discussionComment.getParentId();
-            Long order = discussionComment.getOrder();
+            Long order = discussionComment.getGroupOrder();
             boolean isChild = discussionComment.isChild();
             VoteType voteType = discussionComment.getVoteType();
             String content = discussionComment.getContent();
@@ -238,6 +239,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .nickname(member.getNickname())
                 .honorific(member.getHonorific())
                 .parentId(parentId)
+                .groupId(groupId)
                 .order(order)
                 .totalOrder(totalOrder)
                 .isChild(isChild)
@@ -419,7 +421,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             Long commentId = discussionComment.getId();
             Long memberId = discussionComment.getMember().getId();
             Long parentId = discussionComment.getParentId();
-            Long order = discussionComment.getOrder();
+            Long order = discussionComment.getGroupOrder();
             boolean isChild = discussionComment.isChild();
             VoteType voteType = discussionComment.getVoteType();
             String content = discussionComment.getContent();

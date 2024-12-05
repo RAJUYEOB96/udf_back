@@ -13,7 +13,6 @@ import com.undefinedus.backend.dto.request.report.ReportRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.report.ReportResponseDTO;
 import com.undefinedus.backend.exception.discussion.DiscussionNotFoundException;
-import com.undefinedus.backend.exception.discussionComment.DiscussionCommentNotFoundException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.exception.report.ReportNotFoundException;
 import com.undefinedus.backend.repository.DiscussionCommentRepository;
@@ -43,55 +42,29 @@ public class ReportServiceImpl implements ReportService {
     private final DiscussionCommentRepository discussionCommentRepository;
     private final EntityManager entityManager;
 
-
-    // 토론, 댓글 신고
+    // 토론 신고
     @Override
-    public void report(Long reporterId, ReportRequestDTO reportRequestDTO) {
+    public void reportDiscussion(Long reporterId, Long discussionId,
+        ReportRequestDTO reportRequestDTO) {
 
-        Long discussionId;
-        Long commentId;
-        Discussion discussion = null;
-        DiscussionComment discussionComment = null;
-
-        if (reportRequestDTO.getDiscussionId() != null) {
-            commentId = null;
-            discussionId = reportRequestDTO.getDiscussionId();
-        } else {
-            discussionId = null;
-            commentId = reportRequestDTO.getCommentId();
-        }
-
-        Long reportedId = reportRequestDTO.getReportedId();
         String reason = reportRequestDTO.getReason();
-        String targetType = reportRequestDTO.getTargetType();
 
-        Member member = memberRepository.findById(reporterId)
-            .orElseThrow(() -> new MemberNotFoundException("해당 유저를 찾을 수 없습니다 ; " + reporterId));
+        Member reporter = memberRepository.findById(reporterId)
+            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + reporterId));
 
-        Member reported = memberRepository.findById(reportedId)
-            .orElseThrow(
-                () -> new MemberNotFoundException("해당 신고 당하는 유저를 찾을 수 없습니다 ; " + reportedId));
+        Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(
+            () -> new DiscussionNotFoundException("해당 토론을 찾을 수 없습니다. : " + discussionId));
 
-        if (discussionId != null) {
-            discussion = discussionRepository.findById(discussionId)
-                .orElseThrow(
-                    () -> new DiscussionNotFoundException("해당 토론 방을 찾을 수 없습니다. : " + discussionId));
-        } else {
-            discussionComment = discussionCommentRepository.findById(commentId)
-                .orElseThrow(
-                    () -> new DiscussionCommentNotFoundException(
-                        "해당 댓글을 찾을 수 없습니다. : " + commentId));
-        }
+        Member reported = discussion.getMember();
 
         Report reportDiscussion = Report.builder()
-            .reporter(member)
+            .reporter(reporter)
             .reported(reported)
-            .comment(discussionComment)
             .discussion(discussion)
             .reportReason(reason)
             .status(ReportStatus.PENDING)
-            .targetType(ReportTargetType.valueOf(targetType))
-            .previousDiscussionStatus(discussion != null ? discussion.getStatus() : null)
+            .targetType(ReportTargetType.DISCUSSION)
+            .previousDiscussionStatus(discussion.getStatus())
             .build();
 
         reportRepository.save(reportDiscussion);
@@ -116,6 +89,34 @@ public class ReportServiceImpl implements ReportService {
                 entityManager.flush();
             }
         }
+    }
+
+    // 댓글, 답글 신고
+    @Override
+    public void reportComment(Long reporterId, Long commentId, ReportRequestDTO reportRequestDTO) {
+
+        String reason = reportRequestDTO.getReason();
+
+        Member reporter = memberRepository.findById(reporterId)
+            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + reporterId));
+
+        DiscussionComment discussionComment = discussionCommentRepository.findById(commentId).orElseThrow(
+            () -> new DiscussionNotFoundException("해당 댓글을 찾을 수 없습니다. : " + commentId));
+
+        Member reported = discussionComment.getMember();
+
+        Report reportComment = Report.builder()
+            .reporter(reporter)
+            .reported(reported)
+            .comment(discussionComment)
+            .reportReason(reason)
+            .status(ReportStatus.PENDING)
+            .targetType(ReportTargetType.DISCUSSION_COMMENT)
+            .build();
+
+        reportRepository.save(reportComment);
+
+        entityManager.flush();
 
         // 동일한 댓글에 대한 신고 수 체크
         if (discussionComment != null) {

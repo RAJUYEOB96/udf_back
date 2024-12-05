@@ -27,15 +27,31 @@ public class ReportController {
 
     private final ReportService reportService;
 
-    @PostMapping("/reportDiscussionAndComment")
-    public ResponseEntity<ApiResponseDTO<Void>> report(
+    @PostMapping("/discussion/{discussionId}")
+    public ResponseEntity<ApiResponseDTO<Void>> reportDiscussion(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+        @PathVariable("discussionId") Long discussionId,
         @RequestBody ReportRequestDTO reportRequestDTO
     ) {
 
         Long memberId = memberSecurityDTO.getId();
 
-        reportService.report(memberId, reportRequestDTO);
+        reportService.reportDiscussion(memberId, discussionId, reportRequestDTO);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(ApiResponseDTO.success(null));
+    }
+
+    @PostMapping("/comment/{commentId}")
+    public ResponseEntity<ApiResponseDTO<Void>> reportComment(
+        @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+        @PathVariable("commentId") Long commentId,
+        @RequestBody ReportRequestDTO reportRequestDTO
+    ) {
+
+        Long memberId = memberSecurityDTO.getId();
+
+        reportService.reportComment(memberId, commentId, reportRequestDTO);
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(ApiResponseDTO.success(null));

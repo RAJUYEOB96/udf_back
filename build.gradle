@@ -89,7 +89,8 @@ dependencies {
     testImplementation 'com.github.database-rider:rider-junit5:1.32.0'
 
     // 욕 필터링 라이브러리
-    implementation 'io.github.vaneproject:badwordfiltering:1.0.0'}
+    implementation 'io.github.vaneproject:badwordfiltering:1.0.0'
+}
 
 // chat gpt
 dependencyManagement {

@@ -171,7 +171,7 @@ public class Member extends BaseEntity {
         this.kakaoAccessToken = kakaoAccessToken;
     }
 
-    public void updateMessageToKakao(boolean messageToKakao) {
+    public void updateIsMessageToKakao(boolean messageToKakao) {
         isMessageToKakao = messageToKakao;
     }
 
