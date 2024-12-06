@@ -90,6 +90,7 @@ public class AiServiceImpl implements AiService {
                 "The isbn13 list is: " + isbn13List)
         ));
 
+        // TODO : 확인용 프린트나 log는 삭제하기
         System.out.println("isbn13List = " + isbn13List);
 
         String response = webClient.post()
