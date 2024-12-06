@@ -81,6 +81,7 @@ public class CustomSecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         
         // TODO : 모든 출처 허용 -> 나중에 마지막에 바꾸어야 할듯
+        // TODO : 이건 무엇?
         configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         
         // GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS 메소드 허용
@@ -98,6 +99,7 @@ public class CustomSecurityConfig {
         ));
         
         // 자격 증명 허용
+        // TODO : 이건 무엇?
         configuration.setAllowCredentials(true);
         
         // 아래는 어디에 필요한거지?

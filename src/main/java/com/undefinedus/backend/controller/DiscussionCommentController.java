@@ -25,15 +25,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+// TODO : 현 프로젝트에서는 카멜 케이스 이지만 일반적으로는 케밥케이스(-) 또는 스네이크 케이스(_)가 일반적
 @RequestMapping("/api/discussionComment")
 public class DiscussionCommentController {
 
     private final DiscussionCommentService discussionCommentService;
 
     // 댓글 달기
+    // TODO : 다음 프로젝트할때는 더 RestFul 한 방식을 공부해서 적용해 보기
     @PostMapping("/writeComment/{discussionId}")
     public ResponseEntity<ApiResponseDTO<Void>> writeComment(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+        // TODO : name 을 안해도 같은 의미인데, 깔끔하게 코드 작성을 위해 없어도 되지 않을까?
         @PathVariable(name = "discussionId") Long discussionId,
         @Valid @RequestBody DiscussionCommentRequestDTO discussionCommentRequestDTO
     ) {

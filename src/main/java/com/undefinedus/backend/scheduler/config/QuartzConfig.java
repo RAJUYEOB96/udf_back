@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 public class QuartzConfig {
 
-
+    // TODO : 아래 내용들은 @PostConstruct 말고는 전부 비즈니스 코드 아닌가? 서비스로 가야 하지 않나? - 다음 프로젝트에는 주의해서 쓰기
     private final QuartzJobDetailRepository quartzJobDetailRepository;
     private final QuartzTriggerRepository quartzTriggerRepository;
     private final MemberRepository memberRepository;
