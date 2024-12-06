@@ -8,6 +8,9 @@ import lombok.Data;
 @Builder
 public class DiscussionDetailResponseDTO {
 
+
+    private Long discussionId;  // 신고 용
+
     private String bookTitle;  // 어떤 책의 토론인지
 
     private String memberName;  // 작성자

@@ -7,8 +7,11 @@ import com.undefinedus.backend.dto.response.report.ReportResponseDTO;
 
 public interface ReportService {
 
-    void report(Long reporterId, ReportRequestDTO reportRequestDTO);
-    
+    void reportDiscussion(Long reporterId, Long discussionId,
+        ReportRequestDTO reportRequestDTO);
+
+    void reportComment(Long reporterId, Long commentId, ReportRequestDTO reportRequestDTO);
+
     ScrollResponseDTO<ReportResponseDTO> getReportList(ScrollRequestDTO requestDTO);
     
     ReportResponseDTO getReportDetail(Long reportId);

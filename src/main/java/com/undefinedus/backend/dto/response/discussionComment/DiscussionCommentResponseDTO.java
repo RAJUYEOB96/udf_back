@@ -20,7 +20,9 @@ public class DiscussionCommentResponseDTO {
 
     private Long parentId; // 부모Id // 고유 아이디는 id로 사용
 
-    private Long order;
+    private Long groupId;
+
+    private Long groupOrder;
 
     private Long totalOrder;
 

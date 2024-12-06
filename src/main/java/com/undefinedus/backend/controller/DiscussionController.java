@@ -1,15 +1,16 @@
 package com.undefinedus.backend.controller;
 
 import com.undefinedus.backend.dto.MemberSecurityDTO;
+import com.undefinedus.backend.dto.request.discussion.DiscussionRegisterRequestDTO;
+import com.undefinedus.backend.dto.request.discussion.DiscussionUpdateRequestDTO;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
-import com.undefinedus.backend.exception.discussion.DiscussionException;
-import com.undefinedus.backend.dto.request.discussion.DiscussionUpdateRequestDTO;
-import com.undefinedus.backend.dto.request.discussion.DiscussionRegisterRequestDTO;
 import com.undefinedus.backend.dto.response.discussion.DiscussionDetailResponseDTO;
 import com.undefinedus.backend.dto.response.discussion.DiscussionListResponseDTO;
+import com.undefinedus.backend.exception.discussion.DiscussionException;
 import com.undefinedus.backend.service.DiscussionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,7 @@ public class DiscussionController {
     public ResponseEntity<ApiResponseDTO<Void>> discussionRegister(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @RequestParam(name = "isbn13") String isbn13,
-        @RequestBody DiscussionRegisterRequestDTO discussionRegisterRequestDTO) {
+        @Valid @RequestBody DiscussionRegisterRequestDTO discussionRegisterRequestDTO) {
 
         Long memberId = memberSecurityDTO.getId();
 
@@ -68,13 +69,14 @@ public class DiscussionController {
     public ResponseEntity<ApiResponseDTO<DiscussionDetailResponseDTO>> getDiscussionDetail(
         @RequestParam("discussionId") Long discussionId
     ) {
-        DiscussionDetailResponseDTO discussionDetail = discussionService.getDiscussionDetail(discussionId);
+        DiscussionDetailResponseDTO discussionDetail = discussionService.getDiscussionDetail(
+            discussionId);
 
         return ResponseEntity.ok(ApiResponseDTO.success(discussionDetail));
     }
 
     // 발의글에 찬성으로 참여하기
-    @GetMapping("/joinAgree")
+    @PostMapping("/joinAgree")
     public ResponseEntity<ApiResponseDTO<Void>> joinAgree(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @RequestParam("discussionId") Long discussionId
@@ -93,7 +95,7 @@ public class DiscussionController {
     }
 
     // 발의글에 반대로 참석하기
-    @GetMapping("/joinDisagree")
+    @PostMapping("/joinDisagree")
     public ResponseEntity<ApiResponseDTO<Void>> joinDisagree(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @RequestParam("discussionId") Long discussionId
@@ -117,10 +119,11 @@ public class DiscussionController {
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @RequestParam("isbn13") String isbn13,
         @RequestParam("discussionId") Long discussionId,
-        @RequestBody DiscussionUpdateRequestDTO discussionUpdateRequestDTO) {
+        @Valid @RequestBody DiscussionUpdateRequestDTO discussionUpdateRequestDTO) {
 
         try {
-            discussionService.discussionUpdate(memberSecurityDTO.getId(), isbn13,  discussionId, discussionUpdateRequestDTO);
+            discussionService.discussionUpdate(memberSecurityDTO.getId(), isbn13, discussionId,
+                discussionUpdateRequestDTO);
 
         } catch (Exception e) {
 

@@ -1,5 +1,6 @@
 package com.undefinedus.backend.dto.request.discussion;
 
+import com.undefinedus.backend.global.validation.annotation.NoProfanity;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
@@ -8,13 +9,15 @@ import lombok.Data;
 @Builder
 public class DiscussionRegisterRequestDTO {
 
-    private Long myBook;  // 어떤 책의 토론인지 // 내가 기록한 책만 토론 주제로 올릴 수 있음
+    private Long myBookId;  // 어떤 책의 토론인지 // 내가 기록한 책만 토론 주제로 올릴 수 있음
 
-    private Long member;  // 작성자
+    private Long memberId;  // 작성자
 
+    @NoProfanity
     private String title;    // 토론 제목
 
-    private String content;
+    @NoProfanity
+    private String content;      // 토론 주제 글
 
     private int agree; // 토론 찬성 반대 참여자 수를 세기 위해 필요 예(찬성 2)
 

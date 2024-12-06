@@ -6,8 +6,12 @@ import com.undefinedus.backend.domain.entity.DiscussionParticipant;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
+import com.undefinedus.backend.dto.request.discussion.DiscussionRegisterRequestDTO;
+import com.undefinedus.backend.dto.request.discussion.DiscussionUpdateRequestDTO;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
+import com.undefinedus.backend.dto.response.discussion.DiscussionDetailResponseDTO;
+import com.undefinedus.backend.dto.response.discussion.DiscussionListResponseDTO;
 import com.undefinedus.backend.exception.aladinBook.AladinBookNotFoundException;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.exception.discussion.DiscussionException;
@@ -20,10 +24,6 @@ import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.MyBookRepository;
 import com.undefinedus.backend.scheduler.config.QuartzConfig;
-import com.undefinedus.backend.dto.request.discussion.DiscussionRegisterRequestDTO;
-import com.undefinedus.backend.dto.request.discussion.DiscussionUpdateRequestDTO;
-import com.undefinedus.backend.dto.response.discussion.DiscussionDetailResponseDTO;
-import com.undefinedus.backend.dto.response.discussion.DiscussionListResponseDTO;
 import com.undefinedus.backend.scheduler.job.Scheduled;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -49,7 +49,6 @@ public class DiscussionServiceImpl implements DiscussionService {
     private final AladinBookRepository aladinBookRepository;
     private final Scheduled scheduled;
     private final DiscussionParticipantRepository discussionParticipantRepository;
-    private final DiscussionCommentRepository discussionCommentRepository;
 
     @Override
     public Long discussionRegister(Long memberId, String isbn13,
@@ -65,7 +64,8 @@ public class DiscussionServiceImpl implements DiscussionService {
             .myBook(myBook)  // MyBook 객체
             .member(member)  // Member 객체
             .title(discussionRegisterRequestDTO.getTitle())
-            .content(discussionRegisterRequestDTO.getContent()).status(DiscussionStatus.PROPOSED)
+            .content(discussionRegisterRequestDTO.getContent())
+            .status(DiscussionStatus.PROPOSED)
             .startDate(discussionRegisterRequestDTO.getStartDate())
             .closedAt(discussionRegisterRequestDTO.getStartDate().plusDays(1)) // 하루 뒤 토론 마감
             .build();
@@ -75,7 +75,8 @@ public class DiscussionServiceImpl implements DiscussionService {
 
         // 상태 변경 작업 스케줄링
         try {
-            quartzConfig.scheduleDiscussionJobs(savedDiscussion.getStartDate(), savedDiscussion.getId());
+            quartzConfig.scheduleDiscussionJobs(savedDiscussion.getStartDate(),
+                savedDiscussion.getId());
         } catch (SchedulerException e) {
             log.error(
                 "Failed to schedule status change jobs for discussion: " + savedDiscussion.getId(),
@@ -193,6 +194,7 @@ public class DiscussionServiceImpl implements DiscussionService {
         Discussion savedDiscussion = discussionRepository.save(discussion);
 
         DiscussionDetailResponseDTO discussionDetailResponseDTO = DiscussionDetailResponseDTO.builder()
+            .discussionId(discussionId)
             .bookTitle(discussionBook.getTitle())
             .memberName(discussion.getMember().getNickname())
             .title(savedDiscussion.getTitle())
@@ -259,25 +261,28 @@ public class DiscussionServiceImpl implements DiscussionService {
         DiscussionParticipant savedParticipant = discussionParticipantRepository.findByDiscussionAndMember(
             discussion, member).orElse(null);
 
-        if (savedParticipant == null) {
-            DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
-                .discussion(discussion)
-                .member(member)
-                .isAgree(true)
-                .build();
+        if (discussion.getStatus() == DiscussionStatus.PROPOSED) {
 
-            discussionParticipantRepository.save(discussionParticipant);
-        } else {
-            if (!savedParticipant.isAgree()) {
-
-                discussionParticipantRepository.deleteById(savedParticipant.getId());
-
+            if (savedParticipant == null) {
                 DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
                     .discussion(discussion)
                     .member(member)
                     .isAgree(true)
                     .build();
+
                 discussionParticipantRepository.save(discussionParticipant);
+            } else {
+                if (!savedParticipant.isAgree()) {
+
+                    discussionParticipantRepository.deleteById(savedParticipant.getId());
+
+                    DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
+                        .discussion(discussion)
+                        .member(member)
+                        .isAgree(true)
+                        .build();
+                    discussionParticipantRepository.save(discussionParticipant);
+                }
             }
         }
     }
@@ -295,19 +300,8 @@ public class DiscussionServiceImpl implements DiscussionService {
         DiscussionParticipant savedParticipant = discussionParticipantRepository.findByDiscussionAndMember(
             discussion, member).orElse(null);
 
-        if (savedParticipant == null) {
-            DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
-                .discussion(discussion)
-                .member(member)
-                .isAgree(false)
-                .build();
-
-            discussionParticipantRepository.save(discussionParticipant);
-        } else {
-            if (savedParticipant.isAgree()) {
-
-                discussionParticipantRepository.deleteById(savedParticipant.getId());
-
+        if (discussion.getStatus() == DiscussionStatus.PROPOSED) {
+            if (savedParticipant == null) {
                 DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
                     .discussion(discussion)
                     .member(member)
@@ -315,6 +309,19 @@ public class DiscussionServiceImpl implements DiscussionService {
                     .build();
 
                 discussionParticipantRepository.save(discussionParticipant);
+            } else {
+                if (savedParticipant.isAgree()) {
+
+                    discussionParticipantRepository.deleteById(savedParticipant.getId());
+
+                    DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
+                        .discussion(discussion)
+                        .member(member)
+                        .isAgree(false)
+                        .build();
+
+                    discussionParticipantRepository.save(discussionParticipant);
+                }
             }
         }
     }
