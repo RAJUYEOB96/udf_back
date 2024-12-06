@@ -3,8 +3,14 @@ package com.undefinedus.backend.service;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
+import com.undefinedus.backend.dto.response.ScrollResponseDTO;
+import com.undefinedus.backend.dto.response.social.MemberSocialInfoResponseDTO;
+import com.undefinedus.backend.dto.response.social.OtherMemberInfoResponseDTO;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface MemberService {
 
