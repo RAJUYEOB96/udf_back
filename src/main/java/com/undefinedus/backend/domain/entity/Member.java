@@ -132,24 +132,24 @@ public class Member extends BaseEntity {
     private String kakaoRefreshToken;
 
     // 알림 관련은 한달안에 알림 기능까지 넣기는 빡세다고 생각 다음 버전 만들시 추가 예정
-    
+
     // === Soft Delete 관련 === //
     @Column(nullable = false)
     @Builder.Default
     private boolean isDeleted = false; // softDelete
-    
+
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
-    
+
     // === 메서드 === //
     public void addRole(MemberType memberType) {
         memberRoleList.add(memberType);
     }
-    
+
     public void clearRole() {
         memberRoleList.clear();
     }
-    
+
     public void setSocialLogin(SocialLogin socialLogin) {
         this.socialLogin = socialLogin;
     }
@@ -158,9 +158,30 @@ public class Member extends BaseEntity {
         this.id = id;
     }
 
+    public void updateBirth(LocalDate birth) {
+        this.birth = birth;
+    }
+
+    public void updateGender(String gender) {
+        this.gender = gender;
+    }
+
     public void setNickname(
         @Size(min = 2, max = 10) String nickname) {
         this.nickname = nickname;
+    }
+
+    public void updateProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
+
+    // 취향 업데이트 시 기존 취향 초기화용
+    public void clearPreferences() {
+        this.preferences = new HashSet<>();
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
     }
 
     public void updateKakaoRefreshToken(String kakaoRefreshToken) {

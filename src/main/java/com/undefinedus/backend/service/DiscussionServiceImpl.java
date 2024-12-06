@@ -18,7 +18,6 @@ import com.undefinedus.backend.exception.discussion.DiscussionException;
 import com.undefinedus.backend.exception.discussion.DiscussionNotFoundException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.AladinBookRepository;
-import com.undefinedus.backend.repository.DiscussionCommentRepository;
 import com.undefinedus.backend.repository.DiscussionParticipantRepository;
 import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MemberRepository;
@@ -51,11 +50,12 @@ public class DiscussionServiceImpl implements DiscussionService {
     private final DiscussionParticipantRepository discussionParticipantRepository;
 
     @Override
-    public Long discussionRegister(Long memberId, String isbn13,
-        DiscussionRegisterRequestDTO discussionRegisterRequestDTO) {
+    public Long discussionRegister(Long memberId, DiscussionRegisterRequestDTO discussionRegisterRequestDTO) {
 
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new MemberNotFoundException("해당 사용자를 찾을 수 없습니다. : " + memberId));
+
+        String isbn13 = discussionRegisterRequestDTO.getIsbn13();
 
         MyBook myBook = myBookRepository.findByMemberIdAndIsbn13(memberId, isbn13)
             .orElseThrow(() -> new BookNotFoundException("해당 책을 찾을 수 없습니다. : " + isbn13));
@@ -79,7 +79,7 @@ public class DiscussionServiceImpl implements DiscussionService {
                 savedDiscussion.getId());
         } catch (SchedulerException e) {
             log.error(
-                "Failed to schedule status change jobs for discussion: " + savedDiscussion.getId(),
+                "토론 상태 변경 작업 스케줄링에 실패했습니다. 토론 ID: " + savedDiscussion.getId(),
                 e);
         } catch (Exception e) {
             throw new RuntimeException(e);

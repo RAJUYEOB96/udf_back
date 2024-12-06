@@ -29,7 +29,6 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 public class QuartzConfig {
 
-
     private final QuartzJobDetailRepository quartzJobDetailRepository;
     private final QuartzTriggerRepository quartzTriggerRepository;
     private final MemberRepository memberRepository;
@@ -40,7 +39,8 @@ public class QuartzConfig {
         throws Exception {
 
         // PROPOSED -> SCHEDULED (시작 3시간 전)
-        LocalDateTime startDateTime = targetTime.minusHours(3);
+//        LocalDateTime startDateTime = targetTime.minusHours(3);
+        LocalDateTime startDateTime = targetTime.minusMinutes(3); // 3분전
         Date startDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
         JobDetail scheduleDetail = JobBuilder.newJob(Scheduled.class)
@@ -71,7 +71,8 @@ public class QuartzConfig {
         saveQuartzDiscussionTrigger(discussionId, startDate, DiscussionStatus.IN_PROGRESS);
 
         // IN_PROGRESS -> ANALYZING (시작 24시간 후)
-        startDateTime = targetTime.plusHours(24);
+//        startDateTime = targetTime.plusHours(24);
+        startDateTime = targetTime.plusSeconds(30); // 30초 뒤
         startDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
         JobDetail analyzingDetail = JobBuilder.newJob(Analyzing.class)
@@ -87,7 +88,8 @@ public class QuartzConfig {
         saveQuartzDiscussionTrigger(discussionId, startDate, DiscussionStatus.ANALYZING);
 
         // ANALYZING -> COMPLETED (시작 25시간 후, 분석에 1시간 가정)
-        startDateTime = targetTime.plusHours(25);
+//        startDateTime = targetTime.plusHours(25);
+        startDateTime = targetTime.plusSeconds(30); // 30초 뒤
         startDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
         JobDetail completedDetail = JobBuilder.newJob(Completed.class)

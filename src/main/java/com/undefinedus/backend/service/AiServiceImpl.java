@@ -90,8 +90,6 @@ public class AiServiceImpl implements AiService {
                 "The isbn13 list is: " + isbn13List)
         ));
 
-        System.out.println("isbn13List = " + isbn13List);
-
         String response = webClient.post()
             .uri(API_URL)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -100,8 +98,6 @@ public class AiServiceImpl implements AiService {
             .retrieve()
             .bodyToMono(String.class)
             .block();
-
-        System.out.println("response = " + response);
 
         return parseIsbn13FromAnswer(response);
     }

@@ -108,6 +108,8 @@ public class MemberServiceImpl implements MemberService {
             .password(passwordEncoder.encode(requestDTO.getPassword()))
             .nickname(requestDTO.getNickname())
             // 나중에 수정되면 바꿔야함
+            // 이미지는 리액트에서 아이콘으로 처리하니까
+            // 여기서는 그냥 "default" 정도로 세팅해도 될듯?
             .profileImage("defaultProfileImage.jpg")
             .birth(requestDTO.getBirth())
             .gender(requestDTO.getGender())
