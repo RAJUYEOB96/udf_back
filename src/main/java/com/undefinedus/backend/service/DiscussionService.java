@@ -12,8 +12,7 @@ import org.quartz.SchedulerException;
 
 public interface DiscussionService {
 
-    Long discussionRegister(Long memberId, String isbn13,
-        DiscussionRegisterRequestDTO discussionRegisterRequestDTO);
+    Long discussionRegister(Long memberId, DiscussionRegisterRequestDTO discussionRegisterRequestDTO);
 
     Discussion changeStatus(Long discussionId, DiscussionStatus discussionStatus);
 

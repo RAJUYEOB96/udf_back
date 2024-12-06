@@ -18,7 +18,10 @@ import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.entity.DiscussionParticipant;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
+import com.undefinedus.backend.domain.enums.BookStatus;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
+import com.undefinedus.backend.domain.enums.MemberType;
+import com.undefinedus.backend.domain.enums.PreferencesType;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.repository.AladinBookRepository;
@@ -31,11 +34,13 @@ import com.undefinedus.backend.dto.request.discussion.DiscussionUpdateRequestDTO
 import com.undefinedus.backend.dto.request.discussion.DiscussionRegisterRequestDTO;
 import com.undefinedus.backend.dto.response.discussion.DiscussionListResponseDTO;
 import com.undefinedus.backend.scheduler.job.Scheduled;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -76,6 +81,9 @@ class DiscussionServiceImplTest {
     private String isbn13;
     private DiscussionRegisterRequestDTO discussionRegisterRequestDTO;
 
+    private Member member;
+    private MyBook myBook;
+
     // 토론 생성 관련 설정
     @BeforeEach
     void setUpDiscussionDetails() {
@@ -92,40 +100,80 @@ class DiscussionServiceImplTest {
 
     @Test
     @DisplayName("토론 생성 성공 테스트")
-    void register_shouldReturnDiscussionId() throws Exception {
-        // Mocking
-        Member member = new Member();
-        MyBook myBook = new MyBook();
+    void discussionRegister_shouldReturnDiscussionId() throws Exception {
+        // Given: Mock 데이터 생성
+        Long memberId = 1L;
+        String isbn13 = "9781234567890";
+
+        // Member 더미 데이터
+        Member member = Member.builder()
+            .id(memberId)
+            .username("testuser@example.com")
+            .password("encryptedPassword123")
+            .nickname("testuser")
+            .profileImage("http://example.com/profile.jpg")
+            .introduction("Hello! I love reading books.")
+            .birth(LocalDate.of(1995, 1, 1))
+            .gender("Male")
+            .isPublic(true)
+            .isMessageToKakao(false)
+            .KakaoMessageIsAgree(false)
+            .honorific("초보리더")
+            .preferences(Set.of(PreferencesType.가정_요리_뷰티, PreferencesType.만화))
+            .memberRoleList(List.of(MemberType.USER))
+            .build();
+
+        // MyBook 더미 데이터
+        MyBook myBook = MyBook.builder()
+            .id(1L)
+            .isbn13(isbn13)
+            .status(BookStatus.COMPLETED)
+            .myRating(null)
+            .oneLineReview(null)
+            .currentPage(0)
+            .updateCount(0)
+            .startDate(null)
+            .endDate(null)
+            .build();
+
+        // Discussion 더미 데이터
+        LocalDateTime startDate = LocalDateTime.now();
+        DiscussionRegisterRequestDTO discussionRegisterRequestDTO = DiscussionRegisterRequestDTO.builder()
+            .isbn13(isbn13)
+            .title("Test Discussion Title")
+            .content("This is a test content for discussion.")
+            .startDate(startDate)
+            .build();
+
         Discussion discussion = Discussion.builder()
             .id(1L)
+            .myBook(myBook)
+            .member(member)
             .title(discussionRegisterRequestDTO.getTitle())
             .content(discussionRegisterRequestDTO.getContent())
             .status(DiscussionStatus.PROPOSED)
-            .startDate(discussionRegisterRequestDTO.getStartDate())
-            .closedAt(discussionRegisterRequestDTO.getStartDate().plusDays(1))
+            .startDate(startDate)
+            .closedAt(startDate.plusDays(1))
             .build();
 
-        when(memberRepository.findById(memberId)).thenReturn(java.util.Optional.of(member));
-        when(myBookRepository.findByMemberIdAndIsbn13(memberId, isbn13)).thenReturn(
-            java.util.Optional.of(myBook));
+        // Mocking
+        when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
+        when(myBookRepository.findByMemberIdAndIsbn13(memberId, isbn13)).thenReturn(Optional.of(myBook));
         when(discussionRepository.save(any(Discussion.class))).thenReturn(discussion);
-
-        // Quartz Config Mock
         doNothing().when(quartzConfig).scheduleDiscussionJobs(any(LocalDateTime.class), anyLong());
 
-        // 메서드 호출
-        Long discussionId = discussionServiceImpl.discussionRegister(memberId, isbn13,
-            discussionRegisterRequestDTO);
+        // When: 메서드 호출
+        Long discussionId = discussionServiceImpl.discussionRegister(memberId, discussionRegisterRequestDTO);
 
-        // Assertions
-        assertNotNull(discussionId);  // 반환된 토론 ID가 null이 아님을 확인
-        assertEquals(1L, discussionId);  // 반환된 토론 ID가 1L인지 확인
+        // Then: Assertions
+        assertNotNull(discussionId, "반환된 토론 ID가 null이 아님을 확인");
+        assertEquals(1L, discussionId, "반환된 토론 ID가 예상 값(1L)과 같음을 확인");
 
-        // quartzConfig.scheduleJobs 호출 여부 검증
-        verify(quartzConfig, times(1)).scheduleDiscussionJobs(any(LocalDateTime.class), anyLong());
-
-        // discussionRepository.save 호출 여부 검증
+        // Mock 객체 호출 검증
+        verify(memberRepository, times(1)).findById(memberId);
+        verify(myBookRepository, times(1)).findByMemberIdAndIsbn13(memberId, isbn13);
         verify(discussionRepository, times(1)).save(any(Discussion.class));
+        verify(quartzConfig, times(1)).scheduleDiscussionJobs(any(LocalDateTime.class), anyLong());
     }
 
     @Test
