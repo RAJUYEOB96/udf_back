@@ -1,6 +1,7 @@
 package com.undefinedus.backend.dto.response.report;
 
 import com.undefinedus.backend.domain.entity.Report;
+import com.undefinedus.backend.domain.enums.ReportStatus;
 import com.undefinedus.backend.domain.enums.ReportTargetType;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,8 @@ public class ReportResponseDTO {
     
     private String commentContent;    // 신고한 댓글 내용
     
+    private ReportStatus status; // // 처리 상태 (PENDING, TEMPORARY_ACCEPTED, ACCEPTED, REJECTED)
+    
     
     public static ReportResponseDTO from(Report report) {
         return ReportResponseDTO.builder()
@@ -41,6 +44,7 @@ public class ReportResponseDTO {
                 .discussionTitle(report.getDiscussion() != null ? report.getDiscussion().getTitle() : null)
                 .discussionContent(report.getDiscussion()!= null? report.getDiscussion().getContent() : null)
                 .commentContent(report.getComment()!= null? report.getComment().getContent() : null)
+                .status(report.getStatus())
                 .build();
     }
 }
