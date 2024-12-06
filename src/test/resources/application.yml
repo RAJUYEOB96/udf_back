@@ -66,7 +66,7 @@ spring:
       client:
         enabled: true   # ChatGPT 클라이언트 활성화
 
-  # perplexity (테스트 용)
+    # perplexity (테스트 용)
     perplexity:
       api-key: test-key
 
@@ -80,3 +80,14 @@ logging:
     org.hibernate.SQL: debug
     org.hibernate.type.descriptor.sql.BasicBinder: trace
     org.hibernate.orm.jdbc.bind: trace
+
+# AWS S3 정보
+cloud:
+  aws:
+    credentials:
+      access-key: test
+      secret-key: test
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: gongchaekbucket

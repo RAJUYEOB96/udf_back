@@ -17,6 +17,8 @@ public interface MyPageService {
         MultipartFile profileImage)
         throws IOException, NoSuchAlgorithmException;
 
+    Map<String, String> dropProfileImage(Long memberId);
+
     Map<String, String> updateBirthAndGender(Long memberId, LocalDate birth, String gender);
 
     Map<String, String> updatePreferences(Long memberId, List<String> preferences);

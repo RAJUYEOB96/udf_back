@@ -21,15 +21,9 @@ public class S3ServiceImpl implements S3Service {
 
     private final S3Client s3Client;
 
-    @Value("${cloud.aws.credentials.accessKey}")
-    private String accessKey;
-
-    @Value("${cloud.aws.credentials.secretKey}")
-    private String secretKey;
-
     @Value("${cloud.aws.region.static}")
     private String region;
-
+    //
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
@@ -43,7 +37,6 @@ public class S3ServiceImpl implements S3Service {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)
-                .acl("public-read")
                 .build();
 
             s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fileData));
@@ -112,6 +105,10 @@ public class S3ServiceImpl implements S3Service {
         if (index == -1) {
             throw new IllegalArgumentException("Invalid S3 URL format: " + s3Url);
         }
-        return s3Url.substring(index + 14); // 14는 ".amazonaws.com/" 뒤를 의미
+        String key = s3Url.substring(index + 14); // 14는 ".amazonaws.com/" 뒤를 의미
+        if (key.startsWith("/")) {
+            key = key.substring(1); // 앞의 슬래시 제거
+        }
+        return key;
     }
 }
