@@ -24,9 +24,9 @@ public class AladinAPIController {
     // 키워드 검색
     @GetMapping("/keyword")
     public ResponseEntity<ApiResponseDTO<Map<String, Object>>> getKeywordAladinAPIList(
-        @RequestParam(name = "page") Integer page,
-        @RequestParam(name = "keyword") String keyword,
-        @RequestParam(name = "sort") String sort
+        @RequestParam("page") Integer page,
+        @RequestParam("keyword") String keyword,
+        @RequestParam("sort") String sort
     ) {
 
         Map<String, Object> result = aladinBookService.searchKeywordAladinAPI(

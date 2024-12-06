@@ -360,33 +360,33 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             // 댓글 삭제
             discussionCommentRepository.deleteById(commentId);
 
-            System.out.println("commentMemberId = " + commentMemberId);
-
             // 삭제된 댓글이 찬성 댓글인지 반대 댓글인지 확인 후 해당 카운트 감소
             if (voteType == VoteType.AGREE) {
-                System.out.println("voteType = " + voteType);
+
                 // 찬성 댓글 삭제 시 마지막 찬성 댓글인지 확인
                 long countAgreeComments = countCommentsForDiscussion(
                     discussionComment.getDiscussion().getId(), VoteType.AGREE);
+
                 if (countAgreeComments == 0) {  // 마지막 찬성 댓글이 삭제되었으면
+
                     // 찬성 상태였던 참여자 삭제
                     DiscussionParticipant participant = findParticipantByDiscussionAndMember(
                         discussionComment.getDiscussion(), member);
                     discussionParticipantRepository.delete(participant); // 해당 찬성 상태 삭제
-
-                    System.out.println("Agree participant = " + participant);
                 }
+
             } else if (voteType == VoteType.DISAGREE) {
+
                 // 반대 댓글 삭제 시 마지막 반대 댓글인지 확인
                 long countDisagreeComments = countCommentsForDiscussion(
                     discussionComment.getDiscussion().getId(), VoteType.DISAGREE);
+
                 if (countDisagreeComments == 0) {  // 마지막 반대 댓글이 삭제되었으면
+
                     // 반대 상태였던 참여자 삭제
                     DiscussionParticipant participant = findParticipantByDiscussionAndMember(
                         discussionComment.getDiscussion(), member);
                     discussionParticipantRepository.delete(participant); // 해당 반대 상태 삭제
-
-                    System.out.println("Disagree participant = " + participant);
                 }
             }
         }
@@ -409,8 +409,6 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             discussionId).orElseThrow(
             () -> new DiscussionCommentNotFoundException("댓글을 찾을 수 없습니다.")
         );
-
-        System.out.println(bestCommentTop3List);
 
         // 결과를 담을 리스트
         List<DiscussionCommentResponseDTO> responseDTOList = new ArrayList<>();

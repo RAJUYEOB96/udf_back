@@ -34,24 +34,15 @@ public class DiscussionController {
     private final DiscussionService discussionService;
 
     // 발의 작성
-    // TODO : RESTFUL 에 대한 내용을 더 공부하고 다음 프로젝트에서는 통일되게 작성하기
     @PostMapping("/register")
     public ResponseEntity<ApiResponseDTO<Void>> discussionRegister(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-        @RequestParam(name = "isbn13") String isbn13,
+        @RequestParam("isbn13") String isbn13,
         @Valid @RequestBody DiscussionRegisterRequestDTO discussionRegisterRequestDTO) {
 
         Long memberId = memberSecurityDTO.getId();
 
-        // TODO : 이부분은 수정 필요 try/catch 가 컨트롤러에서 필요 없을듯, service에서 처리 될테니
-        try {
-            discussionService.discussionRegister(memberId, isbn13, discussionRegisterRequestDTO);
-
-        } catch (DiscussionException e) {
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponseDTO.error("토론 생성에 실패했습니다."));
-        }
+        discussionService.discussionRegister(memberId, isbn13, discussionRegisterRequestDTO);
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(null));
     }
@@ -84,14 +75,7 @@ public class DiscussionController {
         @RequestParam("discussionId") Long discussionId
     ) {
 
-        try {
-            discussionService.joinAgree(memberSecurityDTO.getId(), discussionId);
-
-        } catch (DiscussionException e) {
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponseDTO.error("토론 찬성에 실패했습니다."));
-        }
+        discussionService.joinAgree(memberSecurityDTO.getId(), discussionId);
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(null));
     }
@@ -103,14 +87,7 @@ public class DiscussionController {
         @RequestParam("discussionId") Long discussionId
     ) {
 
-        try {
-            discussionService.joinDisagree(memberSecurityDTO.getId(), discussionId);
-
-        } catch (DiscussionException e) {
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponseDTO.error("토론 반대에 실패했습니다."));
-        }
+        discussionService.joinDisagree(memberSecurityDTO.getId(), discussionId);
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(null));
     }
