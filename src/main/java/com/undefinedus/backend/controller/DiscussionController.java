@@ -37,19 +37,11 @@ public class DiscussionController {
     @PostMapping("/register")
     public ResponseEntity<ApiResponseDTO<Void>> discussionRegister(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-        @RequestParam(name = "isbn13") String isbn13,
         @Valid @RequestBody DiscussionRegisterRequestDTO discussionRegisterRequestDTO) {
 
         Long memberId = memberSecurityDTO.getId();
 
-        try {
-            discussionService.discussionRegister(memberId, isbn13, discussionRegisterRequestDTO);
-
-        } catch (DiscussionException e) {
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponseDTO.error("토론 생성에 실패했습니다."));
-        }
+        discussionService.discussionRegister(memberId, discussionRegisterRequestDTO);
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(null));
     }
@@ -82,14 +74,7 @@ public class DiscussionController {
         @RequestParam("discussionId") Long discussionId
     ) {
 
-        try {
-            discussionService.joinAgree(memberSecurityDTO.getId(), discussionId);
-
-        } catch (DiscussionException e) {
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponseDTO.error("토론 찬성에 실패했습니다."));
-        }
+        discussionService.joinAgree(memberSecurityDTO.getId(), discussionId);
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(null));
     }
@@ -101,14 +86,7 @@ public class DiscussionController {
         @RequestParam("discussionId") Long discussionId
     ) {
 
-        try {
-            discussionService.joinDisagree(memberSecurityDTO.getId(), discussionId);
-
-        } catch (DiscussionException e) {
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponseDTO.error("토론 반대에 실패했습니다."));
-        }
+        discussionService.joinDisagree(memberSecurityDTO.getId(), discussionId);
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(null));
     }

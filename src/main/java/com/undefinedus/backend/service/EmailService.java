@@ -26,6 +26,8 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String fromEmail;
     
+    
+    // TODO : 나중에 ?? 처리로 들어오는거 해결 하기
     public void sendVerificationEmail(String toEmail) {
         String verificationCode = generateVerificationCode();
         

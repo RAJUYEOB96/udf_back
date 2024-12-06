@@ -60,7 +60,7 @@ public class KakaoTalkServiceImpl implements KakaoTalkService {
             String newAccessToken = updateKakaoAccessToken(member, refreshToken);
 
             if (newAccessToken != null) {
-                log.info("회원 ID {} - 메시지: {}", memberId, phrase);
+
                 kakaoTalkSender.sendMessage(newAccessToken, phrase, title);
             }
         }
@@ -96,26 +96,31 @@ public class KakaoTalkServiceImpl implements KakaoTalkService {
                 if (jsonResponse.has("refresh_token")) {
                     String newRefreshToken = jsonResponse.getString("refresh_token");
                     member.updateKakaoRefreshToken(newRefreshToken);
-                    log.info("새로운 리프레시 토큰 저장: {}", newRefreshToken);
                 }
 
-                log.info("새로운 액세스 토큰 발급: {}", newAccessToken);
                 memberRepository.save(member);
                 return newAccessToken;
+
             } else {
+
                 log.error("액세스 토큰 갱신 실패. 응답 코드: {}, 응답 본문: {}", response.getStatusCode(),
                     response.getBody());
                 return null;
             }
         } catch (HttpClientErrorException.Unauthorized e) {
+
             log.error("카카오 인증 오류 (401 Unauthorized): {}", e.getResponseBodyAsString());
             log.error("리프레시 토큰 만료 또는 잘못된 클라이언트 정보일 수 있습니다.");
             return null;
+
         } catch (HttpClientErrorException e) {
+
             log.error("HTTP 클라이언트 오류 (상태 코드: {}): {}", e.getStatusCode(),
                 e.getResponseBodyAsString());
             return null;
+
         } catch (Exception e) {
+
             log.error("액세스 토큰 갱신 중 예상치 못한 오류 발생: ", e);
             return null;
         }

@@ -34,7 +34,7 @@ public class DiscussionCommentController {
     @PostMapping("/writeComment/{discussionId}")
     public ResponseEntity<ApiResponseDTO<Void>> writeComment(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-        @PathVariable(name = "discussionId") Long discussionId,
+        @PathVariable("discussionId") Long discussionId,
         @Valid @RequestBody DiscussionCommentRequestDTO discussionCommentRequestDTO
     ) {
 
@@ -50,8 +50,8 @@ public class DiscussionCommentController {
     @PostMapping("/writeComment/{discussionId}/{discussionCommentId}")
     public ResponseEntity<ApiResponseDTO<Void>> writeReply(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-        @PathVariable(name = "discussionId") Long discussionId,
-        @PathVariable(name = "discussionCommentId") Long discussionCommentId,
+        @PathVariable("discussionId") Long discussionId,
+        @PathVariable("discussionCommentId") Long discussionCommentId,
         @Valid @RequestBody DiscussionCommentRequestDTO discussionCommentRequestDTO
     ) {
 
@@ -67,7 +67,7 @@ public class DiscussionCommentController {
     // 베스트 3 댓글 목록
     @GetMapping("/bestComment/{discussionId}")
     public ResponseEntity<ApiResponseDTO<List<DiscussionCommentResponseDTO>>> getBest3CommentsList(
-        @PathVariable(name = "discussionId") Long discussionId) {
+        @PathVariable("discussionId") Long discussionId) {
 
         List<DiscussionCommentResponseDTO> best3CommentByCommentLikes = discussionCommentService.getBest3CommentByCommentLikes(
             discussionId);
@@ -118,7 +118,7 @@ public class DiscussionCommentController {
     @DeleteMapping("/{commentId}")
     public ResponseEntity<ApiResponseDTO<Void>> deleteComment(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-        @PathVariable(name = "commentId") Long commentId
+        @PathVariable("commentId") Long commentId
     ) {
 
         Long memberId = memberSecurityDTO.getId();
