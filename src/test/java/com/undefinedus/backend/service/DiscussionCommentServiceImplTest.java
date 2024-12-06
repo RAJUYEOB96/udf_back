@@ -153,7 +153,7 @@ class DiscussionCommentServiceImplTest {
         verify(discussionRepository).findById(discussionId);
         verify(memberRepository).findById(memberId);
         verify(discussionCommentRepository).findTopTotalOrder(discussionId);
-        verify(discussionCommentRepository, times(2)).save(any(DiscussionComment.class));
+        verify(discussionCommentRepository, times(1)).save(any(DiscussionComment.class));
         verify(discussionParticipantRepository).findByDiscussionAndMember(discussion, member);
         verify(discussionParticipantRepository).save(any(DiscussionParticipant.class));
     }
