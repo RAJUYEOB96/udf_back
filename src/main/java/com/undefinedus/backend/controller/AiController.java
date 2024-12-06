@@ -37,7 +37,7 @@ public class AiController {
     // 토론 게시판의 정보들을 가지고 gpt가 결론낸것 보기
     @GetMapping("/discussion/{discussionId}")
     public ResponseEntity<ApiResponseDTO<DiscussionGPTResponseDTO>> getDiscussionGTP(
-        @PathVariable(name = "discussionId") Long discussionId) {
+        @PathVariable("discussionId") Long discussionId) {
 
         DiscussionGPTResponseDTO discussionGPTResult = aiService.getDiscussionGPTResult(
             discussionId);

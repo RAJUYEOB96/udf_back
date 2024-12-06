@@ -25,19 +25,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-// TODO : 현 프로젝트에서는 카멜 케이스 이지만 일반적으로는 케밥케이스(-) 또는 스네이크 케이스(_)가 일반적
 @RequestMapping("/api/discussionComment")
 public class DiscussionCommentController {
 
     private final DiscussionCommentService discussionCommentService;
 
     // 댓글 달기
-    // TODO : 다음 프로젝트할때는 더 RestFul 한 방식을 공부해서 적용해 보기
     @PostMapping("/writeComment/{discussionId}")
     public ResponseEntity<ApiResponseDTO<Void>> writeComment(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-        // TODO : name 을 안해도 같은 의미인데, 깔끔하게 코드 작성을 위해 없어도 되지 않을까?
-        @PathVariable(name = "discussionId") Long discussionId,
+        @PathVariable("discussionId") Long discussionId,
         @Valid @RequestBody DiscussionCommentRequestDTO discussionCommentRequestDTO
     ) {
 
@@ -53,8 +50,8 @@ public class DiscussionCommentController {
     @PostMapping("/writeComment/{discussionId}/{discussionCommentId}")
     public ResponseEntity<ApiResponseDTO<Void>> writeReply(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-        @PathVariable(name = "discussionId") Long discussionId,
-        @PathVariable(name = "discussionCommentId") Long discussionCommentId,
+        @PathVariable("discussionId") Long discussionId,
+        @PathVariable("discussionCommentId") Long discussionCommentId,
         @Valid @RequestBody DiscussionCommentRequestDTO discussionCommentRequestDTO
     ) {
 
@@ -70,7 +67,7 @@ public class DiscussionCommentController {
     // 베스트 3 댓글 목록
     @GetMapping("/bestComment/{discussionId}")
     public ResponseEntity<ApiResponseDTO<List<DiscussionCommentResponseDTO>>> getBest3CommentsList(
-        @PathVariable(name = "discussionId") Long discussionId) {
+        @PathVariable("discussionId") Long discussionId) {
 
         List<DiscussionCommentResponseDTO> best3CommentByCommentLikes = discussionCommentService.getBest3CommentByCommentLikes(
             discussionId);
@@ -121,7 +118,7 @@ public class DiscussionCommentController {
     @DeleteMapping("/{commentId}")
     public ResponseEntity<ApiResponseDTO<Void>> deleteComment(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-        @PathVariable(name = "commentId") Long commentId
+        @PathVariable("commentId") Long commentId
     ) {
 
         Long memberId = memberSecurityDTO.getId();

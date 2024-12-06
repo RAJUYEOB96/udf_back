@@ -79,7 +79,7 @@ public class DiscussionServiceImpl implements DiscussionService {
                 savedDiscussion.getId());
         } catch (SchedulerException e) {
             log.error(
-                "Failed to schedule status change jobs for discussion: " + savedDiscussion.getId(),
+                "토론 상태 변경 작업 스케줄링에 실패했습니다. 토론 ID: " + savedDiscussion.getId(),
                 e);
         } catch (Exception e) {
             throw new RuntimeException(e);
