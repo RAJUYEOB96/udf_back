@@ -128,10 +128,8 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
         Long parentId = parentDiscussionComment.getId();
 
-        Long parentDiscussionCommentId = parentDiscussionComment.getDiscussion().getId();
-
         Long topOrder = discussionCommentRepository.findTopOrder(discussionId,
-            parentDiscussionCommentId).orElse(0L) + 1;
+            parentId).orElse(0L) + 1;
 
         // 부모 댓글의 그룹 아이디
         Long groupIdFromParent = parentDiscussionComment.getGroupId();
