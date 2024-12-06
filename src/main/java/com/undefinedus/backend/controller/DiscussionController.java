@@ -37,12 +37,11 @@ public class DiscussionController {
     @PostMapping("/register")
     public ResponseEntity<ApiResponseDTO<Void>> discussionRegister(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-        @RequestParam("isbn13") String isbn13,
         @Valid @RequestBody DiscussionRegisterRequestDTO discussionRegisterRequestDTO) {
 
         Long memberId = memberSecurityDTO.getId();
 
-        discussionService.discussionRegister(memberId, isbn13, discussionRegisterRequestDTO);
+        discussionService.discussionRegister(memberId, discussionRegisterRequestDTO);
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(null));
     }

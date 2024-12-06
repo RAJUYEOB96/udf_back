@@ -9,9 +9,9 @@ import lombok.Data;
 @Builder
 public class DiscussionRegisterRequestDTO {
 
-    private Long myBookId;  // 어떤 책의 토론인지 // 내가 기록한 책만 토론 주제로 올릴 수 있음
+    private String isbn13;
 
-    private Long memberId;  // 작성자
+    private Long myBookId;  // 어떤 책의 토론인지 // 내가 기록한 책만 토론 주제로 올릴 수 있음
 
     @NoProfanity
     private String title;    // 토론 제목

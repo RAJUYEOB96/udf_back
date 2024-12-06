@@ -51,11 +51,12 @@ public class DiscussionServiceImpl implements DiscussionService {
     private final DiscussionParticipantRepository discussionParticipantRepository;
 
     @Override
-    public Long discussionRegister(Long memberId, String isbn13,
-        DiscussionRegisterRequestDTO discussionRegisterRequestDTO) {
+    public Long discussionRegister(Long memberId, DiscussionRegisterRequestDTO discussionRegisterRequestDTO) {
 
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new MemberNotFoundException("해당 사용자를 찾을 수 없습니다. : " + memberId));
+
+        String isbn13 = discussionRegisterRequestDTO.getIsbn13();
 
         MyBook myBook = myBookRepository.findByMemberIdAndIsbn13(memberId, isbn13)
             .orElseThrow(() -> new BookNotFoundException("해당 책을 찾을 수 없습니다. : " + isbn13));
