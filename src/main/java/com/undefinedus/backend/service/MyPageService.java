@@ -5,6 +5,8 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+
+import com.undefinedus.backend.dto.response.myPage.MyPageResponseDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface MyPageService {
@@ -26,4 +28,6 @@ public interface MyPageService {
     Map<String, String> updatePassword(Long memberId, String password);
 
     boolean checkSamePassword(Long memberId, String password);
+
+    MyPageResponseDTO getMyInformation(Long memberId);
 }
