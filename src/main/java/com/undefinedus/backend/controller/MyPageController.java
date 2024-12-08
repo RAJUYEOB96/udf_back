@@ -3,6 +3,9 @@ package com.undefinedus.backend.controller;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.myPage.PasswordRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
+import com.undefinedus.backend.dto.response.ScrollResponseDTO;
+import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
+import com.undefinedus.backend.dto.response.myPage.MyPageResponseDTO;
 import com.undefinedus.backend.service.MemberService;
 import com.undefinedus.backend.service.MyPageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,7 +35,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class MyPageController {
 
     private final MyPageService myPageService;
-    private final MemberService memberService;
 
     @Operation(description = "카카오 메시지 권한 확인")
     @GetMapping("/kakao/message")
@@ -56,6 +58,18 @@ public class MyPageController {
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(ApiResponseDTO.success(result));
+    }
+
+    @Operation(description = "사용자 정보 데이터")
+    @GetMapping
+    public ResponseEntity<ApiResponseDTO<MyPageResponseDTO>> getMyInformation(
+            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO
+    ) {
+        Long memberId = memberSecurityDTO.getId();
+
+        MyPageResponseDTO response = myPageService.getMyInformation(memberId);
+
+        return ResponseEntity.ok(ApiResponseDTO.success(response));
     }
 
     @Operation(description = "프로필사진 삭제")

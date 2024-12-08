@@ -93,8 +93,6 @@ class DiscussionServiceImplTest {
             .title("Test Discussion")
             .content("This is a test discussion content")
             .startDate(LocalDateTime.now().plusDays(1)) // 토론 시작 시간을 현재로부터 1일 뒤로 설정
-            .agree(5)
-            .disagree(3)
             .build();
     }
 
