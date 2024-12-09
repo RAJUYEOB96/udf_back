@@ -76,7 +76,6 @@ public class MyBookServiceImpl implements MyBookService {
                 .isbn13(savedAladinBook.getIsbn13())
                 .build();
 
-            // TODO : 나중 QueryDSL 적용하면 바꿀지 말지 고민필요
             saveBookAndCalenarStampByStatus(requestDTO, myBook, savedAladinBook, findMember);
         } catch (MemberException e) {
             log.error("사용자를 찾을 수 없습니다. ID: {}", memberId, e);
