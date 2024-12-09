@@ -380,6 +380,7 @@ public class MyBookServiceImpl implements MyBookService {
                 .endDate(myBook.getEndDate())
                 .readDateCount(count)
                 .myRating(myBook.getMyRating())
+                .oneLineReview(myBook.getOneLineReview())
                 .build();
 
             calendarStampRepository.save(calendarStamp);

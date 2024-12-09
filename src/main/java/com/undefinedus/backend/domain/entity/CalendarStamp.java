@@ -56,6 +56,9 @@ public class CalendarStamp {    // 달력 화면에서만 쓸 예정이지만 �
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private BookStatus status;
+    
+    @Column(length = 100)
+    private String oneLineReview; // 한줄평
 
     @Column
     private Integer itemPage;         // 총 페이지 수
