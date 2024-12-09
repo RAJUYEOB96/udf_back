@@ -12,10 +12,10 @@ public interface MyBookService {
 
     boolean existsBook(Long memberId, String isbn13);
 
-    void insertNewBookByStatus(Long memberId, AladinBook savedAladinBook,
+    Long insertNewBookByStatus(Long memberId, AladinBook savedAladinBook,
         BookStatusRequestDTO requestDTO);
 
-    void updateMyBookStatus(Long memberId, Long bookId, BookStatusRequestDTO requestDTO);
+    Long updateMyBookStatus(Long memberId, Long bookId, BookStatusRequestDTO requestDTO);
 
     ScrollResponseDTO<MyBookResponseDTO> getMyBookList(Long memberId, ScrollRequestDTO requestDTO);
 

@@ -110,7 +110,6 @@ public class DiscussionController {
         Long id = discussionService.discussionUpdate(memberSecurityDTO.getId(), isbn13, discussionId,
                     discussionUpdateRequestDTO);
         result.put("id", id);
-      
         
         return ResponseEntity.ok().body(ApiResponseDTO.success(result));
     }

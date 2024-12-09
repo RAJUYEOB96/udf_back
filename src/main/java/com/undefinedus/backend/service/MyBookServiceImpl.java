@@ -64,7 +64,7 @@ public class MyBookServiceImpl implements MyBookService {
     }
 
     @Override
-    public void insertNewBookByStatus(Long memberId, AladinBook savedAladinBook,
+    public Long insertNewBookByStatus(Long memberId, AladinBook savedAladinBook,
         BookStatusRequestDTO requestDTO) {
         try {
 
@@ -75,8 +75,9 @@ public class MyBookServiceImpl implements MyBookService {
                 .aladinBook(savedAladinBook)
                 .isbn13(savedAladinBook.getIsbn13())
                 .build();
-
-            saveBookAndCalenarStampByStatus(requestDTO, myBook, savedAladinBook, findMember);
+            
+            return saveBookAndCalenarStampByStatus(requestDTO, myBook, savedAladinBook, findMember);
+            
         } catch (MemberException e) {
             log.error("사용자를 찾을 수 없습니다. ID: {}", memberId, e);
             throw new MemberException(USER_AUTH_FAILED, e);
@@ -87,11 +88,10 @@ public class MyBookServiceImpl implements MyBookService {
             log.error("책 등록 중 에러가 발생했습니다. ID: {}", memberId, e);
             throw new BookException(BOOK_REGISTRATION_FAILED, e);
         }
-
     }
 
     @Override
-    public void updateMyBookStatus(Long memberId, Long bookId, BookStatusRequestDTO requestDTO) {
+    public Long updateMyBookStatus(Long memberId, Long bookId, BookStatusRequestDTO requestDTO) {
         MyBook findMyBook = myBookRepository.findByIdAndMemberId(bookId, memberId)
             .orElseThrow(() -> new BookNotFoundException(
                 String.format(BOOK_NOT_FOUND, memberId, bookId)));
@@ -109,6 +109,8 @@ public class MyBookServiceImpl implements MyBookService {
             .equals(requestDTO.getStatus())) {
             recordCalendarStamp(findMember, findMyBook);
         }
+        
+        return findMyBook.getId();
     }
 
     @Override
@@ -285,27 +287,30 @@ public class MyBookServiceImpl implements MyBookService {
         myBookRepository.save(myBook);
     }
 
-    private void saveBookAndCalenarStampByStatus(
+    private Long saveBookAndCalenarStampByStatus(
         BookStatusRequestDTO requestDTO, MyBook myBook,
         AladinBook findAladinBook, Member findMember) {
-
+        
+        MyBook savedMyBook = null;
         // 업데이트 할때 마다 달력 스탬프에 기록 (읽고 있는중, 다 읽은 책 만)
         if (BookStatus.COMPLETED.name().equals(requestDTO.getStatus())) {
-            MyBook savedMyBook = saveBookWithCompletedStatus(requestDTO, myBook, findAladinBook);
+            savedMyBook = saveBookWithCompletedStatus(requestDTO, myBook, findAladinBook);
             recordCalendarStamp(findMember, savedMyBook);
         } else if (BookStatus.READING.name().equals(requestDTO.getStatus())) {
-            MyBook savedMyBook = saveBookWithReadingStatus(requestDTO, myBook);
+            savedMyBook = saveBookWithReadingStatus(requestDTO, myBook);
             recordCalendarStamp(findMember, savedMyBook);
         } else if (BookStatus.WISH.name().equals(requestDTO.getStatus())) {
-            saveBookWithWishStatus(myBook);
+            savedMyBook = saveBookWithWishStatus(myBook);
         } else if (BookStatus.STOPPED.name().equals(requestDTO.getStatus())) {
-            saveBookWithStoppedStatus(requestDTO, myBook);
+            savedMyBook = saveBookWithStoppedStatus(requestDTO, myBook);
         } else {
             throw new InvalidStatusException(String.format(INVALID_STATUS, requestDTO.getStatus()));
         }
+        
+        return savedMyBook.getId();
     }
 
-    private void saveBookWithStoppedStatus(BookStatusRequestDTO requestDTO, MyBook myBook) {
+    private MyBook saveBookWithStoppedStatus(BookStatusRequestDTO requestDTO, MyBook myBook) {
         myBook = myBook.toBuilder()
             .status(BookStatus.STOPPED)
             .myRating(requestDTO.getMyRating())
@@ -316,15 +321,15 @@ public class MyBookServiceImpl implements MyBookService {
             .updateCount(requestDTO.getUpdateCount())
             .build();
 
-        myBookRepository.save(myBook);
+        return myBookRepository.save(myBook);
     }
 
-    private void saveBookWithWishStatus(MyBook myBook) {
+    private MyBook saveBookWithWishStatus(MyBook myBook) {
         myBook = myBook.toBuilder()
             .status(BookStatus.WISH)
             .build();
 
-        myBookRepository.save(myBook);
+        return myBookRepository.save(myBook);
     }
 
     private MyBook saveBookWithReadingStatus(BookStatusRequestDTO requestDTO, MyBook myBook) {

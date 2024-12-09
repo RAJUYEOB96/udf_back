@@ -11,6 +11,8 @@ import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
 import com.undefinedus.backend.service.AladinBookService;
 import com.undefinedus.backend.service.MyBookService;
 import jakarta.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -37,11 +39,12 @@ public class MyBookController {
     private final AladinBookService aladinBookService;
     
     @PostMapping
-    public ResponseEntity<ApiResponseDTO<Void>> insertBook(
+    public ResponseEntity<ApiResponseDTO<Map<String, Long>>> insertBook(
             @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
             @RequestBody @Valid BookRequestDTO requestDTO) {  // @Valid 추가
         
         Long memberId = memberSecurityDTO.getId();
+        Map<String, Long> result = new HashMap<>();
         
         try {
             // MyBook 테이블에 이미 있는지 확인
@@ -54,7 +57,9 @@ public class MyBookController {
                         aladinBookService.insertAladinBook(requestDTO.getAladinBookRequestDTO()));
                 
                 // MyBook에 새로 추가
-                myBookService.insertNewBookByStatus(memberId, savedAladinBook, requestDTO.getBookStatusRequestDTO());
+                Long id = myBookService.insertNewBookByStatus(memberId, savedAladinBook,
+                        requestDTO.getBookStatusRequestDTO());
+                result.put("id", id);
             }
         } catch (Exception e) {
             log.error("책 처리 중 오류가 발생했습니다.", e);
@@ -64,7 +69,7 @@ public class MyBookController {
         
         // 성공적으로 처리되었음을 나타내는 응답을 반환합니다.
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponseDTO.success(null));
+                .body(ApiResponseDTO.success(result));
     }
     
     // GET 요청은 URL의 query parameter로 데이터 전달
@@ -95,16 +100,20 @@ public class MyBookController {
     }
     
     @PatchMapping("/{bookId}")
-    public ResponseEntity<ApiResponseDTO<Void>> updateBookStatus(
+    public ResponseEntity<ApiResponseDTO<Map<String, Long>>> updateBookStatus(
             @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO, // 인증된 사용자 정보를 주입받습니다.
             @PathVariable("bookId") Long bookId,
             @RequestBody @Valid BookStatusRequestDTO requestDTO) {
         
+        Map<String, Long> result = new HashMap<>();
+        
         // 해당 사용자의 책장에서 지정된 책의 상태를 업데이트합니다.
-        myBookService.updateMyBookStatus(memberSecurityDTO.getId(), bookId, requestDTO);
-   
+        Long id = myBookService.updateMyBookStatus(memberSecurityDTO.getId(), bookId, requestDTO);
+        
+        result.put("id", id);
+        
         // 성공적으로 처리되었음을 나타내는 응답을 반환합니다.
-        return ResponseEntity.ok().body(ApiResponseDTO.success(null));
+        return ResponseEntity.ok().body(ApiResponseDTO.success(result));
     }
     
     @DeleteMapping("/{bookId}")
