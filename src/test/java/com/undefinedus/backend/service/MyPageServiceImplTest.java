@@ -1,6 +1,5 @@
 package com.undefinedus.backend.service;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -19,12 +18,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -72,7 +71,9 @@ public class MyPageServiceImplTest {
             .preferences(new HashSet<>()).isPublic(true)
             .isMessageToKakao(true)
             .KakaoMessageIsAgree(true)
+            .isPublic(true)
             .honorific("칭호")
+            .createdDate(LocalDateTime.parse("2015-01-01T00:00"))
             .build();
 
         // Mock 설정
@@ -111,7 +112,23 @@ public class MyPageServiceImplTest {
         assertTrue(response.isKakaoMessageIsAgree()); // 카카오 메시지 동의 확인
         assertEquals("칭호", response.getHonorific()); // 칭호 확인
         assertEquals(new HashSet<>(), response.getPreferences()); // 취향 확인
+        assertEquals(LocalDateTime.parse("2015-01-01T00:00"), response.getCreatedDate());
 
+        // Mock 객체 호출 검증
+        verify(memberRepository).findById(1L); // findById 메서드가 호출되었는지 확인
+    }
+
+    @Test
+    @DisplayName("책장 공개 여부 설정 테스트")
+    void updateIsPublic() {
+        // given
+        given(memberRepository.findById(1L)).willReturn(Optional.of(mockMember));
+
+        // when
+        boolean result = myPageService.updateIsPublic(1L);
+
+        // then
+        assertFalse(result);
         // Mock 객체 호출 검증
         verify(memberRepository).findById(1L); // findById 메서드가 호출되었는지 확인
     }
