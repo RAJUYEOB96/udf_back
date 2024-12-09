@@ -27,9 +27,109 @@
 
 <div align="center">
 
-|                                                     **김재원**                                                     |                                                        **김 용**                                                        |                                                        **라주엽**                                                        |                                                         **송지현**                                                          |                                                   **이석현**                                                    |
-력)" style="width: 50%; height: auto;"><img src="이미지_URL" alt="설명" style="width: 50%; height: auto;">|
+|                                                     **김재원**                                                     |                                                        **김용**                                                        |                                                        **라주엽**                                                        |                                                         **송지현**                                                          |                                                   **이석현**                                                    |
+|:---------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------:|
+| [<img src="https://github.com/Jaewon94.png" height=150 width=150> <br/> @Jaewon94](https://github.com/Jaewon94) | [<img src="https://github.com/kimYong91.png" height=150 width=150> <br/> @kimYong91](https://github.com/kimYong91) | [<img src="https://github.com/RAJUYEOB96.png" height=150 width=150> <br/> @RAJUYEOB96](https://github.com/RAJUYEOB96) | [<img src="https://github.com/songdaramji.png" height=150 width=150> <br/> @songdaramji](https://github.com/songdaramji) | [<img src="https://github.com/maijjoo.png" height=150 width=150> <br/> @maijjoo](https://github.com/maijjoo) |
 
+</div>
+
+---
+
+## 개발 환경
+
+<div align="center">
+
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
+![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)
+
+![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=flat-square&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-6DB33F?style=flat-square&logo=spring-boot&logoColor=white)
+![Spring Security](https://img.shields.io/badge/Spring%20Security-6DB33F?style=flat-square&logo=spring-security&logoColor=white)
+![Spring Data JPA](https://img.shields.io/badge/Spring%20Data%20JPA-6DB33F?style=flat-square&logo=spring&logoColor=white)
+![QueryDSL](https://img.shields.io/badge/QueryDSL-007ACC?style=flat-square&logo=java&logoColor=white)
+
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)
+![DBeaver](https://img.shields.io/badge/DBeaver-4D4D4D?style=flat-square&logo=dbeaver&logoColor=white)
+
+![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white)
+![IntelliJ IDEA](https://img.shields.io/badge/intellijidea-000000?style=flat-square&logo=intellijidea&logoColor=white)
+![Postman](https://img.shields.io/badge/Postman-FF6C37?style=flat-square&logo=postman&logoColor=white)
+![Figma](https://img.shields.io/badge/Figma-F24E1E?style=flat-square&logo=figma&logoColor=white)
+![JSON](https://img.shields.io/badge/JSON-000000?style=flat-square&logo=json&logoColor=white)
+
+
+</div>
+
+---
+
+## 프로젝트 구조
+
+```
+
+```
+
+---
+
+## 역할 분담
+
+### 김재원(팀장, 백엔드 팁장)
+
+- **백엔드 담당**
+  -
+    -
+
+### 김용
+
+- **백엔드 담당**
+  - 
+    -
+
+### 라주엽
+
+- ** 담당**
+  - 
+    -
+
+### 송지현(기획 팀장)
+
+- **프론트 담당**
+  - 
+    -
+
+### 이석현(프론트 팀장)
+
+- ** 담당**
+  - 
+    -
+
+---
+
+## 페이지별 기능
+
+### [초기 화면]
+
+| 초기 화면 |
+|----------|
+|![0  메인](https://github.com/user-attachments/assets/2048d0e8-201f-4b31-984b-ae441034e0c3)|
+
+### [로그인]
+- 저희 홈페이지는 로그인을 해야지 다음 페이지로 넘어 갈 수 있어 초기 화면 다음은 바로 로그인 화면으로 넘어갑니다.
+- 로그인 방법으로 일반 로그인, 카카오톡 로그인 두 가지 로그인 방식이 있습니다.
+
+| 로그인 |
+|----------|
+|![1  로그인](https://github.com/user-attachments/assets/dcf30ebc-eb1a-4656-a720-5fc024c397ca)|
+
+### [회원 가입]
+- 카카오톡으로 로그인 시 카카오 톡 아이디를 입력을 합니다.
+- 일반 회원 가입은 회원의 아이디이자 메일 주소를 입력하면 회원이 입력한 메일 주소로 코드 번호가 담긴 메일을 보냅니다.
+- 만약 이메일 형식이 맞지 않으면 경고 메시지가 나옵니다.
+- 코드 번호가 맞아야 다음 페이지로 넘어 갑니다.
+
+| 회원 가입 |
+|----------|
 |![24-2  일반 회원 가입](https://github.com/user-attachments/assets/3059f349-66c5-4385-9a06-18dc9365711f)![24-3  일반 회원 가입(이메일)](https://github.com/user-attachments/assets/486907c2-b8e3-4901-9d4b-224010308f0e)![24-4  일반 회원 가입(이메일 코드 입력)](https://github.com/user-attachments/assets/d71c8bcb-fa2b-490c-a543-50b2b34fbdce)|
 
 - 마지막으로 회원의 취향을 3가지 선택하면 회원 가입이 되고 메인 화면으로 넘어 갑니다.
