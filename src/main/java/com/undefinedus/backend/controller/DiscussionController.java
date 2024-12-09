@@ -11,7 +11,10 @@ import com.undefinedus.backend.dto.response.discussion.DiscussionListResponseDTO
 import com.undefinedus.backend.exception.discussion.DiscussionException;
 import com.undefinedus.backend.service.DiscussionService;
 import jakarta.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.quartz.SchedulerException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,15 +38,18 @@ public class DiscussionController {
 
     // 발의 작성
     @PostMapping("/register")
-    public ResponseEntity<ApiResponseDTO<Void>> discussionRegister(
+    public ResponseEntity<ApiResponseDTO<Map<String, Long>>> discussionRegister(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @Valid @RequestBody DiscussionRegisterRequestDTO discussionRegisterRequestDTO) {
 
         Long memberId = memberSecurityDTO.getId();
-
-        discussionService.discussionRegister(memberId, discussionRegisterRequestDTO);
-
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(null));
+        
+        Long id = discussionService.discussionRegister(memberId, discussionRegisterRequestDTO);
+        
+        Map<String, Long> result = new HashMap<>();
+        result.put("id", id);
+        
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(result));
     }
 
     // 토론(토론 상태 값 입력시 입력한 상태의 토론 게시판) 목록 보기
@@ -75,7 +81,7 @@ public class DiscussionController {
     ) {
 
         discussionService.joinAgree(memberSecurityDTO.getId(), discussionId);
-
+        
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(null));
     }
 
@@ -93,38 +99,31 @@ public class DiscussionController {
 
     // 발의 상태일때만 수정하기
     @PatchMapping("/update")
-    public ResponseEntity<ApiResponseDTO<Void>> discussionUpdate(
+    public ResponseEntity<ApiResponseDTO<Map<String, Long>>> discussionUpdate(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-        @RequestParam("isbn13") String isbn13,
+        @RequestParam("isbn13") String isbn13,  // 수정할 책의 isbn13
         @RequestParam("discussionId") Long discussionId,
-        @Valid @RequestBody DiscussionUpdateRequestDTO discussionUpdateRequestDTO) {
-
-        try {
-            discussionService.discussionUpdate(memberSecurityDTO.getId(), isbn13, discussionId,
-                discussionUpdateRequestDTO);
-
-        } catch (Exception e) {
-
-            throw new RuntimeException("토론 수정에 실패했습니다." + e.getMessage());
-        }
-
-        return ResponseEntity.ok().body(ApiResponseDTO.success(null));
+        @Valid @RequestBody DiscussionUpdateRequestDTO discussionUpdateRequestDTO) throws Exception {
+        
+        Map<String, Long> result = new HashMap<>();
+        
+        Long id = discussionService.discussionUpdate(memberSecurityDTO.getId(), isbn13, discussionId,
+                    discussionUpdateRequestDTO);
+        result.put("id", id);
+      
+        
+        return ResponseEntity.ok().body(ApiResponseDTO.success(result));
     }
 
     // 내가 만든 토론 삭제
     @DeleteMapping("/{discussionId}")
     public ResponseEntity<ApiResponseDTO<Void>> deleteDiscussion(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-        @PathVariable("discussionId") Long discussionId) {
+        @PathVariable("discussionId") Long discussionId) throws SchedulerException {
 
-        try {
-            discussionService.deleteDiscussion(memberSecurityDTO.getId(), discussionId);
+        discussionService.deleteDiscussion(memberSecurityDTO.getId(), discussionId);
 
-        } catch (Exception e) {
-
-            throw new RuntimeException("토론 삭제에 실패했습니다." + e.getMessage());
-        }
-
+     
         return ResponseEntity.ok().body(ApiResponseDTO.success(null));
     }
 
