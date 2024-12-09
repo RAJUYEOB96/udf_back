@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,7 +100,18 @@ public class MyPageServiceImpl implements MyPageService {
 
         return member.isPublic();
     }
-
+    
+    @Override
+    public void deleteMember(Long memberId) {
+        
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
+        
+        member.updateDeleted(true);
+        member.updateDeletedAt(LocalDateTime.now());
+        
+    }
+    
     // 내 정보 불러오기
     @Override
     public MyPageResponseDTO getMyInformation(Long memberId) {

@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -173,5 +174,12 @@ public class MyPageController {
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(ApiResponseDTO.success(result));
+    }
+    
+    @DeleteMapping
+    public ResponseEntity<ApiResponseDTO<Void>> deleteMember(@AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO) {
+        Long memberId = memberSecurityDTO.getId();
+        myPageService.deleteMember(memberId);
+        return ResponseEntity.ok(ApiResponseDTO.success(null));
     }
 }
