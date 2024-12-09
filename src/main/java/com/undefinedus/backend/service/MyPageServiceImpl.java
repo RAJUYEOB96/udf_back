@@ -1,6 +1,7 @@
 package com.undefinedus.backend.service;
 
 import com.undefinedus.backend.domain.entity.Member;
+import com.undefinedus.backend.domain.entity.SocialLogin;
 import com.undefinedus.backend.domain.enums.PreferencesType;
 import com.undefinedus.backend.dto.response.myPage.MyPageResponseDTO;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
@@ -113,7 +114,7 @@ public class MyPageServiceImpl implements MyPageService {
             .profileImage(member.getProfileImage())
             .birth(member.getBirth())
             .gender(member.getGender())
-            .socialLogin(member.getSocialLogin())
+            .isSocial(member.getSocialLogin()!=null)
             .preferences(member.getPreferences())
             .isPublic(member.isPublic())
             .isMessageToKakao(member.isMessageToKakao())

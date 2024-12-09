@@ -22,7 +22,7 @@ public class MyPageResponseDTO {
 
     private String gender;
 
-    private SocialLogin socialLogin;
+    private boolean isSocial;
 
     private Set<PreferencesType> preferences;
 
