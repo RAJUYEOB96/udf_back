@@ -2,11 +2,11 @@ package com.undefinedus.backend.dto.response.myPage;
 
 import com.undefinedus.backend.domain.entity.SocialLogin;
 import com.undefinedus.backend.domain.enums.PreferencesType;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDate;
-import java.util.Set;
 
 @Data
 @Builder
@@ -33,4 +33,6 @@ public class MyPageResponseDTO {
     private boolean KakaoMessageIsAgree;
 
     private String honorific;
+
+    private LocalDateTime createdDate;
 }

@@ -1,12 +1,11 @@
 package com.undefinedus.backend.service;
 
+import com.undefinedus.backend.dto.response.myPage.MyPageResponseDTO;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-
-import com.undefinedus.backend.dto.response.myPage.MyPageResponseDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface MyPageService {
@@ -30,4 +29,6 @@ public interface MyPageService {
     boolean checkSamePassword(Long memberId, String password);
 
     MyPageResponseDTO getMyInformation(Long memberId);
+
+    boolean updateIsPublic(Long memberId);
 }

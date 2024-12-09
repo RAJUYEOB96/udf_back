@@ -3,10 +3,7 @@ package com.undefinedus.backend.controller;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.myPage.PasswordRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
-import com.undefinedus.backend.dto.response.ScrollResponseDTO;
-import com.undefinedus.backend.dto.response.book.MyBookResponseDTO;
 import com.undefinedus.backend.dto.response.myPage.MyPageResponseDTO;
-import com.undefinedus.backend.service.MemberService;
 import com.undefinedus.backend.service.MyPageService;
 import io.swagger.v3.oas.annotations.Operation;
 import java.io.IOException;
@@ -60,10 +57,22 @@ public class MyPageController {
             .body(ApiResponseDTO.success(result));
     }
 
+    @Operation(description = "책장 공개 여부 설정")
+    @PostMapping("/public")
+    public ResponseEntity<ApiResponseDTO<Boolean>> updateIsPublic(
+        @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO
+    ) {
+        Long memberId = memberSecurityDTO.getId();
+        boolean result = myPageService.updateIsPublic(memberId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(ApiResponseDTO.success(result));
+    }
+
     @Operation(description = "사용자 정보 데이터")
     @GetMapping
     public ResponseEntity<ApiResponseDTO<MyPageResponseDTO>> getMyInformation(
-            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO
+        @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO
     ) {
         Long memberId = memberSecurityDTO.getId();
 

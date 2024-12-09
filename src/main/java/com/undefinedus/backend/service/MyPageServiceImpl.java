@@ -89,25 +89,38 @@ public class MyPageServiceImpl implements MyPageService {
         return member.isMessageToKakao();
     }
 
+    // 책장 공개 여부 설정
+    @Override
+    public boolean updateIsPublic(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
+
+        member.updateIsPublic(!member.isPublic());
+
+        return member.isPublic();
+    }
+
+    // 내 정보 불러오기
     @Override
     public MyPageResponseDTO getMyInformation(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
+            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
 
         // DTO 변환
         return MyPageResponseDTO.builder()
-                .id(member.getId())
-                .nickname(member.getNickname())
-                .profileImage(member.getProfileImage())
-                .birth(member.getBirth())
-                .gender(member.getGender())
-                .socialLogin(member.getSocialLogin())
-                .preferences(member.getPreferences())
-                .isPublic(member.isPublic())
-                .isMessageToKakao(member.isMessageToKakao())
-                .KakaoMessageIsAgree(member.isKakaoMessageIsAgree())
-                .honorific(member.getHonorific())
-                .build();
+            .id(member.getId())
+            .nickname(member.getNickname())
+            .profileImage(member.getProfileImage())
+            .birth(member.getBirth())
+            .gender(member.getGender())
+            .socialLogin(member.getSocialLogin())
+            .preferences(member.getPreferences())
+            .isPublic(member.isPublic())
+            .isMessageToKakao(member.isMessageToKakao())
+            .KakaoMessageIsAgree(member.isKakaoMessageIsAgree())
+            .honorific(member.getHonorific())
+            .createdDate(member.getCreatedDate())
+            .build();
     }
 
     // 카카오 API 호출 로직을 별도로 분리
@@ -174,6 +187,7 @@ public class MyPageServiceImpl implements MyPageService {
         return result;
     }
 
+    // 프로필 이미지 없애기
     @Override
     public Map<String, String> dropProfileImage(Long memberId) {
         Map<String, String> result = new HashMap<>();
@@ -199,6 +213,7 @@ public class MyPageServiceImpl implements MyPageService {
         return result;
     }
 
+    // 생년월일, 성별 수정
     @Override
     public Map<String, String> updateBirthAndGender(Long memberId, LocalDate birth, String gender) {
 
@@ -227,6 +242,7 @@ public class MyPageServiceImpl implements MyPageService {
         return result;
     }
 
+    // 취향 수정
     @Override
     public Map<String, String> updatePreferences(Long memberId, List<String> preferences) {
         if (preferences == null || preferences.isEmpty()) {
