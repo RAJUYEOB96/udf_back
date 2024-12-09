@@ -1,6 +1,5 @@
 package com.undefinedus.backend.domain.enums;
 
-// TODO : 안쓰이는데 마지막 까지 확인해 보고 필요없으면 지울 예정
 public enum AladinCategory {
     // 국내도서
     DOMESTIC_ALL("국내도서"),

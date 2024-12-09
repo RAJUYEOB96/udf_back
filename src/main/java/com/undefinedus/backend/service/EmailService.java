@@ -26,14 +26,12 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String fromEmail;
     
-    
-    // TODO : 나중에 ?? 처리로 들어오는거 해결 하기
     public void sendVerificationEmail(String toEmail) {
         String verificationCode = generateVerificationCode();
         
         try {
             MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
             helper.setFrom(fromEmail);
             helper.setTo(toEmail);
