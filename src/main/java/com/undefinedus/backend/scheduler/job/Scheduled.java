@@ -4,8 +4,7 @@ import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.exception.discussion.DiscussionNotFoundException;
 import com.undefinedus.backend.repository.DiscussionRepository;
-import com.undefinedus.backend.scheduler.repository.QuartzJobDetailRepository;
-import com.undefinedus.backend.scheduler.repository.QuartzTriggerRepository;
+import com.undefinedus.backend.scheduler.config.QuartzConfig;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -13,8 +12,6 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.SchedulerException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class Scheduled implements Job {
 
     private final DiscussionRepository discussionRepository;
-
-    private final QuartzJobDetailRepository quartzJobDetailRepository;
-
-    private final QuartzTriggerRepository quartzTriggerRepository;
+    private final QuartzConfig quartzConfig;
 
     @Override
     @Transactional
@@ -60,10 +54,10 @@ public class Scheduled implements Job {
             } else {
 
                 // 관련된 Job, discussion 삭제
-                removeJob(discussionId, DiscussionStatus.SCHEDULED);
-                removeJob(discussionId, DiscussionStatus.IN_PROGRESS);
-                removeJob(discussionId, DiscussionStatus.ANALYZING);
-                removeJob(discussionId, DiscussionStatus.COMPLETED);
+                quartzConfig.removeJob(discussionId);
+                // 관련된 discussion 소프트 딜리트
+                discussion.changeDeleted(true);
+                discussion.changeDeletedAt(LocalDateTime.now());
             }
 
 
@@ -75,19 +69,5 @@ public class Scheduled implements Job {
             throw new JobExecutionException("상태 변경 중 오류 발생", e);
         }
 
-    }
-
-    public void removeJob(Long discussionId, DiscussionStatus newStatus) throws SchedulerException {
-        // Job 이름을 기준으로 작업 삭제
-        String jobName = "discussion_" + discussionId.toString() + "_";
-        String schedName = "discussion ID : ";
-        
-        // DB에서 관련된 Quartz 작업과 트리거 삭제
-        quartzJobDetailRepository.deleteByJobName(jobName + DiscussionStatus.SCHEDULED);  // Job 이름을 기준으로 삭제
-        quartzJobDetailRepository.deleteByJobName(jobName + DiscussionStatus.IN_PROGRESS);  // Job 이름을 기준으로 삭제
-        quartzJobDetailRepository.deleteByJobName(jobName + DiscussionStatus.ANALYZING);  // Job 이름을 기준으로 삭제
-        quartzJobDetailRepository.deleteByJobName(jobName + DiscussionStatus.COMPLETED);  // Job 이름을 기준으로 삭제
-
-        quartzTriggerRepository.deleteByTriggerName(schedName + discussionId);  // Trigger 이름을 기준으로 삭제
     }
 }

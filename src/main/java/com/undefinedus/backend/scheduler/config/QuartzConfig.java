@@ -1,7 +1,6 @@
 package com.undefinedus.backend.scheduler.config;
 
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
-import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.scheduler.entity.QuartzJobDetail;
 import com.undefinedus.backend.scheduler.entity.QuartzTrigger;
 import com.undefinedus.backend.scheduler.job.Analyzing;
@@ -15,12 +14,13 @@ import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
-import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.springframework.context.annotation.Configuration;
@@ -31,8 +31,6 @@ public class QuartzConfig {
 
     private final QuartzJobDetailRepository quartzJobDetailRepository;
     private final QuartzTriggerRepository quartzTriggerRepository;
-    private final MemberRepository memberRepository;
-    private final DataSource dataSource;
     private final Scheduler scheduler;
 
     public void scheduleDiscussionJobs(LocalDateTime targetTime, Long discussionId)
@@ -103,8 +101,6 @@ public class QuartzConfig {
         scheduler.scheduleJob(completedDetail, completedTrigger);
         saveQuartzDiscussionJobDetail(discussionId, DiscussionStatus.COMPLETED);
         saveQuartzDiscussionTrigger(discussionId, startDate, DiscussionStatus.COMPLETED);
-
-
     }
 
     @PostConstruct
@@ -158,5 +154,30 @@ public class QuartzConfig {
             default:
                 throw new IllegalArgumentException("Unknown status: " + status);
         }
+    }
+
+    public void removeJob(Long discussionId) throws SchedulerException {
+        // Job 이름을 기준으로 작업 삭제
+        String jobName = "discussion_" + discussionId.toString() + "_";
+        String schedName = "discussion ID : ";
+
+        // 메모리에 저장된 스케줄러 삭제
+        scheduler.deleteJob(new JobKey("SCHEDULED_" + discussionId));
+        scheduler.deleteJob(new JobKey("IN_PROGRESS_" + discussionId));
+        scheduler.deleteJob(new JobKey("ANALYZING_" + discussionId));
+        scheduler.deleteJob(new JobKey("COMPLETED_" + discussionId));
+
+        // DB에서 관련된 Quartz 작업과 트리거 삭제
+        quartzJobDetailRepository.deleteByJobName(
+            jobName + DiscussionStatus.SCHEDULED);  // Job 이름을 기준으로 삭제
+        quartzJobDetailRepository.deleteByJobName(
+            jobName + DiscussionStatus.IN_PROGRESS);  // Job 이름을 기준으로 삭제
+        quartzJobDetailRepository.deleteByJobName(
+            jobName + DiscussionStatus.ANALYZING);  // Job 이름을 기준으로 삭제
+        quartzJobDetailRepository.deleteByJobName(
+            jobName + DiscussionStatus.COMPLETED);  // Job 이름을 기준으로 삭제
+
+        quartzTriggerRepository.deleteByTriggerName(
+            schedName + discussionId);  // Trigger 이름을 기준으로 삭제
     }
 }

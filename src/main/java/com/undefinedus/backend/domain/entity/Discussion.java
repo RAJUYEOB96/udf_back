@@ -153,16 +153,16 @@ public class Discussion extends BaseEntity {
         this.startDate = startDate;
     }
 
+    public void changeClosedAt(LocalDateTime closedAt) {
+        this.closedAt = closedAt;
+    }
+
     public void changeStatus(DiscussionStatus status) {
         this.status = status;
     }
 
     public void changeId(Long id) {
         this.id = id;
-    }
-
-    public void changeMember(Member member) {
-        this.member = member;
     }
 
     public void changeParticipants(
