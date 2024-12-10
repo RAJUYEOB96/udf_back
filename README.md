@@ -173,7 +173,9 @@
 ![12-3  검색한 책 담기(다 읽은 책)](https://github.com/user-attachments/assets/24368123-5be0-445d-9483-2d7766f62e54)![12-４  검색한 책 담기(중단한 책)](https://github.com/user-attachments/assets/ee2ea315-2d47-4fc8-816a-bbcf6e55893e)|
 
 - 만약 이미 담았던 책이라면 상세페이지에서 책 담기 버튼이 4가지의 상태에 따른 다른 아이콘으로 변경되어 출력됩니다.
-  
+
+| 책 담기 |
+|----------|
 |![이미 책을 담은 책](https://github.com/user-attachments/assets/06b876b3-7f3a-4d68-8ef3-500cdeae9c82)|
 
 ### [책 갈피]
@@ -188,11 +190,11 @@
 ### [소셜]
 - 다른 회원의 책 담기 목록, 책갈피를 확인 할 수 있습니다.
 - 회원을 팔로잉한 이후에는 검색할 필요 없이 바로 팔로잉한 회원의 페이지로 넘어 갈 수 있습니다.
+
 | 소셜 |
 |----------|
 |![15  소셜 초기 화면](https://github.com/user-attachments/assets/0a1d63e2-9ad7-4e12-8fa0-21e9c80731be)![16-2  검색한 회원의 소셜 화면](https://github.com/user-attachments/assets/6f0440ba-5cb3-4400-8618-d58452a55efd)
-![17-2  팔로잉,팔로우](https://github.com/user-attachments/assets/f2cdcdd9-3b35-4cf0-958c-6075d0ff6c47)
-|
+![17-2  팔로잉,팔로우](https://github.com/user-attachments/assets/f2cdcdd9-3b35-4cf0-958c-6075d0ff6c47)|
 
 ### [토론]
 - 토론을 생성할 때 발의 게시판으로 이동이 되며 발의 중일때는 토론을 시작 할 수 없습니다.
@@ -208,11 +210,15 @@
 - 토론 생성 시 토론 시작 시간, 토론 주제, 주제 소개 글을 작성합니다.
 - 시작 시간은 토론 생성날의 24시간 후 7일 전의 날짜만 설정 가능합니다.
 
+| 토론 |
+|----------|
 |![토론 생성 －１](https://github.com/user-attachments/assets/4848f0c4-4759-410a-bc4f-4770cb63e7e1)![토론 생성(토론 책 선택) －２](https://github.com/user-attachments/assets/fc8294b7-efdc-472e-ad64-ed30fda338de)
 ![토론 생성 －3](https://github.com/user-attachments/assets/a7ad2c33-0818-4e39-b5d5-2beb0ff6a5a4)![토론 생성(시간 선택) －4](https://github.com/user-attachments/assets/14c3bfac-bfc8-4e51-be3c-a8e22448d79e)|
 
 - 종료가 되면 토론의 책 정보, 주제 소개, 댓글 들이 GPT에게 전달 되어지고, 토론의 결과를 출력합니다.
 
+| 토론 |
+|----------|
 | 토론 진행 이미지 |
 
 ### [설정]
@@ -239,8 +245,8 @@
 
 | 통계 |
 |----------|
-|![22  통계 메인](https://github.com/user-attachments/assets/a9d8d904-cbcb-4a5b-9dad-992a285032e2){회원의 달력 이미지 추가}![23-1  통계 연도](https://github.com/user-attachments/assets/7da29c86-fc64-48b8-8c8f-98a9b9639d88)
-![23-2  통계 연도](https://github.com/user-attachments/assets/9b7923ca-1502-4070-87c3-54a43057797f)|
+|![22  통계 메인](https://github.com/user-attachments/assets/a9d8d904-cbcb-4a5b-9dad-992a285032e2){회원의 달력 이미지 추가}
+![23-1  통계 연도](https://github.com/user-attachments/assets/7da29c86-fc64-48b8-8c8f-98a9b9639d88)![23-2  통계 연도](https://github.com/user-attachments/assets/9b7923ca-1502-4070-87c3-54a43057797f)|
 
 ### []
 - 
