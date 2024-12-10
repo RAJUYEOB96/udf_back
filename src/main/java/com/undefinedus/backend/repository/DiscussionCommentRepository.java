@@ -5,6 +5,7 @@ import com.undefinedus.backend.domain.enums.VoteType;
 import com.undefinedus.backend.repository.queryDSL.DiscussionCommentsRepositoryCustom;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -68,4 +69,7 @@ public interface DiscussionCommentRepository extends JpaRepository<DiscussionCom
             + " dc.created_date ASC"
             + " LIMIT 3")
     Optional<List<DiscussionComment>> findBest3CommentList(@Param("discussionId") Long discussionId);
+    
+    @Query("SELECT r.comment.id FROM Report r WHERE r.reporter.id = :reporterId")
+    Set<Long> findDiscussionCommentIdsByReporterId(@Param("reporterId") Long reporterId);
 }

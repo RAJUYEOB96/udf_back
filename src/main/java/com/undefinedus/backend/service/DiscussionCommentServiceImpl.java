@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -191,7 +192,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
     @Override
     public ScrollResponseDTO<DiscussionCommentResponseDTO> getCommentList(
-        DiscussionCommentsScrollRequestDTO discussionCommentsScrollRequestDTO) {
+        Long loginMemberId, DiscussionCommentsScrollRequestDTO discussionCommentsScrollRequestDTO) {
 
         List<DiscussionComment> discussionCommentList = discussionCommentRepository.findDiscussionCommentListWithScroll(
             discussionCommentsScrollRequestDTO);
@@ -205,8 +206,15 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
         // 결과를 담을 리스트
         List<DiscussionCommentResponseDTO> responseDTOList = new ArrayList<>();
-
+        
+        // 한번에 신고된 댓글 ID들을 가져옴
+        Set<Long> reportedCommentIds = discussionCommentRepository.findDiscussionCommentIdsByReporterId(loginMemberId);
+        
         for (DiscussionComment discussionComment : discussionCommentList) {
+            
+            // Set에서 해당 댓글 ID가 있는지 확인
+            boolean isReport = reportedCommentIds.contains(discussionComment.getId());
+            
             // 각 토론 댓글의 관련 정보를 추출
 
             Long groupId = discussionComment.getGroupId();
@@ -248,6 +256,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .isSelected(selected)
                 .createTime(createdDate)
                 .discussionCommentStatus(String.valueOf(discussionCommentStatus))
+                .isReport(isReport)  // 신고 여부 추가
                 .build();
 
             responseDTOList.add(dto);
