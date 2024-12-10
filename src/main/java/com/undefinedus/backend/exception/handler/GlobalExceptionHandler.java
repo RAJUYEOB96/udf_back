@@ -137,7 +137,7 @@ public class GlobalExceptionHandler {
     // discussion 관련
     @ExceptionHandler(DiscussionException.class)
     protected ResponseEntity<ErrorResponse> handleDiscussionException(DiscussionException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(new ErrorResponse(e.getMessage()));
     }
 
