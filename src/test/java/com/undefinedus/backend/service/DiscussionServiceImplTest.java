@@ -76,11 +76,73 @@ class DiscussionServiceImplTest {
     
     private Long memberId;
     private String isbn13;
+    private AladinBook mockAladinBook; // 추가
+    private Member mockMember; // 추가
     
     @BeforeEach
     void setUp() {
         memberId = 1L;
         isbn13 = "1234567890123";
+        
+        // 공통으로 사용할 Mock 객체들 생성
+        mockMember = Member.builder()
+                .id(memberId)
+                .nickname("testuser")
+                .honorific("테스터")
+                .build();
+        
+        mockAladinBook = AladinBook.builder()
+                .isbn13(isbn13)
+                .title("Test Book")
+                .author("Test Author")
+                .cover("test-cover-url")
+                .build();
+    }
+    
+    // 통합된 createMockDiscussion 메서드
+    private Discussion createMockDiscussion(Long id, String title, int agreeCount, int disagreeCount, Member member, AladinBook aladinBook) {
+        MyBook mockMyBook = MyBook.builder()
+                .id(id)
+                .isbn13(aladinBook.getIsbn13())
+                .member(member)
+                .aladinBook(aladinBook)
+                .status(BookStatus.COMPLETED)
+                .build();
+        
+        Discussion discussion = Discussion.builder()
+                .id(id)
+                .title(title)
+                .member(member)
+                .myBook(mockMyBook)
+                .aladinBook(aladinBook)
+                .content("Test content")
+                .status(DiscussionStatus.PROPOSED)
+                .startDate(LocalDateTime.now().plusDays(1))
+                .closedAt(LocalDateTime.now().plusDays(2))
+                .views(0L)
+                .isDeleted(false)
+                .build();
+        
+        if (agreeCount > 0 || disagreeCount > 0) {
+            List<DiscussionParticipant> participants = new ArrayList<>();
+            for (int i = 0; i < agreeCount; i++) {
+                participants.add(DiscussionParticipant.builder()
+                        .discussion(discussion)
+                        .member(member)
+                        .isAgree(true)
+                        .build());
+            }
+            for (int i = 0; i < disagreeCount; i++) {
+                participants.add(DiscussionParticipant.builder()
+                        .discussion(discussion)
+                        .member(member)
+                        .isAgree(false)
+                        .build());
+            }
+            discussion.changeParticipants(participants);
+        }
+        
+        return discussion;
     }
     
     @Test
@@ -89,17 +151,14 @@ class DiscussionServiceImplTest {
         // Given
         LocalDateTime startDate = LocalDateTime.now().plusDays(1);
         
-        Member mockMember = Member.builder()
-                .id(memberId)
-                .nickname("testuser")
-                .build();
-        
         MyBook mockMyBook = MyBook.builder()
                 .id(1L)
                 .isbn13(isbn13)
                 .member(mockMember)
+                .aladinBook(mockAladinBook)
                 .status(BookStatus.COMPLETED)
                 .build();
+        
         
         DiscussionRegisterRequestDTO requestDTO = DiscussionRegisterRequestDTO.builder()
                 .isbn13(isbn13)
@@ -112,6 +171,7 @@ class DiscussionServiceImplTest {
                 .id(1L)
                 .myBook(mockMyBook)
                 .member(mockMember)
+                .aladinBook(mockAladinBook)
                 .title(requestDTO.getTitle())
                 .content(requestDTO.getContent())
                 .status(DiscussionStatus.PROPOSED)
@@ -150,19 +210,9 @@ class DiscussionServiceImplTest {
                 .build();
         
         List<Discussion> mockDiscussions = Arrays.asList(
-                createMockDiscussion(1L, "Discussion 1", 5, 3),
-                createMockDiscussion(2L, "Discussion 2", 4, 2)
+                createMockDiscussion(1L, "Discussion 1", 5, 3, mockMember, mockAladinBook),
+                createMockDiscussion(2L, "Discussion 2", 4, 2, mockMember, mockAladinBook)
         );
-        
-        for (Discussion discussion : mockDiscussions) {
-            AladinBook mockAladinBook = AladinBook.builder()
-                    .isbn13(discussion.getMyBook().getIsbn13())
-                    .cover("cover" + discussion.getId())
-                    .title("Book Title " + discussion.getId())
-                    .build();
-            when(aladinBookRepository.findByIsbn13(discussion.getMyBook().getIsbn13()))
-                    .thenReturn(Optional.of(mockAladinBook));
-        }
         
         when(discussionRepository.findDiscussionsWithScroll(any(DiscussionScrollRequestDTO.class)))
                 .thenReturn(mockDiscussions);
@@ -192,70 +242,25 @@ class DiscussionServiceImplTest {
         assertEquals("desc", capturedDTO.getSort());
         assertEquals("PROPOSED", capturedDTO.getStatus());
     }
-    
-    private Discussion createMockDiscussion(Long id, String title, int agreeCount, int disagreeCount) {
-        Member mockMember = Member.builder()
-                .id(id)
-                .nickname("User " + id)
-                .build();
-        
-        MyBook mockMyBook = MyBook.builder()
-                .id(id)
-                .isbn13("ISBN" + id)
-                .member(mockMember)
-                .status(BookStatus.COMPLETED)
-                .build();
-        
-        Discussion discussion = Discussion.builder()
-                .id(id)
-                .title(title)
-                .member(mockMember)
-                .myBook(mockMyBook)
-                .status(DiscussionStatus.PROPOSED)
-                .startDate(LocalDateTime.now())
-                .closedAt(LocalDateTime.now().plusDays(1))
-                .build();
-        
-        List<DiscussionParticipant> participants = new ArrayList<>();
-        for (int i = 0; i < agreeCount; i++) {
-            participants.add(DiscussionParticipant.builder()
-                    .discussion(discussion)
-                    .member(mockMember)
-                    .isAgree(true)
-                    .build());
-        }
-        for (int i = 0; i < disagreeCount; i++) {
-            participants.add(DiscussionParticipant.builder()
-                    .discussion(discussion)
-                    .member(mockMember)
-                    .isAgree(false)
-                    .build());
-        }
-        discussion.changeParticipants(participants);
-        
-        return discussion;
-    }
-    
     @Test
     @DisplayName("토론 수정 성공 테스트")
     void discussionModify_shouldModifyDiscussion() throws Exception {
         // Given
         Long discussionId = 10L;
         
-        Member mockMember = Member.builder()
-                .id(memberId)
-                .build();
-        
         MyBook mockMyBook = MyBook.builder()
                 .id(1L)
                 .isbn13(isbn13)
                 .member(mockMember)
+                .aladinBook(mockAladinBook)
                 .status(BookStatus.COMPLETED)
                 .build();
         
         Discussion mockDiscussion = Discussion.builder()
                 .id(discussionId)
                 .member(mockMember)
+                .myBook(mockMyBook)
+                .aladinBook(mockAladinBook)
                 .status(DiscussionStatus.PROPOSED)
                 .build();
         
@@ -288,12 +293,14 @@ class DiscussionServiceImplTest {
         // Given
         Long discussionId = 5L;
         
-        Member mockMember = Member.builder()
-                .id(memberId)
-                .build();
-        
         Discussion mockDiscussion = Discussion.builder()
                 .id(discussionId)
+                .member(mockMember)
+                .myBook(MyBook.builder()
+                        .member(mockMember)
+                        .aladinBook(mockAladinBook)
+                        .build())
+                .aladinBook(mockAladinBook)
                 .status(DiscussionStatus.PROPOSED)
                 .build();
         
@@ -319,12 +326,14 @@ class DiscussionServiceImplTest {
         // Given
         Long discussionId = 5L;
         
-        Member mockMember = Member.builder()
-                .id(memberId)
-                .build();
-        
         Discussion mockDiscussion = Discussion.builder()
                 .id(discussionId)
+                .member(mockMember)
+                .myBook(MyBook.builder()
+                        .member(mockMember)
+                        .aladinBook(mockAladinBook)
+                        .build())
+                .aladinBook(mockAladinBook)
                 .status(DiscussionStatus.PROPOSED)
                 .build();
         
@@ -350,13 +359,14 @@ class DiscussionServiceImplTest {
         // Given
         Long discussionId = 5L;
         
-        Member mockMember = Member.builder()
-                .id(memberId)
-                .build();
-        
         Discussion mockDiscussion = Discussion.builder()
                 .id(discussionId)
                 .member(mockMember)
+                .myBook(MyBook.builder()
+                        .member(mockMember)
+                        .aladinBook(mockAladinBook)
+                        .build())
+                .aladinBook(mockAladinBook)
                 .status(DiscussionStatus.PROPOSED)
                 .views(0L)
                 .isDeleted(false)
@@ -364,10 +374,10 @@ class DiscussionServiceImplTest {
         
         when(discussionRepository.findById(discussionId)).thenReturn(Optional.of(mockDiscussion));
         doNothing().when(quartzConfig).removeJob(anyLong());
-
+        
         // When
         discussionServiceImpl.deleteDiscussion(memberId, discussionId);
-
+        
         // Then
         verify(discussionRepository).findById(discussionId);
         verify(quartzConfig).removeJob(discussionId);

@@ -24,6 +24,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -43,9 +45,14 @@ public class Discussion extends BaseEntity {
 
     // === 연관 관계 === //
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_id", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)  // 추가, 해당 myBook이 삭제 되었을때를 대비해서
+    @JoinColumn(name = "book_id")
     private MyBook myBook;  // 어떤 책의 토론인지 // 내가 기록한 책만 토론 주제로 올릴 수 있음
-
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "aladin_book_id", nullable = false)
+    private AladinBook aladinBook;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;  // 작성자

@@ -147,6 +147,7 @@ class ReportRepositoryTest {
         discussion = Discussion.builder()
             .myBook(myBook)  // MyBook 객체 (책 정보)
             .member(reported)  // 작성자 (Member 객체)
+            .aladinBook(aladinBook)  // 이 부분 추가
             .title("책에 대해 어떻게 생각하시나요?")  // 토론 제목
             .content("이 책은 정말 흥미롭고 생각할 거리를 많이 던져주는 작품입니다.")  // 토론 내용
             .status(DiscussionStatus.PROPOSED)  // 토론 상태 (기본값 PROPOSED)
@@ -316,6 +317,7 @@ class ReportRepositoryTest {
         Discussion discussion1 = Discussion.builder()
                 .myBook(myBook)
                 .member(reported)
+                .aladinBook(aladinBook)  // 이 부분 추가
                 .title("토론 제목 1")
                 .content("토론 내용 1")
                 .status(DiscussionStatus.PROPOSED)
@@ -328,6 +330,7 @@ class ReportRepositoryTest {
         Discussion discussion2 = Discussion.builder()
                 .myBook(myBook)
                 .member(reported)
+                .aladinBook(aladinBook)  // 이 부분 추가
                 .title("토론 제목 2")
                 .content("토론 내용 2")
                 .status(DiscussionStatus.PROPOSED)
@@ -380,6 +383,7 @@ class ReportRepositoryTest {
         Discussion discussion1 = Discussion.builder()
                 .myBook(myBook)
                 .member(reported)
+                .aladinBook(aladinBook)  // 이 부분 추가
                 .title("토론 제목 1")
                 .content("토론 내용 1")
                 .status(DiscussionStatus.PROPOSED)
@@ -392,6 +396,7 @@ class ReportRepositoryTest {
         Discussion discussion2 = Discussion.builder()
                 .myBook(myBook)
                 .member(reported)
+                .aladinBook(aladinBook)  // 이 부분 추가
                 .title("토론 제목 2")
                 .content("토론 내용 2")
                 .status(DiscussionStatus.PROPOSED)
@@ -474,6 +479,7 @@ class ReportRepositoryTest {
             Discussion newDiscussion = Discussion.builder()
                     .myBook(myBook)
                     .member(reported)
+                    .aladinBook(aladinBook)  // 이 부분 추가
                     .title("토론 제목 " + i)
                     .content("토론 내용 " + i)
                     .status(DiscussionStatus.PROPOSED)

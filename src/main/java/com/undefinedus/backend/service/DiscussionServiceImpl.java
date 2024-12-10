@@ -66,6 +66,7 @@ public class DiscussionServiceImpl implements DiscussionService {
         Discussion discussion = Discussion.builder()
             .myBook(myBook)  // MyBook 객체
             .member(member)  // Member 객체
+            .aladinBook(myBook.getAladinBook()) // MyBook 정보가 삭제 되었을 때를 위해
             .title(discussionRegisterRequestDTO.getTitle())
             .content(discussionRegisterRequestDTO.getContent())
             .status(DiscussionStatus.PROPOSED)
@@ -130,13 +131,11 @@ public class DiscussionServiceImpl implements DiscussionService {
             LocalDateTime createdDate = discussion.getCreatedDate();
             Long views = discussion.getViews();
             Long discussionId = discussion.getId();
-            String isbn13 = discussion.getMyBook().getIsbn13();
+            String isbn13 = discussion.getAladinBook().getIsbn13();
             LocalDateTime startDateTime = discussion.getStartDate();
             LocalDateTime closedAt = discussion.getClosedAt();
 
-            AladinBook aladinBook = aladinBookRepository.findByIsbn13(isbn13).orElseThrow(
-                () -> new AladinBookNotFoundException("없는 ISBN13 입니다. : " + isbn13)
-            );
+            AladinBook aladinBook = discussion.getAladinBook();
 
             String cover = aladinBook.getCover();
 
@@ -182,10 +181,8 @@ public class DiscussionServiceImpl implements DiscussionService {
 
         Discussion discussion = discussionRepository.findById(discussionId)
             .orElseThrow(() -> new DiscussionException("해당 토론방을 찾을 수 없습니다. : " + discussionId));
-
-        String isbn13 = discussion.getMyBook().getIsbn13();
-
-        AladinBook discussionBook = aladinBookRepository.findByIsbn13(isbn13).orElseThrow();
+        
+        AladinBook discussionBook = discussion.getAladinBook();
 
         long agreeCount = discussion.getParticipants().stream().filter(agree -> agree.isAgree())
             .count();

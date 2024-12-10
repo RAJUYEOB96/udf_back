@@ -1,5 +1,6 @@
 package com.undefinedus.backend.repository;
 
+import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.domain.entity.CommentLike;
 import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.entity.DiscussionComment;
@@ -35,6 +36,9 @@ class DiscussionCommentRepositoryTest {
 
     @Autowired
     private MyBookRepository myBookRepository;
+    
+    @Autowired
+    private AladinBookRepository aladinBookRepository; // 추가
 
     @Autowired
     private CommentLikeRepository commentLikeRepository;
@@ -43,6 +47,8 @@ class DiscussionCommentRepositoryTest {
     private EntityManager entityManager;
 
     private Discussion discussion;
+    private AladinBook aladinBook; // 추가
+    
     Member member1;
     Member member2;
     Member member3;
@@ -93,12 +99,29 @@ class DiscussionCommentRepositoryTest {
             .password("testpassword5")
             .build();
         memberRepository.save(member5);
+        
+        
+        // AladinBook 생성 및 저장 (추가)
+        aladinBook = AladinBook.builder()
+                .isbn13("9780123456789")
+                .title("Test Book")
+                .author("Test Author")
+                .link("test test")
+                .cover("testet")
+                .fullDescription("1111")
+                .fullDescription2("2222")
+                .publisher("3333")
+                .categoryName("dsfasf")
+                .customerReviewRank(1.1)
+                .build();
+        aladinBookRepository.save(aladinBook);
 
         // MyBook 생성 및 저장
         MyBook myBook = MyBook.builder()
             .member(member1)
             .status(BookStatus.READING)  // 적절한 BookStatus 설정
             .isbn13("9780123456789")  // 예시 ISBN
+            .aladinBook(aladinBook) // 추가
             .build();
         myBookRepository.save(myBook);
 
@@ -106,6 +129,7 @@ class DiscussionCommentRepositoryTest {
         discussion = Discussion.builder()
             .member(member1)
             .myBook(myBook)
+            .aladinBook(aladinBook) // 추가
             .title("Test Discussion")
             .content("Discussion Content")
             .status(DiscussionStatus.PROPOSED)
