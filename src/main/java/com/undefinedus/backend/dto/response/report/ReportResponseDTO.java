@@ -36,8 +36,9 @@ public class ReportResponseDTO {
     public static ReportResponseDTO from(Report report) {
         return ReportResponseDTO.builder()
                 .id(report.getId())
-                .reporterNickname(report.getReporter().getNickname())
-                .reportedNickname(report.getReported().getNickname())
+                // 사용자가 소프트 딜리트 처리 되었을 경우 생각
+                .reporterNickname(report.getReporter() != null ? report.getReporter().getNickname() : "삭제된 사용자")
+                .reportedNickname(report.getReported() != null ? report.getReported().getNickname() : "삭제된 사용자")
                 .reportReason(report.getReportReason())
                 .reportTime(report.getCreatedDate())
                 .targetType(report.getTargetType())

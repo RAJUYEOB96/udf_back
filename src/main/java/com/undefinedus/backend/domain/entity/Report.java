@@ -19,6 +19,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 @Entity
 @Getter
@@ -37,12 +39,18 @@ public class Report extends BaseEntity {
     private Long id;
     
     // === 신고자 === //
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    // DB 레벨에서는 해당 member가 없으면 null로 처리됩니다.
+    // 하지만 JPA는 report.reporter_id나 report.reported_id 값이 존재하면(즉, FK가 있으면) 해당 Member 엔티티를 로드하려고 시도합니다.
+    // 이때 Member 테이블에서 해당 ID를 가진 레코드가 없으면 EntityNotFoundException이 발생합니다.
+    // 그래서 Report 엔티티에서 Member 관계 설정을 수정
+    @NotFound(action = NotFoundAction.IGNORE)  // 추가
     @JoinColumn(name = "reporter_id", nullable = false) // 신고를 한 사람의 ID
     private Member reporter;  // 신고한 사람
     
     // === 신고 대상 === //
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @NotFound(action = NotFoundAction.IGNORE)  // 추가
     @JoinColumn(name = "reportee_id", nullable = false) // 신고를 당한 사람의 ID
     private Member reported;  // 신고 당한 사람
     

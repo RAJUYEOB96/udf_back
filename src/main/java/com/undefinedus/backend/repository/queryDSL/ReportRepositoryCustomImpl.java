@@ -6,7 +6,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.undefinedus.backend.domain.entity.QReport;
 import com.undefinedus.backend.domain.entity.Report;
 import com.undefinedus.backend.domain.enums.ReportStatus;
-import com.undefinedus.backend.domain.enums.ReportTargetType;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.exception.social.TabConditionNotEqualException;
 import java.util.List;
