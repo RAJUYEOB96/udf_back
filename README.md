@@ -127,10 +127,12 @@
 - 일반 회원 가입은 회원의 아이디이자 메일 주소를 입력하면 회원이 입력한 메일 주소로 코드 번호가 담긴 메일을 보냅니다.
 - 만약 이메일 형식이 맞지 않으면 경고 메시지가 나옵니다.
 - 코드 번호가 맞아야 다음 페이지로 넘어 갑니다.
+- 카카오톡으로 회원가입 시 메시지 권한을 확인하는 페이지로 넘어 갑니다.
 
 | 회원 가입 |
 |----------|
-|![24-2  일반 회원 가입](https://github.com/user-attachments/assets/3059f349-66c5-4385-9a06-18dc9365711f)![24-3  일반 회원 가입(이메일)](https://github.com/user-attachments/assets/486907c2-b8e3-4901-9d4b-224010308f0e)![24-4  일반 회원 가입(이메일 코드 입력)](https://github.com/user-attachments/assets/d71c8bcb-fa2b-490c-a543-50b2b34fbdce)|
+|![24-2  일반 회원 가입](https://github.com/user-attachments/assets/3059f349-66c5-4385-9a06-18dc9365711f)![24-3  일반 회원 가입(이메일)](https://github.com/user-attachments/assets/a25317a7-0b0f-4ce9-97c3-eacf94c2db37)
+![24-4  일반 회원 가입(이메일 코드 입력)](https://github.com/user-attachments/assets/d71c8bcb-fa2b-490c-a543-50b2b34fbdce)![３  카카오 회원 가입시 권한 확인](https://github.com/user-attachments/assets/b899f47a-95ae-42ed-9c8e-e2edac456971)|
 
 - 마지막으로 회원의 취향을 3가지 선택하면 회원 가입이 되고 메인 화면으로 넘어 갑니다.
 - 카카오톡으로 회원 가입을 하더라도 취향 선택은 동일 합니다.
@@ -159,14 +161,16 @@
 
 | 책 상세 페이지 |
 |----------|
-|![10-1  검색한 책의 상세](https://github.com/user-attachments/assets/d542521e-1e43-4ce1-a7cc-a66c2cceadc2)![10-2  검색한 책의 상세(더 알아보기)](https://github.com/user-attachments/assets/725fe39a-d808-4cea-b3cb-610645c9718c)![11  더 알아보기 누를 시 알라딘 화면 가기](https://github.com/user-attachments/assets/587576a9-4420-4763-b619-f6576358293b)|
+|![10-1  검색한 책의 상세](https://github.com/user-attachments/assets/d542521e-1e43-4ce1-a7cc-a66c2cceadc2)![10-2  검색한 책의 상세(더 알아보기)](https://github.com/user-attachments/assets/725fe39a-d808-4cea-b3cb-610645c9718c)
+![11  더 알아보기 누를 시 알라딘 화면 가기](https://github.com/user-attachments/assets/587576a9-4420-4763-b619-f6576358293b)|
 
 ### [책 담기]
 - 책 담기를 누를 시 4 가지의 상태에 따른 다른 정보들을 입력 합니다.
 
 | 책 담기 |
 |----------|
-|![12-1  검색한 책 담기(읽고 있는 책)](https://github.com/user-attachments/assets/5fea6d22-c242-4eef-a0e2-89972d10dcd3)![12-2  검색한 책 담기(읽고 싶은 책)](https://github.com/user-attachments/assets/fecdfef0-1ef9-4d11-a4b3-82587385db27)![12-3  검색한 책 담기(다 읽은 책)](https://github.com/user-attachments/assets/24368123-5be0-445d-9483-2d7766f62e54)![12-４  검색한 책 담기(중단한 책)](https://github.com/user-attachments/assets/ee2ea315-2d47-4fc8-816a-bbcf6e55893e)|
+|![12-1  검색한 책 담기(읽고 있는 책)](https://github.com/user-attachments/assets/5fea6d22-c242-4eef-a0e2-89972d10dcd3)![12-2  검색한 책 담기(읽고 싶은 책)](https://github.com/user-attachments/assets/fecdfef0-1ef9-4d11-a4b3-82587385db27)
+![12-3  검색한 책 담기(다 읽은 책)](https://github.com/user-attachments/assets/24368123-5be0-445d-9483-2d7766f62e54)![12-４  검색한 책 담기(중단한 책)](https://github.com/user-attachments/assets/ee2ea315-2d47-4fc8-816a-bbcf6e55893e)|
 
 - 만약 이미 담았던 책이라면 상세페이지에서 책 담기 버튼이 4가지의 상태에 따른 다른 아이콘으로 변경되어 출력됩니다.
   
@@ -178,14 +182,16 @@
 
 | 책 갈피 |
 |----------|
-|![14-1  책갈피](https://github.com/user-attachments/assets/0473bfad-79f5-4a36-a733-76d2182e0389)![14-2  책갈피 추가](https://github.com/user-attachments/assets/7b9c5b2c-44bd-4f26-9789-6b9f58ce1b50)![14-3  책갈피 카카오톡](https://github.com/user-attachments/assets/33db1ebd-bede-4b99-a778-f84796f2764f)|
+|![14-1  책갈피](https://github.com/user-attachments/assets/0473bfad-79f5-4a36-a733-76d2182e0389)![14-2  책갈피 추가](https://github.com/user-attachments/assets/7b9c5b2c-44bd-4f26-9789-6b9f58ce1b50)
+![14-3  책갈피 카카오톡](https://github.com/user-attachments/assets/33db1ebd-bede-4b99-a778-f84796f2764f)|
 
 ### [소셜]
 - 다른 회원의 책 담기 목록, 책갈피를 확인 할 수 있습니다.
 - 회원을 팔로잉한 이후에는 검색할 필요 없이 바로 팔로잉한 회원의 페이지로 넘어 갈 수 있습니다.
 | 소셜 |
 |----------|
-|![15  소셜 초기 화면](https://github.com/user-attachments/assets/0a1d63e2-9ad7-4e12-8fa0-21e9c80731be)![16-2  검색한 회원의 소셜 화면](https://github.com/user-attachments/assets/6f0440ba-5cb3-4400-8618-d58452a55efd)![17-2  팔로잉,팔로우](https://github.com/user-attachments/assets/f2cdcdd9-3b35-4cf0-958c-6075d0ff6c47)
+|![15  소셜 초기 화면](https://github.com/user-attachments/assets/0a1d63e2-9ad7-4e12-8fa0-21e9c80731be)![16-2  검색한 회원의 소셜 화면](https://github.com/user-attachments/assets/6f0440ba-5cb3-4400-8618-d58452a55efd)
+![17-2  팔로잉,팔로우](https://github.com/user-attachments/assets/f2cdcdd9-3b35-4cf0-958c-6075d0ff6c47)
 |
 
 ### [토론]
@@ -196,12 +202,14 @@
 
 | 토론 |
 |----------|
-|![18  주제 발의](https://github.com/user-attachments/assets/462d14d7-53fe-4ca6-86b1-02a4cbdb55cb)![토론 예정](https://github.com/user-attachments/assets/2b1a7b7a-f5a0-41a9-849a-f31fa9a7c4a4)![토론 진행 중](https://github.com/user-attachments/assets/c1a26a17-fe51-48a4-b516-115c6d39c844)![19  토론 종료](https://github.com/user-attachments/assets/ed402ebd-1f35-4b56-8ae6-f95b7f942990)|
+|![18  주제 발의](https://github.com/user-attachments/assets/462d14d7-53fe-4ca6-86b1-02a4cbdb55cb)![토론 예정](https://github.com/user-attachments/assets/2b1a7b7a-f5a0-41a9-849a-f31fa9a7c4a4)
+![토론 진행 중](https://github.com/user-attachments/assets/c1a26a17-fe51-48a4-b516-115c6d39c844)![19  토론 종료](https://github.com/user-attachments/assets/ed402ebd-1f35-4b56-8ae6-f95b7f942990)|
 
 - 토론 생성 시 토론 시작 시간, 토론 주제, 주제 소개 글을 작성합니다.
 - 시작 시간은 토론 생성날의 24시간 후 7일 전의 날짜만 설정 가능합니다.
 
-|![토론 생성 －１](https://github.com/user-attachments/assets/4848f0c4-4759-410a-bc4f-4770cb63e7e1)![토론 생성(토론 책 선택) －２](https://github.com/user-attachments/assets/fc8294b7-efdc-472e-ad64-ed30fda338de)![토론 생성 －3](https://github.com/user-attachments/assets/a7ad2c33-0818-4e39-b5d5-2beb0ff6a5a4)![토론 생성(시간 선택) －4](https://github.com/user-attachments/assets/14c3bfac-bfc8-4e51-be3c-a8e22448d79e)|
+|![토론 생성 －１](https://github.com/user-attachments/assets/4848f0c4-4759-410a-bc4f-4770cb63e7e1)![토론 생성(토론 책 선택) －２](https://github.com/user-attachments/assets/fc8294b7-efdc-472e-ad64-ed30fda338de)
+![토론 생성 －3](https://github.com/user-attachments/assets/a7ad2c33-0818-4e39-b5d5-2beb0ff6a5a4)![토론 생성(시간 선택) －4](https://github.com/user-attachments/assets/14c3bfac-bfc8-4e51-be3c-a8e22448d79e)|
 
 - 종료가 되면 토론의 책 정보, 주제 소개, 댓글 들이 GPT에게 전달 되어지고, 토론의 결과를 출력합니다.
 
@@ -231,7 +239,8 @@
 
 | 통계 |
 |----------|
-|![22  통계 메인](https://github.com/user-attachments/assets/a9d8d904-cbcb-4a5b-9dad-992a285032e2){회원의 달력 이미지 추가}![23-1  통계 연도](https://github.com/user-attachments/assets/7da29c86-fc64-48b8-8c8f-98a9b9639d88)![23-2  통계 연도](https://github.com/user-attachments/assets/9b7923ca-1502-4070-87c3-54a43057797f)|
+|![22  통계 메인](https://github.com/user-attachments/assets/a9d8d904-cbcb-4a5b-9dad-992a285032e2){회원의 달력 이미지 추가}![23-1  통계 연도](https://github.com/user-attachments/assets/7da29c86-fc64-48b8-8c8f-98a9b9639d88)
+![23-2  통계 연도](https://github.com/user-attachments/assets/9b7923ca-1502-4070-87c3-54a43057797f)|
 
 ### []
 - 
