@@ -290,7 +290,9 @@ public class DiscussionServiceImpl implements DiscussionService {
                         .isAgree(true)
                         .build();
                     discussionParticipantRepository.save(discussionParticipant);
+                    return;
                 }
+                discussionParticipantRepository.delete(savedParticipant);
             }
         }
     }
@@ -329,7 +331,9 @@ public class DiscussionServiceImpl implements DiscussionService {
                         .build();
 
                     discussionParticipantRepository.save(discussionParticipant);
+                    return;
                 }
+                discussionParticipantRepository.delete(savedParticipant);
             }
         }
     }

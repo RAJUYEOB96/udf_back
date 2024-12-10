@@ -10,6 +10,7 @@ import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.exception.social.InvalidFollowException;
 import com.undefinedus.backend.repository.FollowRepository;
 import com.undefinedus.backend.repository.MemberRepository;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -212,9 +213,12 @@ public class SocialServiceImpl implements SocialService {
             followMembers.remove(followMembers.size() - 1); // 11개 가져온 걸 10개를 보내기 위해
         }
 
+        log.info("loginMemberId : " + loginMemberId);
         // 팔로우 정보 조회 (현재 로그인한 memberId가 팔로우 하는 모든 ID 목록)
         // 내가 팔로잉 (내가 남을) 하고 있는 모든 memberId
         Set<Long> followingIds = followRepository.findFollowingIds(loginMemberId);
+        
+        log.info("followingIds: " + followingIds);
 
         List<OtherMemberInfoResponseDTO> dtoList = followMembers.stream()
             .map(followMember -> {
