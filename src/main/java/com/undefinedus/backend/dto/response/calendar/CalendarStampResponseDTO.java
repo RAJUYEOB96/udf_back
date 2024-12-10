@@ -34,6 +34,8 @@ public class CalendarStampResponseDTO {
     
     private Double myRating;  // 다 읽은 책, 읽고 있는 책 일때 사용할 별점
     
+    private String oneLineReview; // 한줄평
+    
     public static CalendarStampResponseDTO from (CalendarStamp calendarStamp) {
         return CalendarStampResponseDTO.builder()
                 .myBookId(calendarStamp.getMyBookId())
@@ -48,6 +50,7 @@ public class CalendarStampResponseDTO {
                 .endDate(calendarStamp.getEndDate())
                 .readDateCount(calendarStamp.getReadDateCount())
                 .myRating(calendarStamp.getMyRating())
+                .oneLineReview(calendarStamp.getOneLineReview())
                 .build();
     }
 }

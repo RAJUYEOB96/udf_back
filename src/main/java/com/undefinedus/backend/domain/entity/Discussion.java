@@ -32,7 +32,6 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@SQLDelete(sql = "UPDATE discussion SET is_deleted = true, deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("is_deleted = false")
 @ToString(exclude = {"myBook", "member", "participants", "comments"})  // 실제 연관관계 있는 필드만 exclude
 public class Discussion extends BaseEntity {

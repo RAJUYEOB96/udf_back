@@ -36,6 +36,8 @@ public class ReportController {
 
         Long memberId = memberSecurityDTO.getId();
 
+        // TODO : 신고를 두번 할 수 없음, 그래서 ResponseDTO에 isReport(boolean)을 만들어서 넣어줘야 할듯
+        // 그래서 프론트에서 true면 신고하기가 안보이고, false면 신고하기 보이는 방식으로
         reportService.reportDiscussion(memberId, discussionId, reportRequestDTO);
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -50,7 +52,9 @@ public class ReportController {
     ) {
 
         Long memberId = memberSecurityDTO.getId();
-
+        
+        // TODO : 신고를 두번 할 수 없음, 그래서 ResponseDTO에 isReport(boolean)을 만들어서 넣어줘야 할듯
+        // 그래서 프론트에서 true면 신고하기가 안보이고, false면 신고하기 보이는 방식으로
         reportService.reportComment(memberId, commentId, reportRequestDTO);
 
         return ResponseEntity.status(HttpStatus.OK)
