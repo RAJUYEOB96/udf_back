@@ -45,26 +45,22 @@ public class MyBookController {
         
         Long memberId = memberSecurityDTO.getId();
         Map<String, Long> result = new HashMap<>();
+        log.info("111111");
         
-        try {
-            // MyBook 테이블에 이미 있는지 확인
-            if (!myBookService.existsBook(memberId, requestDTO.getAladinBookRequestDTO().getIsbn13())) {
-                // AladinBook 가져오거나 없으면 새로 생성
-                Optional<AladinBook> isExistsAladinBook = aladinBookService.existsAladinBook(
-                        requestDTO.getAladinBookRequestDTO().getIsbn13());
-                
-                AladinBook savedAladinBook = isExistsAladinBook.orElseGet(() ->
-                        aladinBookService.insertAladinBook(requestDTO.getAladinBookRequestDTO()));
-                
-                // MyBook에 새로 추가
-                Long id = myBookService.insertNewBookByStatus(memberId, savedAladinBook,
-                        requestDTO.getBookStatusRequestDTO());
-                result.put("id", id);
-            }
-        } catch (Exception e) {
-            log.error("책 처리 중 오류가 발생했습니다.", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponseDTO.error("책 처리에 실패했습니다."));
+        // MyBook 테이블에 이미 있는지 확인
+        if (!myBookService.existsBook(memberId, requestDTO.getAladinBookRequestDTO().getIsbn13())) {
+            log.info("true");
+            // AladinBook 가져오거나 없으면 새로 생성
+            Optional<AladinBook> isExistsAladinBook = aladinBookService.existsAladinBook(
+                    requestDTO.getAladinBookRequestDTO().getIsbn13());
+            
+            AladinBook savedAladinBook = isExistsAladinBook.orElseGet(() ->
+                    aladinBookService.insertAladinBook(requestDTO.getAladinBookRequestDTO()));
+            
+            // MyBook에 새로 추가
+            Long id = myBookService.insertNewBookByStatus(memberId, savedAladinBook,
+                    requestDTO.getBookStatusRequestDTO());
+            result.put("id", id);
         }
         
         // 성공적으로 처리되었음을 나타내는 응답을 반환합니다.

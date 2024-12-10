@@ -2,6 +2,7 @@ package com.undefinedus.backend.service;
 
 import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.domain.entity.CalendarStamp;
+import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.enums.BookStatus;
@@ -14,9 +15,11 @@ import com.undefinedus.backend.exception.book.BookDuplicateNotAllowException;
 import com.undefinedus.backend.exception.book.BookException;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
+import com.undefinedus.backend.exception.discussion.DiscussionException;
 import com.undefinedus.backend.exception.member.MemberException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.CalendarStampRepository;
+import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.MyBookRepository;
 import jakarta.transaction.Transactional;
@@ -51,6 +54,7 @@ public class MyBookServiceImpl implements MyBookService {
     private final MyBookRepository myBookRepository;
     private final MemberRepository memberRepository;
     private final CalendarStampRepository calendarStampRepository;
+    private final DiscussionRepository discussionRepository;
 
 
     @Override
@@ -58,36 +62,36 @@ public class MyBookServiceImpl implements MyBookService {
 
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new MemberException(String.format(MEMBER_NOT_FOUND, memberId)));
-
-        return myBookRepository.findByMemberIdAndIsbn13(member.getId(), isbn13).isPresent();
-
+        
+        Optional<MyBook> byMemberIdAndIsbn13 = myBookRepository.findByMemberIdAndIsbn13(member.getId(), isbn13);
+        
+        if (byMemberIdAndIsbn13.isPresent()) {
+            throw new BookDuplicateNotAllowException(BOOK_CAN_NOT_DUPLICATE);
+        }
+        return false;
     }
 
     @Override
     public Long insertNewBookByStatus(Long memberId, AladinBook savedAladinBook,
         BookStatusRequestDTO requestDTO) {
-        try {
-
-            Member findMember = getLoginMember(memberId);
-
-            MyBook myBook = MyBook.builder()
-                .member(findMember)
-                .aladinBook(savedAladinBook)
-                .isbn13(savedAladinBook.getIsbn13())
-                .build();
-            
-            return saveBookAndCalenarStampByStatus(requestDTO, myBook, savedAladinBook, findMember);
-            
-        } catch (MemberException e) {
-            log.error("사용자를 찾을 수 없습니다. ID: {}", memberId, e);
-            throw new MemberException(USER_AUTH_FAILED, e);
-        } catch (InvalidStatusException e) {  // InvalidStatusException을 별도로 처리
-            log.error("잘못된 상태값입니다. status: {}", requestDTO.getStatus(), e);
-            throw e;  // 그대로 전파
-        } catch (Exception e) {
-            log.error("책 등록 중 에러가 발생했습니다. ID: {}", memberId, e);
-            throw new BookException(BOOK_REGISTRATION_FAILED, e);
+        
+        Optional<MyBook> check = myBookRepository.findByMemberIdAndIsbn13(memberId, savedAladinBook.getIsbn13());
+        
+        if (check.isPresent()) {
+            throw new BookDuplicateNotAllowException(BOOK_CAN_NOT_DUPLICATE);
+        } else {
+            log.info("myBook is Null");
         }
+        
+        Member findMember = getLoginMember(memberId);
+
+        MyBook myBook = MyBook.builder()
+            .member(findMember)
+            .aladinBook(savedAladinBook)
+            .isbn13(savedAladinBook.getIsbn13())
+            .build();
+        
+        return saveBookAndCalenarStampByStatus(requestDTO, myBook, savedAladinBook, findMember);
     }
 
     @Override
@@ -171,6 +175,14 @@ public class MyBookServiceImpl implements MyBookService {
             .orElseThrow(() -> new BookNotFoundException(
                 String.format(BOOK_NOT_FOUND, memberId, bookId)
             ));
+        
+        List<Discussion> check = discussionRepository.findByMemberIdAndBookId(memberId, bookId);
+        
+        // TODO : 딜리트를 하자니 myBook으로 토론 한번 생성하면 지울 방법이 현재 없는듯, 토론은 소프트 딜리트여서
+        // 아니면 myBook도 소프트 딜리트해서 안보이게 하고 지웠다 같은 걸 만들면 소프트 딜리트를 풀고 새로운 정보 처리??
+        if (!check.isEmpty()) {
+            throw new DiscussionException("MyBook을 삭제하기 위해선 해당 기록으로 만들어진 Discussion이 없어야 합니다. 관리자에게 문의하세요");
+        }
 
         // 2. 연관된 CalendarStamp 먼저 삭제, 안하면 연결 되어있기에 myBook 삭제가 안됨
         calendarStampRepository.deleteAllByMyBookId(bookId);
