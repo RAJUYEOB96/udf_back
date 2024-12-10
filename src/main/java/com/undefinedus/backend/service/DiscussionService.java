@@ -19,7 +19,7 @@ public interface DiscussionService {
     ScrollResponseDTO<DiscussionListResponseDTO> getDiscussionList(
         DiscussionScrollRequestDTO discussionScrollRequestDTO);
 
-    DiscussionDetailResponseDTO getDiscussionDetail(Long discussionId);
+    DiscussionDetailResponseDTO getDiscussionDetail(Long loginMemgerId, Long discussionId);
 
     Long discussionUpdate(Long memberId, String isbn13, Long discussionId,
         DiscussionUpdateRequestDTO discussionUpdateRequestDTO) throws Exception;

@@ -65,10 +65,11 @@ public class DiscussionController {
     // 토론, 발의 상세 보기
     @GetMapping("/detail")
     public ResponseEntity<ApiResponseDTO<DiscussionDetailResponseDTO>> getDiscussionDetail(
-        @RequestParam("discussionId") Long discussionId
+            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+            @RequestParam("discussionId") Long discussionId
     ) {
         DiscussionDetailResponseDTO discussionDetail = discussionService.getDiscussionDetail(
-            discussionId);
+                memberSecurityDTO.getId(), discussionId);
 
         return ResponseEntity.ok(ApiResponseDTO.success(discussionDetail));
     }

@@ -22,6 +22,7 @@ import com.undefinedus.backend.repository.DiscussionParticipantRepository;
 import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.MyBookRepository;
+import com.undefinedus.backend.repository.ReportRepository;
 import com.undefinedus.backend.scheduler.config.QuartzConfig;
 import com.undefinedus.backend.scheduler.repository.QuartzTriggerRepository;
 import java.time.LocalDateTime;
@@ -48,6 +49,7 @@ public class DiscussionServiceImpl implements DiscussionService {
     private final AladinBookRepository aladinBookRepository;
     private final DiscussionParticipantRepository discussionParticipantRepository;
     private final QuartzTriggerRepository quartzTriggerRepository;
+    private final ReportRepository reportRepository;
 
     @Override
     public Long discussionRegister(Long memberId,
@@ -176,7 +178,7 @@ public class DiscussionServiceImpl implements DiscussionService {
     }
 
     @Override
-    public DiscussionDetailResponseDTO getDiscussionDetail(Long discussionId) {
+    public DiscussionDetailResponseDTO getDiscussionDetail(Long loginMemberId, Long discussionId) {
 
         Discussion discussion = discussionRepository.findById(discussionId)
             .orElseThrow(() -> new DiscussionException("해당 토론방을 찾을 수 없습니다. : " + discussionId));
@@ -193,6 +195,8 @@ public class DiscussionServiceImpl implements DiscussionService {
         discussion.increaseViews();
 
         Discussion savedDiscussion = discussionRepository.save(discussion);
+        
+        Boolean isReport = reportRepository.existsByReporterIdAndDiscussionId(loginMemberId, discussionId);
 
         DiscussionDetailResponseDTO discussionDetailResponseDTO = DiscussionDetailResponseDTO.builder()
             .discussionId(discussionId)
@@ -211,6 +215,7 @@ public class DiscussionServiceImpl implements DiscussionService {
             .status(String.valueOf(savedDiscussion.getStatus()))
             .agreePercent(savedDiscussion.getAgreePercent())
             .disagreePercent(savedDiscussion.getDisagreePercent())
+            .isReport(isReport)
             .build();
 
         return discussionDetailResponseDTO;
