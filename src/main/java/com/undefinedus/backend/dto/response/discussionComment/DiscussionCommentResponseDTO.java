@@ -43,4 +43,6 @@ public class DiscussionCommentResponseDTO {
     private LocalDateTime createTime;
 
     private String discussionCommentStatus;
+    
+    private Boolean isReport;
 }

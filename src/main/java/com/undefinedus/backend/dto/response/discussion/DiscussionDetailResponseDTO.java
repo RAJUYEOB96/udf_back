@@ -40,5 +40,7 @@ public class DiscussionDetailResponseDTO {
     private Integer agreePercent; // AI가 분석한 결과 찬성
 
     private Integer disagreePercent; // AI가 분석한 결과 반대
+    
+    private Boolean isReport;   // 로그인 사용자가 볼때 신고 했었는지
 
 }
