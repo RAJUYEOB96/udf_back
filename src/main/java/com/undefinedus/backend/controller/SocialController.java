@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Log4j2
 @RequestMapping("/api/social")
 public class SocialController {
-    // TODO: 프로필 이미지에 대한 것들은 나중에 추가하기
     private final SocialService socialService;
     private final MyBookService myBookService;
     private final MyBookmarkService myBookmarkService;

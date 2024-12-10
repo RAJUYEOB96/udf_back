@@ -44,6 +44,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)  // JUnit5에서 Mockito를 사용하기 위한 설정
 class MyBookServiceImplTest {
@@ -236,6 +237,14 @@ class MyBookServiceImplTest {
                 .status(BookStatus.WISH.name())
                 .build();
         
+        // Mock save 동작 정의 추가
+        when(myBookRepository.save(any(MyBook.class))).thenAnswer(invocation -> {
+            MyBook book = invocation.getArgument(0);
+            // ID 설정 (실제 DB에서처럼 ID가 생성되는 것을 시뮬레이션)
+            ReflectionTestUtils.setField(book, "id", 1L);
+            return book;
+        });
+        
         // when: 테스트할 메서드 실행
         myBookService.insertNewBookByStatus(1L, testAladinBook, wishRequestDTO);
         
@@ -265,6 +274,14 @@ class MyBookServiceImplTest {
                 .startDate(LocalDate.now().minusDays(5))
                 .endDate(LocalDate.now())
                 .build();
+        
+        // Mock save 동작 정의 추가
+        when(myBookRepository.save(any(MyBook.class))).thenAnswer(invocation -> {
+            MyBook book = invocation.getArgument(0);
+            // ID 설정 (실제 DB에서처럼 ID가 생성되는 것을 시뮬레이션)
+            ReflectionTestUtils.setField(book, "id", 1L);
+            return book;
+        });
         
         // when: 테스트할 메서드 실행
         myBookService.insertNewBookByStatus(1L, testAladinBook, stoppedRequestDTO);

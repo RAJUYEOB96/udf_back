@@ -1,5 +1,6 @@
 package com.undefinedus.backend.service;
 
+import com.undefinedus.backend.dto.response.myPage.MyPageResponseDTO;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
@@ -26,4 +27,10 @@ public interface MyPageService {
     Map<String, String> updatePassword(Long memberId, String password);
 
     boolean checkSamePassword(Long memberId, String password);
+
+    MyPageResponseDTO getMyInformation(Long memberId);
+
+    boolean updateIsPublic(Long memberId);
+    
+    void deleteMember(Long memberId);
 }

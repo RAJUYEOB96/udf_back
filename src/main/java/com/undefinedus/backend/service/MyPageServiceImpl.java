@@ -1,7 +1,9 @@
 package com.undefinedus.backend.service;
 
 import com.undefinedus.backend.domain.entity.Member;
+import com.undefinedus.backend.domain.entity.SocialLogin;
 import com.undefinedus.backend.domain.enums.PreferencesType;
+import com.undefinedus.backend.dto.response.myPage.MyPageResponseDTO;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -9,6 +11,7 @@ import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +91,51 @@ public class MyPageServiceImpl implements MyPageService {
         return member.isMessageToKakao();
     }
 
+    // 책장 공개 여부 설정
+    @Override
+    public boolean updateIsPublic(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
+
+        member.updateIsPublic(!member.isPublic());
+
+        return member.isPublic();
+    }
+    
+    @Override
+    public void deleteMember(Long memberId) {
+        
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
+        
+        member.updateDeleted(true);
+        member.updateDeletedAt(LocalDateTime.now());
+        
+    }
+    
+    // 내 정보 불러오기
+    @Override
+    public MyPageResponseDTO getMyInformation(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
+
+        // DTO 변환
+        return MyPageResponseDTO.builder()
+            .id(member.getId())
+            .nickname(member.getNickname())
+            .profileImage(member.getProfileImage())
+            .birth(member.getBirth())
+            .gender(member.getGender())
+            .isSocial(member.getSocialLogin()!=null)
+            .preferences(member.getPreferences())
+            .isPublic(member.isPublic())
+            .isMessageToKakao(member.isMessageToKakao())
+            .KakaoMessageIsAgree(member.isKakaoMessageIsAgree())
+            .honorific(member.getHonorific())
+            .createdDate(member.getCreatedDate())
+            .build();
+    }
+
     // 카카오 API 호출 로직을 별도로 분리
     private Map<String, Object> getKakaoScopes(String accessToken) {
         String kakaoCheckScopeUrl = "https://kapi.kakao.com/v2/user/scopes";
@@ -152,6 +200,7 @@ public class MyPageServiceImpl implements MyPageService {
         return result;
     }
 
+    // 프로필 이미지 없애기
     @Override
     public Map<String, String> dropProfileImage(Long memberId) {
         Map<String, String> result = new HashMap<>();
@@ -177,6 +226,7 @@ public class MyPageServiceImpl implements MyPageService {
         return result;
     }
 
+    // 생년월일, 성별 수정
     @Override
     public Map<String, String> updateBirthAndGender(Long memberId, LocalDate birth, String gender) {
 
@@ -205,6 +255,7 @@ public class MyPageServiceImpl implements MyPageService {
         return result;
     }
 
+    // 취향 수정
     @Override
     public Map<String, String> updatePreferences(Long memberId, List<String> preferences) {
         if (preferences == null || preferences.isEmpty()) {

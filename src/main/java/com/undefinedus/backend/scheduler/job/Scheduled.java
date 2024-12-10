@@ -77,20 +77,17 @@ public class Scheduled implements Job {
 
     }
 
-    public void removeJob(Long discussionId, DiscussionStatus newStatus) throws
-        SchedulerException {
+    public void removeJob(Long discussionId, DiscussionStatus newStatus) throws SchedulerException {
         // Job 이름을 기준으로 작업 삭제
-        String jobName = "discussion_" + discussionId.toString() + "_" + newStatus;
-
-        Discussion discussion = discussionRepository.findById(discussionId).get();
-        discussion.changeDeleted(true);
-        discussion.changeDeletedAt(LocalDateTime.now());
-        discussionRepository.save(discussion);
-
+        String jobName = "discussion_" + discussionId.toString() + "_";
+        String schedName = "discussion ID : ";
+        
         // DB에서 관련된 Quartz 작업과 트리거 삭제
-        quartzJobDetailRepository.deleteByJobName(jobName);  // Job 이름을 기준으로 삭제
-        quartzTriggerRepository.deleteByTriggerName(
-            "trigger_changeStatus_" + discussionId.toString() + "_"
-                + newStatus);  // Trigger 이름을 기준으로 삭제
+        quartzJobDetailRepository.deleteByJobName(jobName + DiscussionStatus.SCHEDULED);  // Job 이름을 기준으로 삭제
+        quartzJobDetailRepository.deleteByJobName(jobName + DiscussionStatus.IN_PROGRESS);  // Job 이름을 기준으로 삭제
+        quartzJobDetailRepository.deleteByJobName(jobName + DiscussionStatus.ANALYZING);  // Job 이름을 기준으로 삭제
+        quartzJobDetailRepository.deleteByJobName(jobName + DiscussionStatus.COMPLETED);  // Job 이름을 기준으로 삭제
+
+        quartzTriggerRepository.deleteByTriggerName(schedName + discussionId);  // Trigger 이름을 기준으로 삭제
     }
 }

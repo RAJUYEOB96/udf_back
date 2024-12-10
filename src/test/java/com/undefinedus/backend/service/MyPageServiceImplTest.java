@@ -11,17 +11,20 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.undefinedus.backend.domain.entity.Member;
+import com.undefinedus.backend.dto.response.myPage.MyPageResponseDTO;
 import com.undefinedus.backend.repository.MemberRepository;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -65,7 +68,12 @@ public class MyPageServiceImplTest {
             .profileImage("defaultProfileImage.jpg")
             .birth(LocalDate.parse("2015-01-01"))
             .gender("남")
-            .preferences(new HashSet<>())
+            .preferences(new HashSet<>()).isPublic(true)
+            .isMessageToKakao(true)
+            .KakaoMessageIsAgree(true)
+            .isPublic(true)
+            .honorific("칭호")
+            .createdDate(LocalDateTime.parse("2015-01-01T00:00"))
             .build();
 
         // Mock 설정
@@ -81,6 +89,48 @@ public class MyPageServiceImplTest {
             "image/jpeg",
             Files.newInputStream(filePath)
         );
+    }
+
+    @Test
+    @DisplayName("유저 정보 받아오기 테스트")
+    void getMyInformation() {
+        // given
+        given(memberRepository.findById(1L)).willReturn(Optional.of(mockMember));
+
+        // when
+        MyPageResponseDTO response = myPageService.getMyInformation(1L);
+
+        // then
+        Assertions.assertNotNull(response); // 응답이 null이 아닌지 확인
+        assertEquals(1L, response.getId()); // ID 확인
+        assertEquals("닉네임", response.getNickname()); // 닉네임 확인
+        assertEquals("defaultProfileImage.jpg", response.getProfileImage()); // 프로필 이미지 확인
+        assertEquals(LocalDate.parse("2015-01-01"), response.getBirth()); // 생년월일 확인
+        assertEquals("남", response.getGender()); // 성별 확인
+        assertTrue(response.isPublic()); // 공개 여부 확인
+        assertTrue(response.isMessageToKakao()); // 카카오 메시지 설정 확인
+        assertTrue(response.isKakaoMessageIsAgree()); // 카카오 메시지 동의 확인
+        assertEquals("칭호", response.getHonorific()); // 칭호 확인
+        assertEquals(new HashSet<>(), response.getPreferences()); // 취향 확인
+        assertEquals(LocalDateTime.parse("2015-01-01T00:00"), response.getCreatedDate());
+
+        // Mock 객체 호출 검증
+        verify(memberRepository).findById(1L); // findById 메서드가 호출되었는지 확인
+    }
+
+    @Test
+    @DisplayName("책장 공개 여부 설정 테스트")
+    void updateIsPublic() {
+        // given
+        given(memberRepository.findById(1L)).willReturn(Optional.of(mockMember));
+
+        // when
+        boolean result = myPageService.updateIsPublic(1L);
+
+        // then
+        assertFalse(result);
+        // Mock 객체 호출 검증
+        verify(memberRepository).findById(1L); // findById 메서드가 호출되었는지 확인
     }
 
     @Test
