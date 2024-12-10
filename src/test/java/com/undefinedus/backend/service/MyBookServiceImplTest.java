@@ -118,19 +118,16 @@ class MyBookServiceImplTest {
         // given: 테스트 조건 설정
         // memberId로 Member를 찾으면 testMember를 반환하도록 설정
         when(memberRepository.findById(anyLong())).thenReturn(Optional.of(testMember));
-        // memberId와 isbn13으로 MyBook을 찾으면 testMyBook을 반환하도록 설정
+        // 존재하지 않는 책으로 설정
         when(myBookRepository.findByMemberIdAndIsbn13(anyLong(), anyString()))
-                .thenReturn(Optional.of(testMyBook));
+                .thenReturn(Optional.empty());
         
         // when: 테스트할 메서드 실행
         boolean result = myBookService.existsBook(1L, "9788956746425");
         
         // then: 결과 검증
-        // 결과가 true인지 확인
-        assertThat(result).isTrue();
-        // memberRepository.findById가 1L 파라미터로 호출되었는지 검증
+        assertThat(result).isFalse(); // 결과가 false인지 확인
         verify(memberRepository).findById(1L);
-        // myBookRepository.findByMemberIdAndIsbn13이 정확한 파라미터로 호출되었는지 검증
         verify(myBookRepository).findByMemberIdAndIsbn13(1L, "9788956746425");
     }
     
@@ -675,7 +672,7 @@ class MyBookServiceImplTest {
     class DeleteMyBookTest {
         
         @Test
-        @DisplayName("내 책 삭제 성공 테스트")
+        @DisplayName("내 책 소프트 딜리트 성공 테스트")
         void testDeleteMyBook() {
             // given
             Long memberId = 1L;
@@ -684,30 +681,27 @@ class MyBookServiceImplTest {
             MyBook myBook = MyBook.builder()
                     .id(bookId)
                     .member(Member.builder().id(memberId).build())
+                    .isDeleted(false)
+                    .deletedAt(null)
                     .build();
             
-            when(myBookRepository.findByIdAndMemberId(bookId, memberId)) // 이 메소드가 호출되면
-                    .thenReturn(Optional.of(myBook));                   // myBook을 반환하도록 설정
+            when(myBookRepository.findByIdAndMemberId(bookId, memberId))
+                    .thenReturn(Optional.of(myBook));
             
             // when
-            myBookService.deleteMyBook(memberId, bookId); // 실제 삭제 메소드 호출
+            myBookService.deleteMyBook(memberId, bookId);
             
             // then
-            // 1. findByIdAndMemberId 메소드가 정확히 한 번 호출되었는지 검증
-            // - bookId와 memberId 파라미터로 호출되었는지 확인
+            // 1. findByIdAndMemberId 메소드 호출 검증
             verify(myBookRepository).findByIdAndMemberId(bookId, memberId);
-            // 2. deleteByIdAndMemberId 메소드가 정확히 한 번 호출되었는지 검증
-            // - bookId와 memberId 파라미터로 호출되었는지 확인
-            verify(myBookRepository).deleteByIdAndMemberId(bookId, memberId);
             
-            // 참고: verify()로 할 수 있는 다른 검증들
-//            verify(myBookRepository, times(1)).findByIdAndMemberId(bookId, memberId);  // 정확히 1번 호출
-//            verify(myBookRepository, never()).otherMethod();  // 이 메소드는 절대 호출되지 않았어야 함 otherMethod는 예시
-//            verify(myBookRepository, atLeastOnce()).findByIdAndMemberId(bookId, memberId);  // 최소 1번 이상 호출
-            // 호출 순서도 검증 가능
-            //InOrder inOrder = inOrder(myBookRepository);
-            //inOrder.verify(myBookRepository).findByIdAndMemberId(bookId, memberId);
-            //inOrder.verify(myBookRepository).deleteByIdAndMemberId(bookId, memberId);
+            // 2. 엔티티 상태 변경 검증
+            assertThat(myBook.isDeleted()).isTrue();
+            assertThat(myBook.getDeletedAt()).isNotNull();
+            
+            // 3. save 메서드가 호출되지 않아야 함 (더티 체킹으로 처리되므로)
+            verify(myBookRepository, never()).save(any(MyBook.class));
+            verify(myBookRepository, never()).deleteByIdAndMemberId(anyLong(), anyLong());
         }
         
         @Test

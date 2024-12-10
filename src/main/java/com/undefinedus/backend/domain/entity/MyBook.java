@@ -14,17 +14,20 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
+@SQLRestriction("is_deleted = false")  // 기본 제약만 유지
 @ToString
 public class MyBook extends BaseEntity {
 
@@ -68,6 +71,14 @@ public class MyBook extends BaseEntity {
     private LocalDate startDate;    // 읽기 시작한 날짜
     @Column
     private LocalDate endDate;   // 완독한/멈춘 날짜
+    
+    // === Soft Delete 관련 === //
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean isDeleted = false; // softDelete
+    
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     // === 메서드 === //
     // === 상태 업데이트 === //
@@ -103,5 +114,13 @@ public class MyBook extends BaseEntity {
 
     public void changeMember(Member member) {
         this.member = member;
+    }
+    
+    public void updateDeleted(boolean deleted) {
+        isDeleted = deleted;
+    }
+    
+    public void updateDeletedAt(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
     }
 }

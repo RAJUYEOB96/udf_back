@@ -37,7 +37,8 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@SQLRestriction("is_deleted = false AND is_public = true")  // @Where 대신 @SQLRestriction 사용
+// @Where 대신 @SQLRestriction 사용
+@SQLRestriction("is_deleted = false")  // 기본 제약만 유지
 @ToString(exclude = {"socialLogin", "followings", "followers"})
 public class Member extends BaseEntity {
 

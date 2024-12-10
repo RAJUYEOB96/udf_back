@@ -143,7 +143,7 @@ public class ReportServiceImpl implements ReportService {
 
         // 해당 tabCondition에 따른 전체 갯수
         Long totalElements = reportRepository.countReportListByTabCondition(requestDTO);
-
+        
         // size + 1개 데이터 조회해서 가져옴 (size가 10이면 11개 가져옴)
         List<Report> findReports = reportRepository.getReportListByTabCondition(requestDTO);
 

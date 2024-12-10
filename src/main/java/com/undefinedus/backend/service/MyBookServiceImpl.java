@@ -24,6 +24,7 @@ import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.MyBookRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -171,24 +172,25 @@ public class MyBookServiceImpl implements MyBookService {
     @Override
     public void deleteMyBook(Long memberId, Long bookId) {
         // 1. 삭제 전에 책이 존재하는지 확인
-        myBookRepository.findByIdAndMemberId(bookId, memberId)
-            .orElseThrow(() -> new BookNotFoundException(
-                String.format(BOOK_NOT_FOUND, memberId, bookId)
-            ));
-        
-        List<Discussion> check = discussionRepository.findByMemberIdAndBookId(memberId, bookId);
-        
-        // TODO : 딜리트를 하자니 myBook으로 토론 한번 생성하면 지울 방법이 현재 없는듯, 토론은 소프트 딜리트여서
-        // 아니면 myBook도 소프트 딜리트해서 안보이게 하고 지웠다 같은 걸 만들면 소프트 딜리트를 풀고 새로운 정보 처리??
-        if (!check.isEmpty()) {
-            throw new DiscussionException("MyBook을 삭제하기 위해선 해당 기록으로 만들어진 Discussion이 없어야 합니다. 관리자에게 문의하세요");
-        }
+        MyBook myBook = myBookRepository.findByIdAndMemberId(bookId, memberId)
+                .orElseThrow(() -> new BookNotFoundException(
+                        String.format(BOOK_NOT_FOUND, memberId, bookId)
+                ));
+//
+//        List<Discussion> check = discussionRepository.findByMemberIdAndBookId(memberId, bookId);
+//
+//        // TODO : 딜리트를 하자니 myBook으로 토론 한번 생성하면 지울 방법이 현재 없는듯, 토론은 소프트 딜리트여서
+//        // 아니면 myBook도 소프트 딜리트해서 안보이게 하고 지웠다 같은 걸 만들면 소프트 딜리트를 풀고 새로운 정보 처리??
+//        if (!check.isEmpty()) {
+//            throw new DiscussionException("MyBook을 삭제하기 위해선 해당 기록으로 만들어진 Discussion이 없어야 합니다. 관리자에게 문의하세요");
+//        }
 
         // 2. 연관된 CalendarStamp 먼저 삭제, 안하면 연결 되어있기에 myBook 삭제가 안됨
         calendarStampRepository.deleteAllByMyBookId(bookId);
 
-        // 3. 존재하면 삭제 실행
-        myBookRepository.deleteByIdAndMemberId(bookId, memberId);
+        // 3. 존재하면 삭제 실행 - 소프트 딜리트로 변경
+        myBook.updateDeleted(true);
+        myBook.updateDeletedAt(LocalDateTime.now());
     }
 
     @Override
