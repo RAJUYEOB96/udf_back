@@ -80,7 +80,7 @@ public class MyPageServiceImpl implements MyPageService {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
 
-        Boolean KakaoMessageIsAgree = checkMessagePermission(memberId);
+        Boolean KakaoMessageIsAgree = member.isMessageToKakao();
 
         if (KakaoMessageIsAgree != null) {
 
