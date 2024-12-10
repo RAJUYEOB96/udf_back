@@ -23,12 +23,8 @@ import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.MyBookRepository;
 import com.undefinedus.backend.scheduler.config.QuartzConfig;
-import com.undefinedus.backend.scheduler.entity.QuartzTrigger;
-import com.undefinedus.backend.scheduler.job.Scheduled;
 import com.undefinedus.backend.scheduler.repository.QuartzTriggerRepository;
-import java.sql.Date;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -50,12 +46,12 @@ public class DiscussionServiceImpl implements DiscussionService {
     private final MyBookRepository myBookRepository;
     private final QuartzConfig quartzConfig;
     private final AladinBookRepository aladinBookRepository;
-    private final Scheduled scheduled;
     private final DiscussionParticipantRepository discussionParticipantRepository;
     private final QuartzTriggerRepository quartzTriggerRepository;
 
     @Override
-    public Long discussionRegister(Long memberId, DiscussionRegisterRequestDTO discussionRegisterRequestDTO) {
+    public Long discussionRegister(Long memberId,
+        DiscussionRegisterRequestDTO discussionRegisterRequestDTO) {
 
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new MemberNotFoundException("해당 사용자를 찾을 수 없습니다. : " + memberId));
@@ -230,29 +226,43 @@ public class DiscussionServiceImpl implements DiscussionService {
         MyBook myBook = myBookRepository.findByMemberIdAndIsbn13(memberId, isbn13)
             .orElseThrow(() -> new BookNotFoundException("해당 책을 찾을 수 없습니다. : " + isbn13));
 
-        Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(
-            () -> new DiscussionNotFoundException("해당 토론을 찾을 수 없습니다. : " + discussionId));
-        
-        List<QuartzTrigger> quartzTriggers =
-                quartzTriggerRepository.findAllBySchedName("discussion ID : " + discussionId);
+        Discussion discussion = discussionRepository.findById(discussionId)
+            .orElseThrow(
+                () -> new DiscussionNotFoundException("해당 토론을 찾을 수 없습니다. : " + discussionId));
 
-        if (member == discussion.getMember()
-            && discussion.getStatus() == DiscussionStatus.PROPOSED && discussion.getParticipants()
-            .isEmpty()) {
-            
-            discussion.changeMyBook(myBook);
-            discussion.changeTitle(discussionUpdateRequestDTO.getTitle());
-            discussion.changeContent(discussionUpdateRequestDTO.getContent());
+        if (member.getId() != discussion.getMember().getId()) {
+
+            throw new DiscussionException("발의한 회원만 수정 할 수 있습니다. : " + "수정 할 회원 : " + memberId + " 토론 만든 회원 : "
+                + discussion.getMember().getId());
+        }
+
+        if (discussion.getStatus() != DiscussionStatus.PROPOSED) {
+
+            throw new DiscussionException("발의 상태의 토론만 수정할 수 있습니다. : " + discussion.getStatus());
+        }
+
+        if (!discussion.getParticipants().isEmpty()) {
+
+            throw new DiscussionException("참석 예정 회원이 있어 수정 할 수 없습니다. : " + discussion.getParticipants());
+        }
+
+        // 토론 업데이트
+        discussion.changeMyBook(myBook);
+        discussion.changeTitle(discussionUpdateRequestDTO.getTitle());
+        discussion.changeContent(discussionUpdateRequestDTO.getContent());
+
+        if (discussionUpdateRequestDTO.getModifyStartTime() != null) {
             discussion.changeStartDate(discussionUpdateRequestDTO.getModifyStartTime());
+            discussion.changeClosedAt(discussionUpdateRequestDTO.getModifyStartTime().plusDays(1));
 
+            // 이전 Quartz 스케줄러 삭제
+            quartzConfig.removeJob(discussionId);
+
+            // 새로운 Quartz 스케줄러 설정
+            quartzConfig.scheduleDiscussionJobs(discussion.getStartDate(), discussionId);
         }
 
         Discussion save = discussionRepository.save(discussion);
-        
-        for (QuartzTrigger quartzTrigger : quartzTriggers) {
-            quartzTrigger.updateStartTimeEasy(Date.from(save.getStartDate().atZone(ZoneId.systemDefault()).toInstant()));
-        }
-
         return save.getId();
     }
 
@@ -348,7 +358,7 @@ public class DiscussionServiceImpl implements DiscussionService {
 
             discussion.changeDeleted(true);
             discussion.changeDeletedAt(LocalDateTime.now());
-            scheduled.removeJob(discussionId, discussion.getStatus());
+            quartzConfig.removeJob(discussionId);
         } else {
             throw new DiscussionException("해당 discussion을 만든 회원이 아닙니다. memberId : " + memberId);
         }

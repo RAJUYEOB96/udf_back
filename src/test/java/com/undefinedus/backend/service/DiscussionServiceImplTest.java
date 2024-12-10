@@ -363,14 +363,14 @@ class DiscussionServiceImplTest {
                 .build();
         
         when(discussionRepository.findById(discussionId)).thenReturn(Optional.of(mockDiscussion));
-        doNothing().when(scheduled).removeJob(anyLong(), any(DiscussionStatus.class));
-        
+        doNothing().when(quartzConfig).removeJob(anyLong());
+
         // When
         discussionServiceImpl.deleteDiscussion(memberId, discussionId);
-        
+
         // Then
         verify(discussionRepository).findById(discussionId);
-        verify(scheduled).removeJob(discussionId, mockDiscussion.getStatus());
+        verify(quartzConfig).removeJob(discussionId);
         
         assertTrue(mockDiscussion.isDeleted());
         assertNotNull(mockDiscussion.getDeletedAt());
