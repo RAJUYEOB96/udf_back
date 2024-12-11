@@ -34,4 +34,5 @@ public interface ReportRepository extends JpaRepository<Report, Long>, ReportRep
     Optional<Report> findByIdWithAll(@Param("reportId") Long reportId);
     
     Boolean existsByReporterIdAndDiscussionId(Long loginMemberId, Long discussionId);
+    
 }

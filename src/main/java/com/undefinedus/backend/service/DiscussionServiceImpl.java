@@ -5,6 +5,7 @@ import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.entity.DiscussionParticipant;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
+import com.undefinedus.backend.domain.entity.Report;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.dto.request.discussion.DiscussionRegisterRequestDTO;
 import com.undefinedus.backend.dto.request.discussion.DiscussionUpdateRequestDTO;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.quartz.SchedulerException;
@@ -195,8 +197,21 @@ public class DiscussionServiceImpl implements DiscussionService {
 
         Discussion savedDiscussion = discussionRepository.save(discussion);
         
-        Boolean isAgree = discussionParticipantRepository.existsByMemberIdAndDiscussionId(loginMemberId,
-                discussion.getId());
+        String isAgree = null;
+        
+        Optional<DiscussionParticipant> findDiscussionParticipant = discussionParticipantRepository.findByMemberIdAndDiscussionId(
+                loginMemberId, discussion.getId());
+        
+        if (findDiscussionParticipant.isEmpty()) {
+            isAgree = "null";
+        } else {
+            DiscussionParticipant discussionParticipant = findDiscussionParticipant.get();
+            if (discussionParticipant.isAgree()) {
+                isAgree = "agree";
+            } else {
+                isAgree = "disagree";
+            }
+        }
         
         Boolean isReport = reportRepository.existsByReporterIdAndDiscussionId(loginMemberId, discussionId);
 
@@ -299,7 +314,7 @@ public class DiscussionServiceImpl implements DiscussionService {
                     .build();
 
                 discussionParticipantRepository.save(discussionParticipant);
-                result.put("choice", "agree");
+                result.put("isAgree", "agree");
                 return result;
             } else {
                 if (!savedParticipant.isAgree()) {  // disagree 일때
@@ -312,15 +327,15 @@ public class DiscussionServiceImpl implements DiscussionService {
                         .isAgree(true)
                         .build();
                     discussionParticipantRepository.save(discussionParticipant);
-                    result.put("choice", "agree");
+                    result.put("isAgree", "agree");
                     return result;
                 }
                 discussionParticipantRepository.delete(savedParticipant);   // agree 눌러져 있는데 한번더 눌릴때
-                result.put("choice", "null");
+                result.put("isAgree", "null");
                 return result;
             }
         }
-        result.put("choice", "isOver");
+        result.put("isAgree", "isOver");
         return result;
     }
 
@@ -348,7 +363,7 @@ public class DiscussionServiceImpl implements DiscussionService {
                     .build();
 
                 discussionParticipantRepository.save(discussionParticipant);
-                result.put("choice", "disagree");
+                result.put("isAgree", "disagree");
                 return result;
             } else {
                 if (savedParticipant.isAgree()) {
@@ -362,15 +377,15 @@ public class DiscussionServiceImpl implements DiscussionService {
                         .build();
 
                     discussionParticipantRepository.save(discussionParticipant);
-                    result.put("choice", "disagree");
+                    result.put("isAgree", "disagree");
                     return result;
                 }
                 discussionParticipantRepository.delete(savedParticipant);
-                result.put("choice", "null");
+                result.put("isAgree", "null");
                 return result;
             }
         }
-        result.put("choice", "isOver");
+        result.put("isAgree", "isOver");
         return result;
     }
 
