@@ -36,6 +36,11 @@ public class QuartzConfig {
     public void scheduleDiscussionJobs(LocalDateTime targetTime, Long discussionId)
         throws Exception {
 
+        LocalDateTime now = LocalDateTime.now();
+        if (targetTime.isBefore(now)) {
+            throw new IllegalArgumentException("타겟 시간이 현재 시간보다 이전입니다.");
+        }
+
         // PROPOSED -> SCHEDULED (시작 3시간 전)
 //        LocalDateTime startDateTime = targetTime.minusHours(3);
         LocalDateTime startDateTime = targetTime.minusMinutes(3); // 3분전
