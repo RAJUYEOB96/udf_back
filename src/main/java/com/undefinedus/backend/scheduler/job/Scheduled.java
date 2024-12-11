@@ -26,7 +26,6 @@ public class Scheduled implements Job {
     @Override
     @Transactional
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        System.out.println("Scheduled");
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String discussionIdStr = dataMap.getString("discussionId");
 
