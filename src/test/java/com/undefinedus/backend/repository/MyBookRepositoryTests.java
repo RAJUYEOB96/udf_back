@@ -26,5 +26,7 @@ class MyBookRepositoryTests {
         List<String> top5Isbn13ByMemberId = myBookRepository.findTop5Isbn13ByMemberId(memberId);
         
         assertNotNull(top5Isbn13ByMemberId);
+
+        System.out.println("top5Isbn13ByMemberId = " + top5Isbn13ByMemberId);
     }
 }

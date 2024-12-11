@@ -217,6 +217,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             
             // 각 토론 댓글의 관련 정보를 추출
 
+            String profileImage = discussionComment.getMember().getProfileImage();
             Long groupId = discussionComment.getGroupId();
             Long commentId = discussionComment.getId();
             Long discussionId = discussionComment.getDiscussion().getId();
@@ -242,6 +243,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .commentId(commentId)
                 .discussionId(discussionId)
                 .memberId(memberId)
+                .profileImage(profileImage)
                 .nickname(member.getNickname())
                 .honorific(member.getHonorific())
                 .parentId(parentId)
@@ -410,6 +412,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             .orElseThrow(() -> new DiscussionParticipantNotFoundException("해당 참여자를 찾을 수 없습니다."));
     }
 
+    @Override
     public List<DiscussionCommentResponseDTO> getBest3CommentByCommentLikes(Long discussionId) {
 
         List<DiscussionComment> bestCommentTop3List = discussionCommentRepository.findBest3CommentList(
@@ -423,6 +426,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
         for (DiscussionComment discussionComment : bestCommentTop3List) {
             // 각 토론 댓글의 관련 정보를 추출
 
+            String profileImage = discussionComment.getMember().getProfileImage();
             Long commentId = discussionComment.getId();
             Long memberId = discussionComment.getMember().getId();
             Long parentId = discussionComment.getParentId();
@@ -446,6 +450,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .commentId(commentId)
                 .discussionId(discussionId)
                 .memberId(memberId)
+                .profileImage(profileImage)
                 .nickname(member.getNickname())
                 .honorific(member.getHonorific())
                 .parentId(parentId)

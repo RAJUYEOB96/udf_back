@@ -102,14 +102,11 @@ public class DiscussionController {
     @PatchMapping("/update")
     public ResponseEntity<ApiResponseDTO<Map<String, Long>>> discussionUpdate(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-        @RequestParam("isbn13") String isbn13,  // 수정할 책의 isbn13
-        @RequestParam("discussionId") Long discussionId,
         @Valid @RequestBody DiscussionUpdateRequestDTO discussionUpdateRequestDTO) throws Exception {
         
         Map<String, Long> result = new HashMap<>();
         
-        Long id = discussionService.discussionUpdate(memberSecurityDTO.getId(), isbn13, discussionId,
-                    discussionUpdateRequestDTO);
+        Long id = discussionService.discussionUpdate(memberSecurityDTO.getId(), discussionUpdateRequestDTO);
         result.put("id", id);
         
         return ResponseEntity.ok().body(ApiResponseDTO.success(result));

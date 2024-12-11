@@ -33,8 +33,6 @@ public class AladinApiResponseDTO {
 
     private String fullDescription;
 
-    private String fullDescription2; // gpt에게 책의 추가적인 정보를 넘겨주기 위해 필요
-
     private String bestRank;   // 베스트셀러 순위 정보
 
     private SubInfoDTO subInfo;

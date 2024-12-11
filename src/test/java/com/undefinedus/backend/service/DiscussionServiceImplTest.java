@@ -53,7 +53,7 @@ import org.quartz.SchedulerException;
 
 @ExtendWith(MockitoExtension.class)
 class DiscussionServiceImplTest {
-    
+
     @Mock
     private MemberRepository memberRepository;
     @Mock
@@ -70,156 +70,158 @@ class DiscussionServiceImplTest {
     private DiscussionParticipantRepository discussionParticipantRepository;
     @Mock
     private Scheduled scheduled;
-    
+
     @InjectMocks
     private DiscussionServiceImpl discussionServiceImpl;
-    
+
     private Long memberId;
     private String isbn13;
     private AladinBook mockAladinBook; // 추가
     private Member mockMember; // 추가
-    
+
     @BeforeEach
     void setUp() {
         memberId = 1L;
         isbn13 = "1234567890123";
-        
+
         // 공통으로 사용할 Mock 객체들 생성
         mockMember = Member.builder()
-                .id(memberId)
-                .nickname("testuser")
-                .honorific("테스터")
-                .build();
-        
+            .id(memberId)
+            .nickname("testuser")
+            .honorific("테스터")
+            .build();
+
         mockAladinBook = AladinBook.builder()
-                .isbn13(isbn13)
-                .title("Test Book")
-                .author("Test Author")
-                .cover("test-cover-url")
-                .build();
+            .isbn13(isbn13)
+            .title("Test Book")
+            .author("Test Author")
+            .cover("test-cover-url")
+            .build();
     }
-    
+
     // 통합된 createMockDiscussion 메서드
-    private Discussion createMockDiscussion(Long id, String title, int agreeCount, int disagreeCount, Member member, AladinBook aladinBook) {
+    private Discussion createMockDiscussion(Long id, String title, int agreeCount,
+        int disagreeCount, Member member, AladinBook aladinBook) {
         MyBook mockMyBook = MyBook.builder()
-                .id(id)
-                .isbn13(aladinBook.getIsbn13())
-                .member(member)
-                .aladinBook(aladinBook)
-                .status(BookStatus.COMPLETED)
-                .build();
-        
+            .id(id)
+            .isbn13(aladinBook.getIsbn13())
+            .member(member)
+            .aladinBook(aladinBook)
+            .status(BookStatus.COMPLETED)
+            .build();
+
         Discussion discussion = Discussion.builder()
-                .id(id)
-                .title(title)
-                .member(member)
-                .myBook(mockMyBook)
-                .aladinBook(aladinBook)
-                .content("Test content")
-                .status(DiscussionStatus.PROPOSED)
-                .startDate(LocalDateTime.now().plusDays(1))
-                .closedAt(LocalDateTime.now().plusDays(2))
-                .views(0L)
-                .isDeleted(false)
-                .build();
-        
+            .id(id)
+            .title(title)
+            .member(member)
+            .myBook(mockMyBook)
+            .aladinBook(aladinBook)
+            .content("Test content")
+            .status(DiscussionStatus.PROPOSED)
+            .startDate(LocalDateTime.now().plusDays(1))
+            .closedAt(LocalDateTime.now().plusDays(2))
+            .views(0L)
+            .isDeleted(false)
+            .build();
+
         if (agreeCount > 0 || disagreeCount > 0) {
             List<DiscussionParticipant> participants = new ArrayList<>();
             for (int i = 0; i < agreeCount; i++) {
                 participants.add(DiscussionParticipant.builder()
-                        .discussion(discussion)
-                        .member(member)
-                        .isAgree(true)
-                        .build());
+                    .discussion(discussion)
+                    .member(member)
+                    .isAgree(true)
+                    .build());
             }
             for (int i = 0; i < disagreeCount; i++) {
                 participants.add(DiscussionParticipant.builder()
-                        .discussion(discussion)
-                        .member(member)
-                        .isAgree(false)
-                        .build());
+                    .discussion(discussion)
+                    .member(member)
+                    .isAgree(false)
+                    .build());
             }
             discussion.changeParticipants(participants);
         }
-        
+
         return discussion;
     }
-    
+
     @Test
     @DisplayName("토론 생성 성공 테스트")
     void discussionRegister_shouldReturnDiscussionId() throws Exception {
         // Given
         LocalDateTime startDate = LocalDateTime.now().plusDays(1);
-        
+
         MyBook mockMyBook = MyBook.builder()
-                .id(1L)
-                .isbn13(isbn13)
-                .member(mockMember)
-                .aladinBook(mockAladinBook)
-                .status(BookStatus.COMPLETED)
-                .build();
-        
-        
+            .id(1L)
+            .isbn13(isbn13)
+            .member(mockMember)
+            .aladinBook(mockAladinBook)
+            .status(BookStatus.COMPLETED)
+            .build();
+
         DiscussionRegisterRequestDTO requestDTO = DiscussionRegisterRequestDTO.builder()
-                .isbn13(isbn13)
-                .title("Test Discussion Title")
-                .content("This is a test content for discussion.")
-                .startDate(startDate)
-                .build();
-        
+            .isbn13(isbn13)
+            .title("Test Discussion Title")
+            .content("This is a test content for discussion.")
+            .startDate(startDate)
+            .build();
+
         Discussion mockDiscussion = Discussion.builder()
-                .id(1L)
-                .myBook(mockMyBook)
-                .member(mockMember)
-                .aladinBook(mockAladinBook)
-                .title(requestDTO.getTitle())
-                .content(requestDTO.getContent())
-                .status(DiscussionStatus.PROPOSED)
-                .startDate(startDate)
-                .closedAt(startDate.plusDays(1))
-                .build();
-        
+            .id(1L)
+            .myBook(mockMyBook)
+            .member(mockMember)
+            .aladinBook(mockAladinBook)
+            .title(requestDTO.getTitle())
+            .content(requestDTO.getContent())
+            .status(DiscussionStatus.PROPOSED)
+            .startDate(startDate)
+            .closedAt(startDate.plusDays(1))
+            .build();
+
         // Mocking
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(mockMember));
-        when(myBookRepository.findByMemberIdAndIsbn13(memberId, isbn13)).thenReturn(Optional.of(mockMyBook));
+        when(myBookRepository.findByMemberIdAndIsbn13(memberId, isbn13)).thenReturn(
+            Optional.of(mockMyBook));
         when(discussionRepository.save(any(Discussion.class))).thenReturn(mockDiscussion);
         doNothing().when(quartzConfig).scheduleDiscussionJobs(any(LocalDateTime.class), anyLong());
-        
+
         // When
         Long discussionId = discussionServiceImpl.discussionRegister(memberId, requestDTO);
-        
+
         // Then
         assertNotNull(discussionId);
         assertEquals(1L, discussionId);
-        
+
         verify(memberRepository).findById(memberId);
         verify(myBookRepository).findByMemberIdAndIsbn13(memberId, isbn13);
         verify(discussionRepository).save(any(Discussion.class));
         verify(quartzConfig).scheduleDiscussionJobs(any(LocalDateTime.class), anyLong());
     }
-    
+
     @Test
     @DisplayName("토론 리스트 조회 테스트")
     void getDiscussionList_shouldReturnScrollResponseDTO() {
         // Given
         DiscussionScrollRequestDTO requestDTO = DiscussionScrollRequestDTO.builder()
-                .lastId(0L)
-                .size(10)
-                .sort("desc")
-                .status("PROPOSED")
-                .build();
-        
+            .lastId(0L)
+            .size(10)
+            .sort("desc")
+            .status("PROPOSED")
+            .build();
+
         List<Discussion> mockDiscussions = Arrays.asList(
-                createMockDiscussion(1L, "Discussion 1", 5, 3, mockMember, mockAladinBook),
-                createMockDiscussion(2L, "Discussion 2", 4, 2, mockMember, mockAladinBook)
+            createMockDiscussion(1L, "Discussion 1", 5, 3, mockMember, mockAladinBook),
+            createMockDiscussion(2L, "Discussion 2", 4, 2, mockMember, mockAladinBook)
         );
-        
+
         when(discussionRepository.findDiscussionsWithScroll(any(DiscussionScrollRequestDTO.class)))
-                .thenReturn(mockDiscussions);
-        
+            .thenReturn(mockDiscussions);
+
         // When
-        ScrollResponseDTO<DiscussionListResponseDTO> result = discussionServiceImpl.getDiscussionList(requestDTO);
-        
+        ScrollResponseDTO<DiscussionListResponseDTO> result = discussionServiceImpl.getDiscussionList(
+            requestDTO);
+
         // Then
         assertNotNull(result);
         assertEquals(2, result.getContent().size());
@@ -227,14 +229,15 @@ class DiscussionServiceImplTest {
         assertEquals(2, result.getNumberOfElements());
         assertEquals(2L, result.getLastId());
         assertFalse(result.isHasNext());
-        
+
         DiscussionListResponseDTO firstDiscussion = result.getContent().get(0);
         assertEquals(1L, firstDiscussion.getDiscussionId());
         assertEquals("Discussion 1", firstDiscussion.getTitle());
         assertEquals(5L, firstDiscussion.getAgree());
         assertEquals(3L, firstDiscussion.getDisagree());
-        
-        ArgumentCaptor<DiscussionScrollRequestDTO> captor = ArgumentCaptor.forClass(DiscussionScrollRequestDTO.class);
+
+        ArgumentCaptor<DiscussionScrollRequestDTO> captor = ArgumentCaptor.forClass(
+            DiscussionScrollRequestDTO.class);
         verify(discussionRepository).findDiscussionsWithScroll(captor.capture());
         DiscussionScrollRequestDTO capturedDTO = captor.getValue();
         assertEquals(0L, capturedDTO.getLastId());
@@ -242,146 +245,139 @@ class DiscussionServiceImplTest {
         assertEquals("desc", capturedDTO.getSort());
         assertEquals("PROPOSED", capturedDTO.getStatus());
     }
+
     @Test
     @DisplayName("토론 수정 성공 테스트")
     void discussionModify_shouldModifyDiscussion() throws Exception {
         // Given
         Long discussionId = 10L;
-        
-        MyBook mockMyBook = MyBook.builder()
-                .id(1L)
-                .isbn13(isbn13)
-                .member(mockMember)
-                .aladinBook(mockAladinBook)
-                .status(BookStatus.COMPLETED)
-                .build();
-        
+
         Discussion mockDiscussion = Discussion.builder()
-                .id(discussionId)
-                .member(mockMember)
-                .myBook(mockMyBook)
-                .aladinBook(mockAladinBook)
-                .status(DiscussionStatus.PROPOSED)
-                .build();
-        
+            .id(discussionId)
+            .member(mockMember)
+            .status(DiscussionStatus.PROPOSED)
+            .build();
+
         DiscussionUpdateRequestDTO requestDTO = DiscussionUpdateRequestDTO.builder()
-                .title("Updated Title")
-                .content("Updated Content")
-                .modifyStartTime(LocalDateTime.now().plusHours(2))
-                .build();
-        
+            .discussionId(discussionId)
+            .title("Updated Title")
+            .content("Updated Content")
+            .modifyStartTime(LocalDateTime.now().plusHours(2))
+            .build();
+
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(mockMember));
-        when(myBookRepository.findByMemberIdAndIsbn13(memberId, isbn13)).thenReturn(Optional.of(mockMyBook));
         when(discussionRepository.findById(discussionId)).thenReturn(Optional.of(mockDiscussion));
         when(discussionRepository.save(any(Discussion.class))).thenReturn(mockDiscussion);
-        
+
         // When
-        Long modifiedDiscussionId = discussionServiceImpl.discussionUpdate(memberId, isbn13, discussionId, requestDTO);
-        
+        Long modifiedDiscussionId = discussionServiceImpl.discussionUpdate(memberId, requestDTO);
+
         // Then
         assertNotNull(modifiedDiscussionId);
         assertEquals(discussionId, modifiedDiscussionId);
         assertEquals("Updated Title", mockDiscussion.getTitle());
         assertEquals("Updated Content", mockDiscussion.getContent());
-        
+
         verify(discussionRepository).save(any(Discussion.class));
     }
-    
+
     @Test
     @DisplayName("찬성 참여 성공 테스트")
     void joinAgree_shouldSaveDiscussionParticipant() {
         // Given
         Long discussionId = 5L;
-        
+
         Discussion mockDiscussion = Discussion.builder()
-                .id(discussionId)
+            .id(discussionId)
+            .member(mockMember)
+            .myBook(MyBook.builder()
                 .member(mockMember)
-                .myBook(MyBook.builder()
-                        .member(mockMember)
-                        .aladinBook(mockAladinBook)
-                        .build())
                 .aladinBook(mockAladinBook)
-                .status(DiscussionStatus.PROPOSED)
-                .build();
-        
+                .build())
+            .aladinBook(mockAladinBook)
+            .status(DiscussionStatus.PROPOSED)
+            .build();
+
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(mockMember));
         when(discussionRepository.findById(discussionId)).thenReturn(Optional.of(mockDiscussion));
-        
+
         // When
         discussionServiceImpl.joinAgree(memberId, discussionId);
-        
+
         // Then
-        ArgumentCaptor<DiscussionParticipant> captor = ArgumentCaptor.forClass(DiscussionParticipant.class);
+        ArgumentCaptor<DiscussionParticipant> captor = ArgumentCaptor.forClass(
+            DiscussionParticipant.class);
         verify(discussionParticipantRepository).save(captor.capture());
-        
+
         DiscussionParticipant savedParticipant = captor.getValue();
         assertEquals(mockDiscussion, savedParticipant.getDiscussion());
         assertEquals(mockMember, savedParticipant.getMember());
         assertTrue(savedParticipant.isAgree());
     }
-    
+
     @Test
     @DisplayName("반대 참여 성공 테스트")
     void joinDisagree_shouldSaveDiscussionParticipant() {
         // Given
         Long discussionId = 5L;
-        
+
         Discussion mockDiscussion = Discussion.builder()
-                .id(discussionId)
+            .id(discussionId)
+            .member(mockMember)
+            .myBook(MyBook.builder()
                 .member(mockMember)
-                .myBook(MyBook.builder()
-                        .member(mockMember)
-                        .aladinBook(mockAladinBook)
-                        .build())
                 .aladinBook(mockAladinBook)
-                .status(DiscussionStatus.PROPOSED)
-                .build();
-        
+                .build())
+            .aladinBook(mockAladinBook)
+            .status(DiscussionStatus.PROPOSED)
+            .build();
+
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(mockMember));
         when(discussionRepository.findById(discussionId)).thenReturn(Optional.of(mockDiscussion));
-        
+
         // When
         discussionServiceImpl.joinDisagree(memberId, discussionId);
-        
+
         // Then
-        ArgumentCaptor<DiscussionParticipant> captor = ArgumentCaptor.forClass(DiscussionParticipant.class);
+        ArgumentCaptor<DiscussionParticipant> captor = ArgumentCaptor.forClass(
+            DiscussionParticipant.class);
         verify(discussionParticipantRepository).save(captor.capture());
-        
+
         DiscussionParticipant savedParticipant = captor.getValue();
         assertEquals(mockDiscussion, savedParticipant.getDiscussion());
         assertEquals(mockMember, savedParticipant.getMember());
         assertFalse(savedParticipant.isAgree());
     }
-    
+
     @Test
     @DisplayName("토론 삭제 성공 테스트")
     void deleteDiscussion_shouldDeleteDiscussion() throws SchedulerException {
         // Given
         Long discussionId = 5L;
-        
+
         Discussion mockDiscussion = Discussion.builder()
-                .id(discussionId)
+            .id(discussionId)
+            .member(mockMember)
+            .myBook(MyBook.builder()
                 .member(mockMember)
-                .myBook(MyBook.builder()
-                        .member(mockMember)
-                        .aladinBook(mockAladinBook)
-                        .build())
                 .aladinBook(mockAladinBook)
-                .status(DiscussionStatus.PROPOSED)
-                .views(0L)
-                .isDeleted(false)
-                .build();
-        
+                .build())
+            .aladinBook(mockAladinBook)
+            .status(DiscussionStatus.PROPOSED)
+            .views(0L)
+            .isDeleted(false)
+            .build();
+
         when(discussionRepository.findById(discussionId)).thenReturn(Optional.of(mockDiscussion));
         doNothing().when(quartzConfig).removeJob(anyLong());
-        
+
         // When
         discussionServiceImpl.deleteDiscussion(memberId, discussionId);
-        
+
         // Then
         verify(discussionRepository).findById(discussionId);
         verify(quartzConfig).removeJob(discussionId);
-        
+
         assertTrue(mockDiscussion.isDeleted());
         assertNotNull(mockDiscussion.getDeletedAt());
     }
