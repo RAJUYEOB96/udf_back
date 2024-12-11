@@ -189,8 +189,7 @@ public class MyBookServiceImpl implements MyBookService {
         calendarStampRepository.deleteAllByMyBookId(bookId);
 
         // 3. 존재하면 삭제 실행 - 소프트 딜리트로 변경
-        myBook.updateDeleted(true);
-        myBook.updateDeletedAt(LocalDateTime.now());
+        myBookRepository.delete(myBook);
     }
 
     @Override
