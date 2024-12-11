@@ -15,4 +15,5 @@ public interface DiscussionParticipantRepository extends JpaRepository<Discussio
     
     Optional<DiscussionParticipant> findByMemberIdAndDiscussionId(Long loginMemberId, Long discussionId);
     
+    List<DiscussionParticipant> findByDiscussion(Discussion discussion);
 }

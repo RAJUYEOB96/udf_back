@@ -187,11 +187,12 @@ public class DiscussionServiceImpl implements DiscussionService {
             .orElseThrow(() -> new DiscussionException("해당 토론방을 찾을 수 없습니다. : " + discussionId));
         
         AladinBook discussionBook = discussion.getAladinBook();
-
-        long agreeCount = discussion.getParticipants().stream().filter(agree -> agree.isAgree())
-            .count();
-
-        long disagreeCount = discussion.getParticipants().size() - agreeCount;
+        
+        List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
+        
+        Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
+        
+        Long disagreeCount = findDPList.size() - agreeCount;
 
         discussion.increaseViews();
 
@@ -221,8 +222,8 @@ public class DiscussionServiceImpl implements DiscussionService {
             .memberName(discussion.getMember().getNickname())
             .title(savedDiscussion.getTitle())
             .content(savedDiscussion.getContent())
-            .agree(agreeCount)
-            .disagree(disagreeCount)
+            .agreeCount(agreeCount)
+            .disagreeCount(disagreeCount)
             .startDate(savedDiscussion.getStartDate())
             .closedAt(savedDiscussion.getStartDate().plusDays(1))
             .createdDate(savedDiscussion.getCreatedDate())
@@ -314,7 +315,16 @@ public class DiscussionServiceImpl implements DiscussionService {
                     .build();
 
                 discussionParticipantRepository.save(discussionParticipant);
+                
+                List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
+                
+                Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
+                
+                Long disagreeCount = findDPList.size() - agreeCount;
+                
                 result.put("isAgree", "agree");
+                result.put("agreeCount", String.valueOf(agreeCount));
+                result.put("disagreeCount", String.valueOf(disagreeCount));
                 return result;
             } else {
                 if (!savedParticipant.isAgree()) {  // disagree 일때
@@ -327,15 +337,41 @@ public class DiscussionServiceImpl implements DiscussionService {
                         .isAgree(true)
                         .build();
                     discussionParticipantRepository.save(discussionParticipant);
+                    
+                    List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
+                    
+                    Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
+                    
+                    Long disagreeCount = findDPList.size() - agreeCount;
+                    
                     result.put("isAgree", "agree");
+                    result.put("agreeCount", String.valueOf(agreeCount));
+                    result.put("disagreeCount", String.valueOf(disagreeCount));
                     return result;
                 }
                 discussionParticipantRepository.delete(savedParticipant);   // agree 눌러져 있는데 한번더 눌릴때
+                
+                List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
+                
+                Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
+                
+                Long disagreeCount = findDPList.size() - agreeCount;
+                
                 result.put("isAgree", "null");
+                result.put("agreeCount", String.valueOf(agreeCount));
+                result.put("disagreeCount", String.valueOf(disagreeCount));
                 return result;
             }
         }
+        
+        List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
+        
+        Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
+        
+        Long disagreeCount = findDPList.size() - agreeCount;
         result.put("isAgree", "isOver");
+        result.put("agreeCount", String.valueOf(agreeCount));
+        result.put("disagreeCount", String.valueOf(disagreeCount));
         return result;
     }
 
@@ -353,6 +389,7 @@ public class DiscussionServiceImpl implements DiscussionService {
             discussion, member).orElse(null);
         
         Map<String, String> result = new HashMap<>();
+
         
         if (discussion.getStatus() == DiscussionStatus.PROPOSED) {
             if (savedParticipant == null) {
@@ -363,7 +400,16 @@ public class DiscussionServiceImpl implements DiscussionService {
                     .build();
 
                 discussionParticipantRepository.save(discussionParticipant);
+                
+                List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
+                
+                Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
+                
+                Long disagreeCount = findDPList.size() - agreeCount;
+                
                 result.put("isAgree", "disagree");
+                result.put("agreeCount", String.valueOf(agreeCount));
+                result.put("disagreeCount", String.valueOf(disagreeCount));
                 return result;
             } else {
                 if (savedParticipant.isAgree()) {
@@ -377,15 +423,42 @@ public class DiscussionServiceImpl implements DiscussionService {
                         .build();
 
                     discussionParticipantRepository.save(discussionParticipant);
+                    
+                    List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
+                    
+                    Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
+                    
+                    Long disagreeCount = findDPList.size() - agreeCount;
+                    
                     result.put("isAgree", "disagree");
+                    result.put("agreeCount", String.valueOf(agreeCount));
+                    result.put("disagreeCount", String.valueOf(disagreeCount));
                     return result;
                 }
                 discussionParticipantRepository.delete(savedParticipant);
+                
+                List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
+                
+                Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
+                
+                Long disagreeCount = findDPList.size() - agreeCount;
+                
                 result.put("isAgree", "null");
+                result.put("agreeCount", String.valueOf(agreeCount));
+                result.put("disagreeCount", String.valueOf(disagreeCount));
                 return result;
             }
         }
+        
+        List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
+        
+        Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
+        
+        Long disagreeCount = findDPList.size() - agreeCount;
+        
         result.put("isAgree", "isOver");
+        result.put("agreeCount", String.valueOf(agreeCount));
+        result.put("disagreeCount", String.valueOf(disagreeCount));
         return result;
     }
 
