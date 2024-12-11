@@ -45,11 +45,6 @@ public class Discussion extends BaseEntity {
 
     // === 연관 관계 === //
     @ManyToOne(fetch = FetchType.LAZY)
-    @NotFound(action = NotFoundAction.IGNORE)  // 추가, 해당 myBook이 삭제 되었을때를 대비해서
-    @JoinColumn(name = "book_id")
-    private MyBook myBook;  // 어떤 책의 토론인지 // 내가 기록한 책만 토론 주제로 올릴 수 있음
-    
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aladin_book_id", nullable = false)
     private AladinBook aladinBook;
     
@@ -150,10 +145,6 @@ public class Discussion extends BaseEntity {
 
     public void changeContent(String content) {
         this.content = content;
-    }
-
-    public void changeMyBook(MyBook myBook) {
-        this.myBook = myBook;
     }
 
     public void changeStartDate(LocalDateTime startDate) {

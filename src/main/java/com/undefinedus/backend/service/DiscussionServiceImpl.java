@@ -68,7 +68,7 @@ public class DiscussionServiceImpl implements DiscussionService {
             .orElseThrow(() -> new BookNotFoundException("해당 책을 찾을 수 없습니다. : " + isbn13));
 
         Discussion discussion = Discussion.builder()
-            .myBook(myBook)  // MyBook 객체
+//            .myBook(myBook)  // MyBook 객체
             .member(member)  // Member 객체
             .aladinBook(myBook.getAladinBook()) // MyBook 정보가 삭제 되었을 때를 위해
             .title(discussionRegisterRequestDTO.getTitle())

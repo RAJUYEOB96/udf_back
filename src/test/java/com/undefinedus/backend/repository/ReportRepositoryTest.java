@@ -145,7 +145,6 @@ class ReportRepositoryTest {
 
         // Discussion 데이터 생성
         discussion = Discussion.builder()
-            .myBook(myBook)  // MyBook 객체 (책 정보)
             .member(reported)  // 작성자 (Member 객체)
             .aladinBook(aladinBook)  // 이 부분 추가
             .title("책에 대해 어떻게 생각하시나요?")  // 토론 제목
@@ -315,7 +314,6 @@ class ReportRepositoryTest {
         // given
         // 여러 개의 Discussion을 만들어서 각각 신고
         Discussion discussion1 = Discussion.builder()
-                .myBook(myBook)
                 .member(reported)
                 .aladinBook(aladinBook)  // 이 부분 추가
                 .title("토론 제목 1")
@@ -328,7 +326,6 @@ class ReportRepositoryTest {
         discussionRepository.save(discussion1);
         
         Discussion discussion2 = Discussion.builder()
-                .myBook(myBook)
                 .member(reported)
                 .aladinBook(aladinBook)  // 이 부분 추가
                 .title("토론 제목 2")
@@ -381,7 +378,6 @@ class ReportRepositoryTest {
     void testGetCompletedReportList() {
         // given
         Discussion discussion1 = Discussion.builder()
-                .myBook(myBook)
                 .member(reported)
                 .aladinBook(aladinBook)  // 이 부분 추가
                 .title("토론 제목 1")
@@ -394,7 +390,6 @@ class ReportRepositoryTest {
         discussionRepository.save(discussion1);
         
         Discussion discussion2 = Discussion.builder()
-                .myBook(myBook)
                 .member(reported)
                 .aladinBook(aladinBook)  // 이 부분 추가
                 .title("토론 제목 2")
@@ -477,7 +472,6 @@ class ReportRepositoryTest {
         // 여러 개의 Discussion을 만들어서 각각 신고
         for (int i = 0; i < 5; i++) {
             Discussion newDiscussion = Discussion.builder()
-                    .myBook(myBook)
                     .member(reported)
                     .aladinBook(aladinBook)  // 이 부분 추가
                     .title("토론 제목 " + i)

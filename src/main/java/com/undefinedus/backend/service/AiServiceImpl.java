@@ -126,7 +126,7 @@ public class AiServiceImpl implements AiService {
 
         // AladinBook을 DTO로 변환
         AladinBookForGPTResponseDTO aladinBookDTO = convertToAladinBookDTO(
-            discussion.getMyBook().getAladinBook());
+            discussion.getAladinBook());
 
         String information = formatAladinBookToJson(aladinBookDTO); // 변환된 DTO를 JSON으로 변환
 

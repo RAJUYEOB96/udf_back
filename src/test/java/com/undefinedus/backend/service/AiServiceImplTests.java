@@ -123,7 +123,7 @@ class AiServiceImplTests {
             .title("'사피엔스'가 제시하는 인류의 미래는?")
             .content("유발 하라리가 그리는 인류의 미래상에 대해 어떻게 생각하시나요?")
             .member(testMember)
-            .myBook(testMyBook)
+            .aladinBook(testAladinBook)
             .build();
 
         discussionRepository.save(testDiscussion);
