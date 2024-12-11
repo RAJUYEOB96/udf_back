@@ -128,7 +128,6 @@ class DiscussionCommentRepositoryTest {
         // Discussion 생성 및 저장
         discussion = Discussion.builder()
             .member(member1)
-            .myBook(myBook)
             .aladinBook(aladinBook) // 추가
             .title("Test Discussion")
             .content("Discussion Content")

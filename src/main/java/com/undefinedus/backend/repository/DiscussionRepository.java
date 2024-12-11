@@ -16,8 +16,4 @@ public interface DiscussionRepository extends JpaRepository<Discussion, Long>,
 
     @Query("SELECT d FROM Discussion d LEFT JOIN FETCH d.participants WHERE d.id = :discussionId")
     Optional<Discussion> findByIdWithParticipants(@Param("discussionId") Long discussionId);
-    
-    // 삭제 처리된 discussion까지 찾기 위해
-    @Query("SELECT d FROM Discussion d WHERE d.member.id = :memberId AND d.myBook.id = :bookId")
-    List<Discussion> findByMemberIdAndBookId(Long memberId, Long bookId);
 }
