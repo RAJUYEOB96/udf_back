@@ -6,7 +6,9 @@ import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.scheduler.entity.QuartzTrigger;
 import com.undefinedus.backend.scheduler.repository.QuartzTriggerRepository;
 import jakarta.annotation.PostConstruct;
+import java.util.Date;
 import java.util.List;
+import lombok.extern.log4j.Log4j2;
 import org.quartz.Job;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
@@ -18,6 +20,7 @@ import org.quartz.TriggerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class JobRestorer {
 
@@ -32,75 +35,63 @@ public class JobRestorer {
 
     @PostConstruct
     public void restoreJobs() {
-
-        List<Discussion> discussionList = discussionRepository.findAll(); // DB에서 논의 정보 조회
+        List<Discussion> discussionList = discussionRepository.findAll();
+        Date now = new Date();
 
         for (Discussion discussion : discussionList) {
+            if (discussion.getDeletedAt() == null &&
+                discussion.getStatus() != DiscussionStatus.COMPLETED &&
+                discussion.getStatus() != DiscussionStatus.BLOCKED) {
 
-            if (discussion.getDeletedAt() == null) {
-
-                if (discussion.getStatus() == DiscussionStatus.COMPLETED ||
-                    discussion.getStatus() == DiscussionStatus.BLOCKED
-                ) {
-                    continue;
-                }
-
-                // 'PROPOSED' 상태일 때도 이후 상태에 대한 작업을 진행하도록 처리
-                List<DiscussionStatus> statusList = getStatusListForProcessing(
-                    discussion.getStatus());
+                List<DiscussionStatus> statusList = getStatusListForProcessing(discussion.getStatus());
 
                 for (DiscussionStatus status : statusList) {
-
                     try {
-                        String jobName =
-                            "discussion_" + discussion.getId().toString() + "_" + status;
+                        String jobName = "discussion_" + discussion.getId() + "_" + status;
                         String jobGroup = status.name();
-                        String triggerName =
-                            "trigger_changeStatus_" + discussion.getId().toString() + "_" + status;
+                        String triggerName = "trigger_changeStatus_" + discussion.getId() + "_" + status;
                         String triggerGroup = status.name();
 
-                        // QuartzTrigger에서 트리거 정보 읽기
-                        QuartzTrigger quartzTrigger = quartzTriggerRepository.findByTriggerName(
-                                triggerName)
-                            .orElseThrow(() -> new JobExecutionException(
-                                "Trigger not found for " + triggerName));
+                        QuartzTrigger quartzTrigger = quartzTriggerRepository.findByTriggerName(triggerName)
+                            .orElseThrow(() -> new JobExecutionException("Trigger not found for " + triggerName));
 
-                        // Trigger 객체 생성 (시간을 `startTime`으로 설정)
-                        Trigger trigger = TriggerBuilder.newTrigger()
-                            .withIdentity(triggerName, triggerGroup)
-                            .startAt(new java.util.Date(quartzTrigger.getStartTime()))  // 시작 시간 설정
-                            .build();
+                        Date startTime = new Date(quartzTrigger.getStartTime());
 
-                        // JobDetail 생성
-                        String jobClassName = getJobClassNameForStatus(status);
-                        Class<? extends Job> jobClass = (Class<? extends Job>) Class.forName(
-                            jobClassName);
+                        // 시작 시간이 현재 시간보다 이후인 경우에만 스케줄링
+                        if (startTime.after(now)) {
+                            Trigger trigger = TriggerBuilder.newTrigger()
+                                .withIdentity(triggerName, triggerGroup)
+                                .startAt(startTime)
+                                .build();
 
-                        JobDetail jobDetail = JobBuilder.newJob(jobClass)
-                            .withIdentity(jobName, jobGroup)
-                            .usingJobData("discussionId", discussion.getId().toString())
-                            .build();
+                            String jobClassName = getJobClassNameForStatus(status);
+                            Class<? extends Job> jobClass = (Class<? extends Job>) Class.forName(jobClassName);
 
-                        // Job과 Trigger를 Scheduler에 등록
-                        scheduler.scheduleJob(jobDetail, trigger);
-                        System.out.println("Scheduled job for discussion ID: " + discussion.getId()
-                            + " with status: " + status);
+                            JobDetail jobDetail = JobBuilder.newJob(jobClass)
+                                .withIdentity(jobName, jobGroup)
+                                .usingJobData("discussionId", discussion.getId().toString())
+                                .build();
 
+                            scheduler.scheduleJob(jobDetail, trigger);
+
+                            log.info("토론 ID: {}에 대한 {} 상태의 작업이 예약되었습니다.", discussion.getId(), status);
+                        } else {
+
+                            log.info("토론 ID: {}에 대한 {} 상태의 작업 예약을 건너뛰었습니다. (시작 시간이 이미 지났음)", discussion.getId(), status);
+                        }
                     } catch (SchedulerException | ClassNotFoundException e) {
-                        System.out.println(
-                            "Error scheduling job for discussion ID: " + discussion.getId()
-                                + " with status: " + discussion.getStatus());
-                        e.printStackTrace(); // 예외 처리
+
+                        log.info("토론 ID: {}에 대한 {} 상태의 작업 예약 중 오류가 발생했습니다.", discussion.getId(), discussion.getStatus());
+                        e.printStackTrace();
                     }
                 }
             }
         }
 
         try {
-            // 스케줄러 시작
             scheduler.start();
         } catch (SchedulerException e) {
-            e.printStackTrace(); // 예외 처리
+            e.printStackTrace();
         }
     }
 
