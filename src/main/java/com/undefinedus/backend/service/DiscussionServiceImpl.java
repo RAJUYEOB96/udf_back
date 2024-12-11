@@ -269,8 +269,8 @@ public class DiscussionServiceImpl implements DiscussionService {
         }
 
         // 토론 업데이트
-        discussion.changeTitle(discussionUpdateRequestDTO.getTitle());
-        discussion.changeContent(discussionUpdateRequestDTO.getContent());
+        discussion.changeTitle(discussionUpdateRequestDTO.getTitle() != null ? discussionUpdateRequestDTO.getTitle() : discussion.getTitle());
+        discussion.changeContent(discussionUpdateRequestDTO.getContent() != null ? discussionUpdateRequestDTO.getContent() : discussion.getContent());
 
         if (discussionUpdateRequestDTO.getModifyStartTime() != null) {
             discussion.changeStartDate(discussionUpdateRequestDTO.getModifyStartTime());
