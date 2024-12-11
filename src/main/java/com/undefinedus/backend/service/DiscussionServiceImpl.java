@@ -241,14 +241,12 @@ public class DiscussionServiceImpl implements DiscussionService {
     }
 
     @Override
-    public Long discussionUpdate(Long memberId, String isbn13, Long discussionId,
-        DiscussionUpdateRequestDTO discussionUpdateRequestDTO) throws Exception {
+    public Long discussionUpdate(Long memberId, DiscussionUpdateRequestDTO discussionUpdateRequestDTO) throws Exception {
+
+        Long discussionId = discussionUpdateRequestDTO.getDiscussionId();
 
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId));
-
-        MyBook myBook = myBookRepository.findByMemberIdAndIsbn13(memberId, isbn13)
-            .orElseThrow(() -> new BookNotFoundException("해당 책을 찾을 수 없습니다. : " + isbn13));
 
         Discussion discussion = discussionRepository.findById(discussionId)
             .orElseThrow(
@@ -271,7 +269,6 @@ public class DiscussionServiceImpl implements DiscussionService {
         }
 
         // 토론 업데이트
-        discussion.changeMyBook(myBook);
         discussion.changeTitle(discussionUpdateRequestDTO.getTitle());
         discussion.changeContent(discussionUpdateRequestDTO.getContent());
 

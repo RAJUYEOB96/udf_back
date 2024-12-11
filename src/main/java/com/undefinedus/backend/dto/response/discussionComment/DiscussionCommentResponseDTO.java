@@ -14,6 +14,8 @@ public class DiscussionCommentResponseDTO {
 
     private Long memberId;
 
+    private String profileImage;
+
     private String nickname;
 
     private String honorific; // 칭호 = 초보리더 // version.1 에서는 기본 칭호를 유지할 예정

@@ -198,6 +198,7 @@ class DiscussionCommentServiceImplTest {
         DiscussionCommentsScrollRequestDTO requestDTO = new DiscussionCommentsScrollRequestDTO();
         requestDTO.setSize(10);
         requestDTO.setLastId(0L);
+        requestDTO.setDiscussionId(42L);
 
         Member member = new Member();
         member.setId(1L); // 멤버 ID 설정

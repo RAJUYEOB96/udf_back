@@ -22,8 +22,7 @@ public interface DiscussionService {
 
     DiscussionDetailResponseDTO getDiscussionDetail(Long loginMemgerId, Long discussionId);
 
-    Long discussionUpdate(Long memberId, String isbn13, Long discussionId,
-        DiscussionUpdateRequestDTO discussionUpdateRequestDTO) throws Exception;
+    Long discussionUpdate(Long memberId, DiscussionUpdateRequestDTO discussionUpdateRequestDTO) throws Exception;
 
     Map<String, String> joinAgree(Long memberId, Long discussionId);
     
