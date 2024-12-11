@@ -27,7 +27,9 @@ import com.undefinedus.backend.scheduler.config.QuartzConfig;
 import com.undefinedus.backend.scheduler.repository.QuartzTriggerRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -66,6 +68,7 @@ public class DiscussionServiceImpl implements DiscussionService {
         Discussion discussion = Discussion.builder()
             .myBook(myBook)  // MyBook 객체
             .member(member)  // Member 객체
+            .aladinBook(myBook.getAladinBook()) // MyBook 정보가 삭제 되었을 때를 위해
             .title(discussionRegisterRequestDTO.getTitle())
             .content(discussionRegisterRequestDTO.getContent())
             .status(DiscussionStatus.PROPOSED)
@@ -130,13 +133,11 @@ public class DiscussionServiceImpl implements DiscussionService {
             LocalDateTime createdDate = discussion.getCreatedDate();
             Long views = discussion.getViews();
             Long discussionId = discussion.getId();
-            String isbn13 = discussion.getMyBook().getIsbn13();
+            String isbn13 = discussion.getAladinBook().getIsbn13();
             LocalDateTime startDateTime = discussion.getStartDate();
             LocalDateTime closedAt = discussion.getClosedAt();
 
-            AladinBook aladinBook = aladinBookRepository.findByIsbn13(isbn13).orElseThrow(
-                () -> new AladinBookNotFoundException("없는 ISBN13 입니다. : " + isbn13)
-            );
+            AladinBook aladinBook = discussion.getAladinBook();
 
             String cover = aladinBook.getCover();
 
@@ -182,10 +183,8 @@ public class DiscussionServiceImpl implements DiscussionService {
 
         Discussion discussion = discussionRepository.findById(discussionId)
             .orElseThrow(() -> new DiscussionException("해당 토론방을 찾을 수 없습니다. : " + discussionId));
-
-        String isbn13 = discussion.getMyBook().getIsbn13();
-
-        AladinBook discussionBook = aladinBookRepository.findByIsbn13(isbn13).orElseThrow();
+        
+        AladinBook discussionBook = discussion.getAladinBook();
 
         long agreeCount = discussion.getParticipants().stream().filter(agree -> agree.isAgree())
             .count();
@@ -195,6 +194,9 @@ public class DiscussionServiceImpl implements DiscussionService {
         discussion.increaseViews();
 
         Discussion savedDiscussion = discussionRepository.save(discussion);
+        
+        Boolean isAgree = discussionParticipantRepository.existsByMemberIdAndDiscussionId(loginMemberId,
+                discussion.getId());
         
         Boolean isReport = reportRepository.existsByReporterIdAndDiscussionId(loginMemberId, discussionId);
 
@@ -216,6 +218,7 @@ public class DiscussionServiceImpl implements DiscussionService {
             .agreePercent(savedDiscussion.getAgreePercent())
             .disagreePercent(savedDiscussion.getDisagreePercent())
             .isReport(isReport)
+            .isAgree(isAgree)
             .build();
 
         return discussionDetailResponseDTO;
@@ -273,7 +276,7 @@ public class DiscussionServiceImpl implements DiscussionService {
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void joinAgree(Long memberId, Long discussionId) {
+    public Map<String, String> joinAgree(Long memberId, Long discussionId) {
 
         Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(
             () -> new DiscussionNotFoundException("해당 토론을 찾을 수 없습니다. : " + discussionId));
@@ -283,6 +286,8 @@ public class DiscussionServiceImpl implements DiscussionService {
 
         DiscussionParticipant savedParticipant = discussionParticipantRepository.findByDiscussionAndMember(
             discussion, member).orElse(null);
+        
+        Map<String, String> result = new HashMap<>();
 
         if (discussion.getStatus() == DiscussionStatus.PROPOSED) {
 
@@ -294,8 +299,10 @@ public class DiscussionServiceImpl implements DiscussionService {
                     .build();
 
                 discussionParticipantRepository.save(discussionParticipant);
+                result.put("choice", "agree");
+                return result;
             } else {
-                if (!savedParticipant.isAgree()) {
+                if (!savedParticipant.isAgree()) {  // disagree 일때
 
                     discussionParticipantRepository.deleteById(savedParticipant.getId());
 
@@ -305,16 +312,21 @@ public class DiscussionServiceImpl implements DiscussionService {
                         .isAgree(true)
                         .build();
                     discussionParticipantRepository.save(discussionParticipant);
-                    return;
+                    result.put("choice", "agree");
+                    return result;
                 }
-                discussionParticipantRepository.delete(savedParticipant);
+                discussionParticipantRepository.delete(savedParticipant);   // agree 눌러져 있는데 한번더 눌릴때
+                result.put("choice", "null");
+                return result;
             }
         }
+        result.put("choice", "isOver");
+        return result;
     }
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void joinDisagree(Long memberId, Long discussionId) {
+    public Map<String, String> joinDisagree(Long memberId, Long discussionId) {
 
         Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(
             () -> new DiscussionNotFoundException("해당 토론을 찾을 수 없습니다. : " + discussionId));
@@ -324,7 +336,9 @@ public class DiscussionServiceImpl implements DiscussionService {
 
         DiscussionParticipant savedParticipant = discussionParticipantRepository.findByDiscussionAndMember(
             discussion, member).orElse(null);
-
+        
+        Map<String, String> result = new HashMap<>();
+        
         if (discussion.getStatus() == DiscussionStatus.PROPOSED) {
             if (savedParticipant == null) {
                 DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
@@ -334,6 +348,8 @@ public class DiscussionServiceImpl implements DiscussionService {
                     .build();
 
                 discussionParticipantRepository.save(discussionParticipant);
+                result.put("choice", "disagree");
+                return result;
             } else {
                 if (savedParticipant.isAgree()) {
 
@@ -346,11 +362,16 @@ public class DiscussionServiceImpl implements DiscussionService {
                         .build();
 
                     discussionParticipantRepository.save(discussionParticipant);
-                    return;
+                    result.put("choice", "disagree");
+                    return result;
                 }
                 discussionParticipantRepository.delete(savedParticipant);
+                result.put("choice", "null");
+                return result;
             }
         }
+        result.put("choice", "isOver");
+        return result;
     }
 
     @Override

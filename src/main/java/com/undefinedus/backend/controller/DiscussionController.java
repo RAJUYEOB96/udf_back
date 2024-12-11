@@ -76,26 +76,26 @@ public class DiscussionController {
 
     // 발의글에 찬성으로 참여하기
     @PostMapping("/joinAgree")
-    public ResponseEntity<ApiResponseDTO<Void>> joinAgree(
+    public ResponseEntity<ApiResponseDTO<Map<String, String>>> joinAgree(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @RequestParam("discussionId") Long discussionId
     ) {
-
-        discussionService.joinAgree(memberSecurityDTO.getId(), discussionId);
         
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(null));
+        Map<String, String> result = discussionService.joinAgree(memberSecurityDTO.getId(), discussionId);
+        
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(result));
     }
 
     // 발의글에 반대로 참석하기
     @PostMapping("/joinDisagree")
-    public ResponseEntity<ApiResponseDTO<Void>> joinDisagree(
+    public ResponseEntity<ApiResponseDTO<Map<String, String>>> joinDisagree(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @RequestParam("discussionId") Long discussionId
     ) {
-
-        discussionService.joinDisagree(memberSecurityDTO.getId(), discussionId);
-
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(null));
+        
+        Map<String, String> result = discussionService.joinDisagree(memberSecurityDTO.getId(), discussionId);
+        
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(result));
     }
 
     // 발의 상태일때만 수정하기

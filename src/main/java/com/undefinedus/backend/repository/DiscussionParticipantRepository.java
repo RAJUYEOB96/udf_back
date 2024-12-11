@@ -9,4 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DiscussionParticipantRepository extends JpaRepository<DiscussionParticipant, Long> {
     Optional<DiscussionParticipant> findByDiscussionAndMember(Discussion discussion, Member member);
+    
+    Boolean existsByMemberIdAndDiscussionId(Long loginMemberId, Long id);
 }
