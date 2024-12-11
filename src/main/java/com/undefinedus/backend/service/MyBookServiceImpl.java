@@ -2,7 +2,6 @@ package com.undefinedus.backend.service;
 
 import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.domain.entity.CalendarStamp;
-import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.enums.BookStatus;
@@ -15,7 +14,6 @@ import com.undefinedus.backend.exception.book.BookDuplicateNotAllowException;
 import com.undefinedus.backend.exception.book.BookException;
 import com.undefinedus.backend.exception.book.BookNotFoundException;
 import com.undefinedus.backend.exception.book.InvalidStatusException;
-import com.undefinedus.backend.exception.discussion.DiscussionException;
 import com.undefinedus.backend.exception.member.MemberException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.CalendarStampRepository;
@@ -24,7 +22,6 @@ import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.MyBookRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -63,9 +60,10 @@ public class MyBookServiceImpl implements MyBookService {
 
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new MemberException(String.format(MEMBER_NOT_FOUND, memberId)));
-        
-        Optional<MyBook> byMemberIdAndIsbn13 = myBookRepository.findByMemberIdAndIsbn13(member.getId(), isbn13);
-        
+
+        Optional<MyBook> byMemberIdAndIsbn13 = myBookRepository.findByMemberIdAndIsbn13(
+            member.getId(), isbn13);
+
         if (byMemberIdAndIsbn13.isPresent()) {
             throw new BookDuplicateNotAllowException(BOOK_CAN_NOT_DUPLICATE);
         }
@@ -75,15 +73,16 @@ public class MyBookServiceImpl implements MyBookService {
     @Override
     public Long insertNewBookByStatus(Long memberId, AladinBook savedAladinBook,
         BookStatusRequestDTO requestDTO) {
-        
-        Optional<MyBook> check = myBookRepository.findByMemberIdAndIsbn13(memberId, savedAladinBook.getIsbn13());
-        
+
+        Optional<MyBook> check = myBookRepository.findByMemberIdAndIsbn13(memberId,
+            savedAladinBook.getIsbn13());
+
         if (check.isPresent()) {
             throw new BookDuplicateNotAllowException(BOOK_CAN_NOT_DUPLICATE);
         } else {
             log.info("myBook is Null");
         }
-        
+
         Member findMember = getLoginMember(memberId);
 
         MyBook myBook = MyBook.builder()
@@ -91,7 +90,7 @@ public class MyBookServiceImpl implements MyBookService {
             .aladinBook(savedAladinBook)
             .isbn13(savedAladinBook.getIsbn13())
             .build();
-        
+
         return saveBookAndCalenarStampByStatus(requestDTO, myBook, savedAladinBook, findMember);
     }
 
@@ -114,7 +113,7 @@ public class MyBookServiceImpl implements MyBookService {
             .equals(requestDTO.getStatus())) {
             recordCalendarStamp(findMember, findMyBook);
         }
-        
+
         return findMyBook.getId();
     }
 
@@ -173,9 +172,9 @@ public class MyBookServiceImpl implements MyBookService {
     public void deleteMyBook(Long memberId, Long bookId) {
         // 1. 삭제 전에 책이 존재하는지 확인
         MyBook myBook = myBookRepository.findByIdAndMemberId(bookId, memberId)
-                .orElseThrow(() -> new BookNotFoundException(
-                        String.format(BOOK_NOT_FOUND, memberId, bookId)
-                ));
+            .orElseThrow(() -> new BookNotFoundException(
+                String.format(BOOK_NOT_FOUND, memberId, bookId)
+            ));
 //
 //        List<Discussion> check = discussionRepository.findByMemberIdAndBookId(memberId, bookId);
 //
@@ -303,7 +302,7 @@ public class MyBookServiceImpl implements MyBookService {
     private Long saveBookAndCalenarStampByStatus(
         BookStatusRequestDTO requestDTO, MyBook myBook,
         AladinBook findAladinBook, Member findMember) {
-        
+
         MyBook savedMyBook = null;
         // 업데이트 할때 마다 달력 스탬프에 기록 (읽고 있는중, 다 읽은 책 만)
         if (BookStatus.COMPLETED.name().equals(requestDTO.getStatus())) {
@@ -319,7 +318,7 @@ public class MyBookServiceImpl implements MyBookService {
         } else {
             throw new InvalidStatusException(String.format(INVALID_STATUS, requestDTO.getStatus()));
         }
-        
+
         return savedMyBook.getId();
     }
 

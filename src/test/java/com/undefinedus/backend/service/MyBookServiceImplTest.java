@@ -670,36 +670,33 @@ class MyBookServiceImplTest {
     @Nested
     @DisplayName("내 책장 기록 삭제  테스트")
     class DeleteMyBookTest {
-        
+
         @Test
-        @DisplayName("내 책 소프트 딜리트 성공 테스트")
+        @DisplayName("내 책 하드 딜리트 성공 테스트")
         void testDeleteMyBook() {
             // given
             Long memberId = 1L;
             Long bookId = 1L;
-            
+
             MyBook myBook = MyBook.builder()
-                    .id(bookId)
-                    .member(Member.builder().id(memberId).build())
-                    .isDeleted(false)
-                    .deletedAt(null)
-                    .build();
-            
+                .id(bookId)
+                .member(Member.builder().id(memberId).build())
+                .build();
+
             when(myBookRepository.findByIdAndMemberId(bookId, memberId))
-                    .thenReturn(Optional.of(myBook));
-            
+                .thenReturn(Optional.of(myBook));
+
             // when
             myBookService.deleteMyBook(memberId, bookId);
-            
+
             // then
-            // 1. findByIdAndMemberId 메소드 호출 검증
+            // 1. findByIdAndMemberId 메서드 호출 검증
             verify(myBookRepository).findByIdAndMemberId(bookId, memberId);
-            
-            // 2. 엔티티 상태 변경 검증
-            assertThat(myBook.isDeleted()).isTrue();
-            assertThat(myBook.getDeletedAt()).isNotNull();
-            
-            // 3. save 메서드가 호출되지 않아야 함 (더티 체킹으로 처리되므로)
+
+            // 2. delete 메서드 호출 검증
+            verify(myBookRepository).delete(myBook);
+
+            // 3. 다른 메서드 호출 확인 (deleteByIdAndMemberId 등이 호출되지 않아야 함)
             verify(myBookRepository, never()).save(any(MyBook.class));
             verify(myBookRepository, never()).deleteByIdAndMemberId(anyLong(), anyLong());
         }
