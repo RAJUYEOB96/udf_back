@@ -43,6 +43,6 @@ public class DiscussionDetailResponseDTO {
     
     private Boolean isReport;   // 로그인 사용자가 볼때 신고 했었는지
     
-    private Boolean isAgree;
+    private String isAgree; // isAgree, disAgree, null
 
 }
