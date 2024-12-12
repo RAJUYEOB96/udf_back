@@ -22,6 +22,8 @@ public class MemberSocialInfoResponseDTO {
     // 내가 내것을 볼때는 null 예정
     private Boolean isFollowing; // 내가 그 사람을 팔로우 했는지 안했는지
     
+    private Boolean isPublic; // 소셜을 보여줄지 말지 여부
+    
     public static MemberSocialInfoResponseDTO from(Member member, Integer followingCount, Integer followerCount) {
         return from(member, followingCount, followerCount, null);
     }
@@ -35,6 +37,7 @@ public class MemberSocialInfoResponseDTO {
                 .followingCount(followingCount)
                 .followerCount(followerCount)
                 .isFollowing(isFollowing)
+                .isPublic(member.isPublic())
                 .build();
     }
 }
