@@ -15,7 +15,7 @@ public interface DiscussionCommentService {
         DiscussionCommentRequestDTO discussionCommentRequestDTO);
 
     ScrollResponseDTO<DiscussionCommentResponseDTO> getCommentList(
-        Long loginMemberId, DiscussionCommentsScrollRequestDTO discussionCommentsScrollRequestDTO);
+        Long loginMemberId, DiscussionCommentsScrollRequestDTO discussionCommentsScrollRequestDTO, Long discussionId);
 
     void addLike(Long memberId, Long discussionCommentId);
 

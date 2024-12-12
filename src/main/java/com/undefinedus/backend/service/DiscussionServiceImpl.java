@@ -126,7 +126,7 @@ public class DiscussionServiceImpl implements DiscussionService {
 
         for (Discussion discussion : discussionList) {
             // 각 토론의 관련 정보를 추출
-            String memberName = discussion.getMember().getNickname();
+            String memberName = discussion.getMember() == null ? "탈퇴한 사용자" : discussion.getMember().getNickname();
             String title = discussion.getTitle();
             Long agree = discussion.getParticipants().stream().filter(isAgree -> isAgree.isAgree())
                 .count();  // 찬성 참여자 수
@@ -193,10 +193,9 @@ public class DiscussionServiceImpl implements DiscussionService {
         Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
         
         Long disagreeCount = findDPList.size() - agreeCount;
-
-        discussion.increaseViews();
-
-        Discussion savedDiscussion = discussionRepository.save(discussion);
+        
+        // 조회수 증가 쿼리 실행
+        discussionRepository.increaseViews(discussionId);
         
         String isAgree = null;
         
@@ -215,24 +214,27 @@ public class DiscussionServiceImpl implements DiscussionService {
         }
         
         Boolean isReport = reportRepository.existsByReporterIdAndDiscussionId(loginMemberId, discussionId);
-
+        
+        Long currentViews = discussionRepository.findViewsById(discussionId);
+        
+        
         DiscussionDetailResponseDTO discussionDetailResponseDTO = DiscussionDetailResponseDTO.builder()
             .discussionId(discussionId)
             .bookTitle(discussionBook.getTitle())
-            .memberName(discussion.getMember().getNickname())
-            .title(savedDiscussion.getTitle())
-            .content(savedDiscussion.getContent())
+            .memberName(discussion.getMember() == null ? "탈퇴한 사용자" : discussion.getMember().getNickname())
+            .title(discussion.getTitle())
+            .content(discussion.getContent())
             .agreeCount(agreeCount)
             .disagreeCount(disagreeCount)
-            .startDate(savedDiscussion.getStartDate())
-            .closedAt(savedDiscussion.getStartDate().plusDays(1))
-            .createdDate(savedDiscussion.getCreatedDate())
-            .views(savedDiscussion.getViews())
-            .commentCount(savedDiscussion.getComments().stream().count())
+            .startDate(discussion.getStartDate())
+            .closedAt(discussion.getStartDate().plusDays(1))
+            .createdDate(discussion.getCreatedDate())
+            .views(currentViews)
+            .commentCount(discussion.getComments().stream().count())
             .cover(discussionBook.getCover())
-            .status(String.valueOf(savedDiscussion.getStatus()))
-            .agreePercent(savedDiscussion.getAgreePercent())
-            .disagreePercent(savedDiscussion.getDisagreePercent())
+            .status(String.valueOf(discussion.getStatus()))
+            .agreePercent(discussion.getAgreePercent())
+            .disagreePercent(discussion.getDisagreePercent())
             .isReport(isReport)
             .isAgree(isAgree)
             .build();

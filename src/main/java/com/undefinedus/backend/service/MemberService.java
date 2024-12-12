@@ -51,5 +51,6 @@ public interface MemberService {
             "일반"  // 일반 로그인 사용자
         );
     }
-
+    
+    void deleteMember(Long loginMemberId);
 }

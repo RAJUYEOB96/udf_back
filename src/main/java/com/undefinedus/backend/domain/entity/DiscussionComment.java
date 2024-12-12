@@ -21,6 +21,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -45,6 +47,7 @@ public class DiscussionComment extends BaseEntity {
     private Discussion discussion;  // 어떤 토론의 댓글인지
     
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE)  // 추가
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;  // 작성자
     
