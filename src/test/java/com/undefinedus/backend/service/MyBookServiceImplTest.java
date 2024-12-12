@@ -745,6 +745,7 @@ class MyBookServiceImplTest {
     @DisplayName("다른 회원의 도서 목록 무한 스크롤 조회 테스트")
     class GetOtherMemberBookListTest {
         
+        
         @Test
         @DisplayName("로그인한 회원이 동일한 책을 가지고 있는 경우")
         void getOtherMemberBookList_WithLoginMemberHavingSameBook() {
@@ -758,14 +759,18 @@ class MyBookServiceImplTest {
             
             // 다른 회원의 책 목록 생성
             List<MyBook> otherMemberBooks = new ArrayList<>(Arrays.asList(
-                    createMyBook(5L, "책5", "12345", BookStatus.READING),  // COMPLETED -> READING으로 변경 (다른 회원의 상태)
-                    createMyBook(4L, "책4", "12344", BookStatus.READING),  // null -> READING으로 변경 (status는 null이 될 수 없음)
-                    createMyBook(3L, "책3", "12343", BookStatus.READING)   // null -> READING으로 변경 (status는 null이 될 수 없음)
+                    createMyBook(5L, "책5", "12345", BookStatus.READING),
+                    createMyBook(4L, "책4", "12344", BookStatus.READING),
+                    createMyBook(3L, "책3", "12343", BookStatus.READING)
             ));
             
-            // 로그인한 회원이 가진 책 생성 (isbn13이 "12345"인 책을 가지고 있음)
+            // 로그인한 회원이 가진 책 생성
             MyBook loginMemberBook = createMyBook(6L, "책5", "12345", BookStatus.COMPLETED);
             Set<MyBook> loginMemberBooks = new HashSet<>(Collections.singletonList(loginMemberBook));
+            
+            // Member 모킹 추가
+            Member targetMember = createMember(targetMemberId);
+            when(memberRepository.findByIdAndIsDeletedFalse(targetMemberId)).thenReturn(Optional.of(targetMember));
             
             when(myBookRepository.findBooksWithScroll(eq(targetMemberId), any(ScrollRequestDTO.class)))
                     .thenReturn(otherMemberBooks);
@@ -782,15 +787,11 @@ class MyBookServiceImplTest {
             assertThat(result.getContent()).hasSize(3);
             assertThat(result.isHasNext()).isFalse();
             
-            // 첫 번째 책(isbn13: "12345")은 타겟 회원의 상태값을 가져야 함
             MyBookResponseDTO firstBook = result.getContent().get(0);
             assertThat(firstBook.getStatus()).isEqualTo(BookStatus.READING.name());
             
-            // 나머지 책들은 다른 회원의 상태값(READING)이어야 함
-            assertThat(result.getContent().get(1).getStatus()).isEqualTo(
-                    BookStatus.READING.name());  // null -> READING으로 변경
-            assertThat(result.getContent().get(2).getStatus()).isEqualTo(
-                    BookStatus.READING.name());  // null -> READING으로 변경
+            assertThat(result.getContent().get(1).getStatus()).isEqualTo(BookStatus.READING.name());
+            assertThat(result.getContent().get(2).getStatus()).isEqualTo(BookStatus.READING.name());
         }
         
         @Test
@@ -805,14 +806,19 @@ class MyBookServiceImplTest {
                     .build();
             
             List<MyBook> otherMemberBooks = new ArrayList<>(Arrays.asList(
-                    createMyBook(5L, "책5", "12345", BookStatus.READING),  // null -> READING으로 변경
-                    createMyBook(4L, "책4", "12344", BookStatus.READING),  // null -> READING으로 변경
-                    createMyBook(3L, "책3", "12343", BookStatus.READING)   // null -> READING으로 변경
+                    createMyBook(5L, "책5", "12345", BookStatus.READING),
+                    createMyBook(4L, "책4", "12344", BookStatus.READING),
+                    createMyBook(3L, "책3", "12343", BookStatus.READING)
             ));
             
             // 로그인한 회원은 다른 책을 가지고 있음
             MyBook loginMemberBook = createMyBook(6L, "다른책", "99999");
             Set<MyBook> loginMemberBooks = new HashSet<>(Collections.singletonList(loginMemberBook));
+            
+            
+            // Member 모킹 추가
+            Member targetMember = createMember(targetMemberId);
+            when(memberRepository.findByIdAndIsDeletedFalse(targetMemberId)).thenReturn(Optional.of(targetMember));
             
             when(myBookRepository.findBooksWithScroll(eq(targetMemberId), any(ScrollRequestDTO.class)))
                     .thenReturn(otherMemberBooks);
@@ -829,10 +835,19 @@ class MyBookServiceImplTest {
             assertThat(result.getContent()).hasSize(3);
             assertThat(result.isHasNext()).isFalse();
             
-            // 모든 책에 다른 회원의 상태값(READING)이 있어야 함
             assertThat(result.getContent())
                     .extracting(MyBookResponseDTO::getStatus)
-                    .containsOnly(BookStatus.READING.name());  // containsOnlyNulls()
+                    .containsOnly(BookStatus.READING.name());
+        }
+        
+        // Member 생성 헬퍼 메서드 추가
+        private Member createMember(Long id) {
+            return Member.builder()
+                    .id(id)
+                    .username("user" + id)
+                    .password("password")
+                    .nickname("nickname" + id)
+                    .build();
         }
         
         // ISBN을 지정할 수 있도록 createMyBook 메서드 수정
@@ -878,6 +893,10 @@ class MyBookServiceImplTest {
             Long myBookId = 1L;
             String isbn13 = "12345";
             
+            Member targetMember = createMember(targetMemberId);
+            when(memberRepository.findByIdAndIsDeletedFalse(targetMemberId))
+                    .thenReturn(Optional.of(targetMember));
+            
             // 대상 회원의 책 설정
             MyBook targetMemberBook = createMyBook(myBookId, "테스트 책", isbn13, BookStatus.READING);
             
@@ -914,6 +933,10 @@ class MyBookServiceImplTest {
             Long myBookId = 1L;
             String isbn13 = "12345";
             
+            Member targetMember = createMember(targetMemberId);
+            when(memberRepository.findByIdAndIsDeletedFalse(targetMemberId))
+                    .thenReturn(Optional.of(targetMember));
+            
             MyBook targetMemberBook = createMyBook(myBookId, "테스트 책", isbn13, BookStatus.READING);
             
             when(myBookRepository.findByIdAndMemberIdWithAladinBook(myBookId, targetMemberId))
@@ -945,6 +968,10 @@ class MyBookServiceImplTest {
             Long targetMemberId = 2L;
             Long invalidBookId = 999L;
             
+            Member targetMember = createMember(targetMemberId);
+            when(memberRepository.findByIdAndIsDeletedFalse(targetMemberId))
+                    .thenReturn(Optional.of(targetMember));
+            
             when(myBookRepository.findByIdAndMemberIdWithAladinBook(invalidBookId, targetMemberId))
                     .thenReturn(Optional.empty());
             
@@ -958,6 +985,16 @@ class MyBookServiceImplTest {
             verify(calendarStampRepository, never()).countByMemberIdAndMyBookId(anyLong(), anyLong());
             verify(myBookRepository, never()).findByMemberIdAndIsbn13(anyLong(), anyString());
         }
+    }
+    
+    // Member 생성 헬퍼 메서드 추가
+    private Member createMember(Long id) {
+        return Member.builder()
+                .id(id)
+                .username("user" + id)
+                .password("password")
+                .nickname("nickname" + id)
+                .build();
     }
     
     // 테스트에 필요한 MyBook 객체 생성 헬퍼 메소드
