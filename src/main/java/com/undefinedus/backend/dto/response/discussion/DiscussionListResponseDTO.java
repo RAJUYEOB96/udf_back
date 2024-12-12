@@ -13,6 +13,8 @@ public class DiscussionListResponseDTO {
     private String isbn13;
 
     private String bookTitle;
+    
+    private Long memberId; // 작성자 Id
 
     private String memberName;  // 작성자
 

@@ -195,6 +195,9 @@ public class MyBookServiceImpl implements MyBookService {
     public ScrollResponseDTO<MyBookResponseDTO> getOtherMemberBookList(Long loginMemberId,
         Long targetMemberId,
         ScrollRequestDTO requestDTO) {
+        
+        memberRepository.findByIdAndIsDeletedFalse(targetMemberId)
+                .orElseThrow(() -> new MemberNotFoundException(String.format(USER_NOT_FOUND,targetMemberId)));
 
         // 해당 status에 따른 전체 기록된 책 수
         Long totalElements = myBookRepository.countByMemberIdAndStatus(targetMemberId, requestDTO);
@@ -246,6 +249,10 @@ public class MyBookServiceImpl implements MyBookService {
     @Override
     public MyBookResponseDTO getOtherMemberBook(Long loginMemberId, Long targetMemberId,
         Long myBookId) {
+        
+        memberRepository.findByIdAndIsDeletedFalse(targetMemberId)
+                .orElseThrow(() -> new MemberNotFoundException(String.format(USER_NOT_FOUND,targetMemberId)));
+        
         MyBook findBook = myBookRepository.findByIdAndMemberIdWithAladinBook(myBookId,
                 targetMemberId)
             .orElseThrow(() -> new BookNotFoundException(
