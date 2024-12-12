@@ -59,6 +59,8 @@ public class MyBookResponseDTO {
     // 기록되어있으면 "COMPLETED", "READING", "WISH", "STOPPED" 중 하나
     private String existingStatus;
     
+    private Boolean isPublic;
+    
     
     public static MyBookResponseDTO from(MyBook myBook, Integer count) {
         return from(myBook, count, null);
@@ -86,6 +88,7 @@ public class MyBookResponseDTO {
                 .customerReviewRank(myBook.getAladinBook().getCustomerReviewRank())
                 .itemPage(myBook.getAladinBook().getItemPage())
                 .existingStatus(existingStatus)
+                .isPublic(myBook.getMember().isPublic())
                 .build();
     }
     
