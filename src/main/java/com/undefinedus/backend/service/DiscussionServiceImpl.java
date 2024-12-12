@@ -126,7 +126,11 @@ public class DiscussionServiceImpl implements DiscussionService {
 
         for (Discussion discussion : discussionList) {
             // 각 토론의 관련 정보를 추출
-            String memberName = discussion.getMember() == null ? "탈퇴한 사용자" : discussion.getMember().getNickname();
+            
+            Long memberId = discussion.getMember().getId();
+            String memberName = discussion.getMember().isDeleted() ? "탈퇴한 회원" : discussion.getMember().getNickname();
+            
+            
             String title = discussion.getTitle();
             Long agree = discussion.getParticipants().stream().filter(isAgree -> isAgree.isAgree())
                 .count();  // 찬성 참여자 수
@@ -148,6 +152,7 @@ public class DiscussionServiceImpl implements DiscussionService {
                 .discussionId(discussionId)
                 .isbn13(isbn13)
                 .bookTitle(aladinBook.getTitle())
+                .memberId(memberId)
                 .memberName(memberName)
                 .title(title)
                 .agree(agree)
@@ -217,11 +222,18 @@ public class DiscussionServiceImpl implements DiscussionService {
         
         Long currentViews = discussionRepository.findViewsById(discussionId);
         
+        Long memberId = discussion.getMember().getId();
+        String profileImage =
+                discussion.getMember().isDeleted() ? "defaultProfileImage.jpg" : discussion.getMember().getProfileImage();
+        String nickname =
+                discussion.getMember().isDeleted() ? "탈퇴한 회원" : discussion.getMember().getNickname();
         
         DiscussionDetailResponseDTO discussionDetailResponseDTO = DiscussionDetailResponseDTO.builder()
             .discussionId(discussionId)
             .bookTitle(discussionBook.getTitle())
-            .memberName(discussion.getMember() == null ? "탈퇴한 사용자" : discussion.getMember().getNickname())
+            .memberId(memberId)
+            .memberName(nickname)
+            .profileImage(profileImage)
             .title(discussion.getTitle())
             .content(discussion.getContent())
             .agreeCount(agreeCount)

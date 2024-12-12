@@ -171,11 +171,11 @@ public class SocialServiceImpl implements SocialService {
     public MemberSocialInfoResponseDTO getOtherMemberSocialSimpleInfo(Long myMemberId,
         Long targetMemberId) {
 
-        Member findMyMember = memberRepository.findById(myMemberId)
+        Member findMyMember = memberRepository.findByIdAndIsDeletedFalse(myMemberId)
             .orElseThrow(
                 () -> new MemberNotFoundException(String.format(USER_NOT_FOUND, myMemberId)));
 
-        Member findTargetMember = memberRepository.findById(targetMemberId)
+        Member findTargetMember = memberRepository.findByIdAndIsDeletedFalse(targetMemberId)
             .orElseThrow(
                 () -> new MemberNotFoundException(String.format(USER_NOT_FOUND, targetMemberId)));
 

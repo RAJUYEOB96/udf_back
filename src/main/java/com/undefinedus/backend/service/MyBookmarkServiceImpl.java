@@ -61,14 +61,17 @@ public class MyBookmarkServiceImpl implements MyBookmarkService {
     }
 
     @Override
-    public ScrollResponseDTO<MyBookmarkResponseDTO> getMyBookmarkList(Long memberId,
+    public ScrollResponseDTO<MyBookmarkResponseDTO> getMyBookmarkList(Long targetMemberId,
         ScrollRequestDTO requestDTO) {
+        
+        memberRepository.findByIdAndIsDeletedFalse(targetMemberId)
+                .orElseThrow(() -> new MemberNotFoundException(String.format(USER_NOT_FOUND,targetMemberId)));
 
         // 로그인한 아이디의 모든 bookmark의 갯수를 위한
-        Long totalElements = myBookmarkRepository.countByMemberIdAndStatus(memberId, requestDTO);
+        Long totalElements = myBookmarkRepository.countByMemberIdAndStatus(targetMemberId, requestDTO);
 
         // findBooksWithScroll안에서 size + 1개 데이터 조회해서 가져옴 (size가 10이면 11개 가져옴)
-        List<MyBookmark> myBookmarks = myBookmarkRepository.findBookmarksWithScroll(memberId,
+        List<MyBookmark> myBookmarks = myBookmarkRepository.findBookmarksWithScroll(targetMemberId,
             requestDTO);
 
         boolean hasNext = false;

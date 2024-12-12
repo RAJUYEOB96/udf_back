@@ -12,8 +12,12 @@ public class DiscussionDetailResponseDTO {
     private Long discussionId;  // 신고 용
 
     private String bookTitle;  // 어떤 책의 토론인지
+    
+    private Long memberId; // 작성자 id
 
     private String memberName;  // 작성자
+    
+    private String profileImage;  // 작성자 프로필 사진
 
     private String title;    // 토론 제목
 
