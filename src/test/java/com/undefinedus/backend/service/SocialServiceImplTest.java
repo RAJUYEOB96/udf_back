@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.undefinedus.backend.domain.entity.Follow;
 import com.undefinedus.backend.domain.entity.Member;
@@ -551,6 +552,8 @@ class SocialServiceImplTest {
         Long myMemberId = 1L;
         Long targetMemberId = 2L;
         
+        
+        
         Member myMember = Member.builder()
                 .id(myMemberId)
                 .username("my@example.com")
@@ -565,9 +568,9 @@ class SocialServiceImplTest {
                 .isPublic(true)
                 .build();
         
-        given(memberRepository.findById(myMemberId))
+        given(memberRepository.findByIdAndIsDeletedFalse(myMemberId))
                 .willReturn(Optional.of(myMember));
-        given(memberRepository.findById(targetMemberId))
+        given(memberRepository.findByIdAndIsDeletedFalse(targetMemberId))
                 .willReturn(Optional.of(targetMember));
         given(followRepository.findByFollowerAndFollowing(myMember, targetMember))
                 .willReturn(Optional.empty());
@@ -586,8 +589,8 @@ class SocialServiceImplTest {
         assertThat(result.getFollowerCount()).isEqualTo(3);
         assertThat(result.getIsFollowing()).isFalse();
         
-        verify(memberRepository).findById(myMemberId);
-        verify(memberRepository).findById(targetMemberId);
+        verify(memberRepository).findByIdAndIsDeletedFalse(myMemberId);
+        verify(memberRepository).findByIdAndIsDeletedFalse(targetMemberId);
         verify(followRepository).findByFollowerAndFollowing(myMember, targetMember);
         verify(followRepository).countFollowingsByMemberId(targetMemberId);
         verify(followRepository).countFollowersByMemberId(targetMemberId);
@@ -619,9 +622,9 @@ class SocialServiceImplTest {
                 .following(targetMember)
                 .build();
         
-        given(memberRepository.findById(myMemberId))
+        given(memberRepository.findByIdAndIsDeletedFalse(myMemberId))
                 .willReturn(Optional.of(myMember));
-        given(memberRepository.findById(targetMemberId))
+        given(memberRepository.findByIdAndIsDeletedFalse(targetMemberId))
                 .willReturn(Optional.of(targetMember));
         given(followRepository.findByFollowerAndFollowing(myMember, targetMember))
                 .willReturn(Optional.of(follow));
@@ -640,8 +643,8 @@ class SocialServiceImplTest {
         assertThat(result.getFollowerCount()).isEqualTo(3);
         assertThat(result.getIsFollowing()).isTrue();
         
-        verify(memberRepository).findById(myMemberId);
-        verify(memberRepository).findById(targetMemberId);
+        verify(memberRepository).findByIdAndIsDeletedFalse(myMemberId);
+        verify(memberRepository).findByIdAndIsDeletedFalse(targetMemberId);
         verify(followRepository).findByFollowerAndFollowing(myMember, targetMember);
         verify(followRepository).countFollowingsByMemberId(targetMemberId);
         verify(followRepository).countFollowersByMemberId(targetMemberId);
@@ -654,7 +657,7 @@ class SocialServiceImplTest {
         Long nonExistentMemberId = 999L;
         Long targetMemberId = 2L;
         
-        given(memberRepository.findById(nonExistentMemberId))
+        given(memberRepository.findByIdAndIsDeletedFalse(nonExistentMemberId))
                 .willReturn(Optional.empty());
         
         // when & then
@@ -666,7 +669,7 @@ class SocialServiceImplTest {
         assertThat(exception.getMessage())
                 .contains(String.format("해당 유저를 찾을 수 없습니다. : %d", nonExistentMemberId));
         
-        verify(memberRepository).findById(nonExistentMemberId);
+        verify(memberRepository).findByIdAndIsDeletedFalse(nonExistentMemberId);
         verify(memberRepository, never()).findById(targetMemberId);
     }
     
@@ -684,9 +687,9 @@ class SocialServiceImplTest {
                 .isPublic(true)
                 .build();
         
-        given(memberRepository.findById(myMemberId))
+        given(memberRepository.findByIdAndIsDeletedFalse(myMemberId))
                 .willReturn(Optional.of(myMember));
-        given(memberRepository.findById(nonExistentTargetId))
+        given(memberRepository.findByIdAndIsDeletedFalse(nonExistentTargetId))
                 .willReturn(Optional.empty());
         
         // when & then
@@ -698,8 +701,8 @@ class SocialServiceImplTest {
         assertThat(exception.getMessage())
                 .contains(String.format("해당 유저를 찾을 수 없습니다. : %d", nonExistentTargetId));
         
-        verify(memberRepository).findById(myMemberId);
-        verify(memberRepository).findById(nonExistentTargetId);
+        verify(memberRepository).findByIdAndIsDeletedFalse(myMemberId);
+        verify(memberRepository).findByIdAndIsDeletedFalse(nonExistentTargetId);
     }
     
     @Test

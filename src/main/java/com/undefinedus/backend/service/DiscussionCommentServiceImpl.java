@@ -223,7 +223,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             String nickname =
                     discussionComment.getMember().isDeleted() ? "탈퇴한 회원" : discussionComment.getMember().getNickname();
             String honorific =
-                    discussionComment.getMember().isDeleted() ? " " : discussionComment.getMember().getHonorific();
+                    discussionComment.getMember().isDeleted() ? "탈퇴한 회원입니다" : discussionComment.getMember().getHonorific();
             
             Long groupId = discussionComment.getGroupId();
             Long commentId = discussionComment.getId();
@@ -434,7 +434,8 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             String nickname =
                     discussionComment.getMember().isDeleted() ? "탈퇴한 회원" : discussionComment.getMember().getNickname();
             String honorific =
-                    discussionComment.getMember().isDeleted() ? " " : discussionComment.getMember().getHonorific();
+                    discussionComment.getMember().isDeleted() ? "탈퇴한 회원입니다" :
+                            discussionComment.getMember().getHonorific();
 
             Long commentId = discussionComment.getId();
             Long parentId = discussionComment.getParentId();

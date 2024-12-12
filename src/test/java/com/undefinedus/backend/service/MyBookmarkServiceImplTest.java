@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.domain.entity.Member;
@@ -143,6 +144,10 @@ class MyBookmarkServiceImplTest {
         @DisplayName("북마크 목록 조회 성공 - 다음 페이지 존재")
         void getMyBookmarkList_WithNextPage() {
             // given
+            Long memberId = 1L;
+            Member member = createMember(memberId);
+            when(memberRepository.findByIdAndIsDeletedFalse(memberId))
+                    .thenReturn(Optional.of(member));
             ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
                     .size(2)
                     .lastId(0L)
@@ -192,6 +197,11 @@ class MyBookmarkServiceImplTest {
         @DisplayName("북마크 목록 조회 성공 - 다음 페이지 없음")
         void getMyBookmarkList_WithoutNextPage() {
             // given
+            Long memberId = 1L;
+            Member member = createMember(memberId);
+            when(memberRepository.findByIdAndIsDeletedFalse(memberId))
+                    .thenReturn(Optional.of(member));
+            
             ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
                     .size(2)
                     .lastId(0L)
@@ -233,6 +243,11 @@ class MyBookmarkServiceImplTest {
         @DisplayName("북마크 목록 조회 - 빈 결과")
         void getMyBookmarkList_EmptyResult() {
             // given
+            Long memberId = 1L;
+            Member member = createMember(memberId);
+            when(memberRepository.findByIdAndIsDeletedFalse(memberId))
+                    .thenReturn(Optional.of(member));
+            
             ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
                     .size(2)
                     .lastId(0L)
@@ -257,6 +272,11 @@ class MyBookmarkServiceImplTest {
         @DisplayName("검색어가 있는 경우의 북마크 목록 조회")
         void getMyBookmarkList_WithSearch() {
             // given
+            Long memberId = 1L;
+            Member member = createMember(memberId);
+            when(memberRepository.findByIdAndIsDeletedFalse(memberId))
+                    .thenReturn(Optional.of(member));
+            
             ScrollRequestDTO requestDTO = ScrollRequestDTO.builder()
                     .size(2)
                     .lastId(0L)
@@ -287,6 +307,16 @@ class MyBookmarkServiceImplTest {
             assertThat(result.getContent().get(0).getPhrase()).contains("테스트");
             assertThat(result.getLastId()).isEqualTo(2L);
             assertThat(result.getNumberOfElements()).isEqualTo(1);
+        }
+        
+        // Member 생성 헬퍼 메서드
+        private Member createMember(Long id) {
+            return Member.builder()
+                    .id(id)
+                    .username("user" + id)
+                    .password("password")
+                    .nickname("nickname" + id)
+                    .build();
         }
     }
     
