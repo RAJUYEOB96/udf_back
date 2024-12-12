@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface DiscussionCommentsRepositoryCustom {
 
-    List<DiscussionComment> findDiscussionCommentListWithScroll(DiscussionCommentsScrollRequestDTO requestDTO);
+    List<DiscussionComment> findDiscussionCommentListWithScroll(DiscussionCommentsScrollRequestDTO requestDTO,
+            Long discussionId);
 }

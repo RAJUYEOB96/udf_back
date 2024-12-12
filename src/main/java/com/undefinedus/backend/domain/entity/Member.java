@@ -48,14 +48,13 @@ public class Member extends BaseEntity {
     private Long id;
 
     // === 기본 정보 === //
-    @Column(length = 40, unique = true, nullable = false)
+    @Column(length = 50, unique = true, nullable = false)   // 회원탈퇴시 처리를 위해 length 50으로 변경
     private String username;    // 아이디 (일반 로그인 유저 : 이메일형식, 소셜 로그인 유저 : 숫자형식(kakaoId))
 
     @Column(length = 100, nullable = false) // 암호화해서 길이 늘어남
     private String password;   // 비밀번호
 
-    @Column(length = 10, unique = true, nullable = false)
-    @Size(min = 2, max = 10)
+    @Column(length = 50, unique = true, nullable = false)  // 회원탈퇴시 처리를 위해 length 50으로 변경
     private String nickname;    // 일반, 소셜 둘다 회원 가입시 임의 작성
 
     // === 프로필 정보 === //
@@ -164,8 +163,7 @@ public class Member extends BaseEntity {
         this.gender = gender;
     }
 
-    public void setNickname(
-        @Size(min = 2, max = 10) String nickname) {
+    public void setNickname(String nickname) {
         this.nickname = nickname;
     }
 
@@ -208,5 +206,13 @@ public class Member extends BaseEntity {
     
     public void updateDeletedAt(LocalDateTime deletedAt) {
         this.deletedAt = deletedAt;
+    }
+    
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+    
+    public void updateUsername(String username) {
+        this.username = username;
     }
 }

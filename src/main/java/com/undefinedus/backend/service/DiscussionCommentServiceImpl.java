@@ -192,10 +192,10 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
     @Override
     public ScrollResponseDTO<DiscussionCommentResponseDTO> getCommentList(
-        Long loginMemberId, DiscussionCommentsScrollRequestDTO discussionCommentsScrollRequestDTO) {
+        Long loginMemberId, DiscussionCommentsScrollRequestDTO discussionCommentsScrollRequestDTO, Long discussionId) {
 
         List<DiscussionComment> discussionCommentList = discussionCommentRepository.findDiscussionCommentListWithScroll(
-            discussionCommentsScrollRequestDTO);
+            discussionCommentsScrollRequestDTO, discussionId);
 
         boolean hasNext = false;
         if (discussionCommentList.size()
@@ -216,12 +216,17 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             boolean isReport = reportedCommentIds.contains(discussionComment.getId());
             
             // 각 토론 댓글의 관련 정보를 추출
-
-            String profileImage = discussionComment.getMember().getProfileImage();
+            
+            Long memberId = discussionComment.getMember() == null ? -1L : discussionComment.getMember().getId();
+            String profileImage =
+                    discussionComment.getMember() == null ? "defaultProfileImage.jpg" : discussionComment.getMember().getProfileImage();
+            String nickname =
+                    discussionComment.getMember() == null ? "탈퇴한 사용자" : discussionComment.getMember().getNickname();
+            String honorific =
+                    discussionComment.getMember() == null ? "돌아와요" : discussionComment.getMember().getHonorific();
+            
             Long groupId = discussionComment.getGroupId();
             Long commentId = discussionComment.getId();
-            Long discussionId = discussionComment.getDiscussion().getId();
-            Long memberId = discussionComment.getMember().getId();
             Long parentId = discussionComment.getParentId();
             Long order = discussionComment.getGroupOrder();
             boolean isChild = discussionComment.isChild();
@@ -235,17 +240,14 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             Long totalOrder = discussionComment.getTotalOrder();
             DiscussionCommentStatus discussionCommentStatus = discussionComment.getDiscussionCommentStatus();
 
-            Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId));
-
             // DTO 객체 생성 후 리스트에 추가
             DiscussionCommentResponseDTO dto = DiscussionCommentResponseDTO.builder()
                 .commentId(commentId)
                 .discussionId(discussionId)
                 .memberId(memberId)
                 .profileImage(profileImage)
-                .nickname(member.getNickname())
-                .honorific(member.getHonorific())
+                .nickname(nickname)
+                .honorific(honorific)
                 .parentId(parentId)
                 .groupId(groupId)
                 .groupOrder(order)
@@ -425,10 +427,16 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
         for (DiscussionComment discussionComment : bestCommentTop3List) {
             // 각 토론 댓글의 관련 정보를 추출
+            
+            Long memberId = discussionComment.getMember() == null ? -1L : discussionComment.getMember().getId();
+            String profileImage =
+                    discussionComment.getMember() == null ? "defaultProfileImage.jpg" : discussionComment.getMember().getProfileImage();
+            String nickname =
+                    discussionComment.getMember() == null ? "탈퇴한 사용자" : discussionComment.getMember().getNickname();
+            String honorific =
+                    discussionComment.getMember() == null ? "돌아와요" : discussionComment.getMember().getHonorific();
 
-            String profileImage = discussionComment.getMember().getProfileImage();
             Long commentId = discussionComment.getId();
-            Long memberId = discussionComment.getMember().getId();
             Long parentId = discussionComment.getParentId();
             Long order = discussionComment.getGroupOrder();
             boolean isChild = discussionComment.isChild();
@@ -442,17 +450,14 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             Long totalOrder = discussionComment.getTotalOrder();
             DiscussionCommentStatus discussionCommentStatus = discussionComment.getDiscussionCommentStatus();
 
-            Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId));
-
             // DTO 객체 생성 후 리스트에 추가
             DiscussionCommentResponseDTO dto = DiscussionCommentResponseDTO.builder()
                 .commentId(commentId)
                 .discussionId(discussionId)
                 .memberId(memberId)
                 .profileImage(profileImage)
-                .nickname(member.getNickname())
-                .honorific(member.getHonorific())
+                .nickname(nickname)
+                .honorific(honorific)
                 .parentId(parentId)
                 .groupOrder(order)
                 .totalOrder(totalOrder)
