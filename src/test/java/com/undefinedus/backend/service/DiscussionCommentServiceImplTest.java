@@ -198,6 +198,7 @@ class DiscussionCommentServiceImplTest {
         DiscussionCommentsScrollRequestDTO requestDTO = new DiscussionCommentsScrollRequestDTO();
         requestDTO.setSize(10);
         requestDTO.setLastId(0L);
+        requestDTO.setDiscussionId(42L);
 
         Member member = new Member();
         member.setId(1L); // 멤버 ID 설정
@@ -218,7 +219,8 @@ class DiscussionCommentServiceImplTest {
         when(discussionCommentRepository.findDiscussionCommentListWithScroll(any())).thenReturn(commentList);
         when(memberRepository.findById(1L)).thenReturn(Optional.of(member)); // 정확한 멤버 ID로 설정
 
-        ScrollResponseDTO<DiscussionCommentResponseDTO> result = discussionCommentService.getCommentList(requestDTO);
+        ScrollResponseDTO<DiscussionCommentResponseDTO> result =
+                discussionCommentService.getCommentList(member.getId(), requestDTO);
 
         assertNotNull(result);
         assertEquals(1, result.getContent().size());

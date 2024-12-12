@@ -32,4 +32,7 @@ public interface ReportRepository extends JpaRepository<Report, Long>, ReportRep
             + "left join fetch r.comment "
             + "where r.id = :reportId")
     Optional<Report> findByIdWithAll(@Param("reportId") Long reportId);
+    
+    Boolean existsByReporterIdAndDiscussionId(Long loginMemberId, Long discussionId);
+    
 }

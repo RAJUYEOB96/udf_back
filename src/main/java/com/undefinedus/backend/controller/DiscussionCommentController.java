@@ -77,11 +77,12 @@ public class DiscussionCommentController {
     // 댓글 리스트
     @GetMapping
     public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<DiscussionCommentResponseDTO>>> getCommentList(
-        @ModelAttribute DiscussionCommentsScrollRequestDTO requestDTO
+            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+            @ModelAttribute DiscussionCommentsScrollRequestDTO requestDTO
     ) {
-
+        
         ScrollResponseDTO<DiscussionCommentResponseDTO> response = discussionCommentService.getCommentList(
-            requestDTO);
+            memberSecurityDTO.getId(), requestDTO);
 
         return ResponseEntity.ok(ApiResponseDTO.success(response));
     }

@@ -65,50 +65,48 @@ public class DiscussionController {
     // 토론, 발의 상세 보기
     @GetMapping("/detail")
     public ResponseEntity<ApiResponseDTO<DiscussionDetailResponseDTO>> getDiscussionDetail(
-        @RequestParam("discussionId") Long discussionId
+            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+            @RequestParam("discussionId") Long discussionId
     ) {
         DiscussionDetailResponseDTO discussionDetail = discussionService.getDiscussionDetail(
-            discussionId);
+                memberSecurityDTO.getId(), discussionId);
 
         return ResponseEntity.ok(ApiResponseDTO.success(discussionDetail));
     }
 
     // 발의글에 찬성으로 참여하기
     @PostMapping("/joinAgree")
-    public ResponseEntity<ApiResponseDTO<Void>> joinAgree(
+    public ResponseEntity<ApiResponseDTO<Map<String, String>>> joinAgree(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @RequestParam("discussionId") Long discussionId
     ) {
-
-        discussionService.joinAgree(memberSecurityDTO.getId(), discussionId);
         
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(null));
+        Map<String, String> result = discussionService.joinAgree(memberSecurityDTO.getId(), discussionId);
+        
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(result));
     }
 
     // 발의글에 반대로 참석하기
     @PostMapping("/joinDisagree")
-    public ResponseEntity<ApiResponseDTO<Void>> joinDisagree(
+    public ResponseEntity<ApiResponseDTO<Map<String, String>>> joinDisagree(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @RequestParam("discussionId") Long discussionId
     ) {
-
-        discussionService.joinDisagree(memberSecurityDTO.getId(), discussionId);
-
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(null));
+        
+        Map<String, String> result = discussionService.joinDisagree(memberSecurityDTO.getId(), discussionId);
+        
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponseDTO.success(result));
     }
 
     // 발의 상태일때만 수정하기
     @PatchMapping("/update")
     public ResponseEntity<ApiResponseDTO<Map<String, Long>>> discussionUpdate(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-        @RequestParam("isbn13") String isbn13,  // 수정할 책의 isbn13
-        @RequestParam("discussionId") Long discussionId,
         @Valid @RequestBody DiscussionUpdateRequestDTO discussionUpdateRequestDTO) throws Exception {
         
         Map<String, Long> result = new HashMap<>();
         
-        Long id = discussionService.discussionUpdate(memberSecurityDTO.getId(), isbn13, discussionId,
-                    discussionUpdateRequestDTO);
+        Long id = discussionService.discussionUpdate(memberSecurityDTO.getId(), discussionUpdateRequestDTO);
         result.put("id", id);
         
         return ResponseEntity.ok().body(ApiResponseDTO.success(result));

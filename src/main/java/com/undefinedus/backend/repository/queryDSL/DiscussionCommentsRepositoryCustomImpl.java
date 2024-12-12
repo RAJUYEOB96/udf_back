@@ -26,6 +26,9 @@ public class DiscussionCommentsRepositoryCustomImpl implements DiscussionComment
         // 여러 조건들을 and()나 or()로 연결할 수 있게 해주는 빌더 패턴 구현체입니다
         BooleanBuilder builder = new BooleanBuilder();
 
+        // 같은 discussionId인 것만 가져오기
+        builder.and(qDiscussionComment.discussion.id.eq(requestDTO.getDiscussionId()));
+
         // cursor는 마지막으로 로드된 항목의 기준값(여기서는 ID)을 의미합니다
         // 이전/다음 페이지로 이동할 때 offset을 사용하는 대신 마지막으로 본 항목의 ID를 기준으로 데이터를 가져옵니다
         // Cursor 조건 추가

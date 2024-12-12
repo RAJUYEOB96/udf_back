@@ -9,6 +9,8 @@ import lombok.Data;
 @Builder
 public class DiscussionUpdateRequestDTO {
 
+    private Long discussionId;  // 수정 할 토론
+
     @NoProfanity
     private String title;    // 토론 제목
 

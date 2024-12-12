@@ -172,8 +172,8 @@ class ReportServiceImplTest {
 
         // Discussion 데이터 생성
         discussion = Discussion.builder()
-            .myBook(myBook)  // MyBook 객체 (책 정보)
             .member(reported)  // 작성자 (Member 객체)
+            .aladinBook(aladinBook)  // 추가
             .title("책에 대해 어떻게 생각하시나요?")  // 토론 제목
             .content("이 책은 정말 흥미롭고 생각할 거리를 많이 던져주는 작품입니다.")  // 토론 내용
             .status(DiscussionStatus.PROPOSED)  // 토론 상태 (기본값 PROPOSED)

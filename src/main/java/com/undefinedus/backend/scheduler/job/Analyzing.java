@@ -23,7 +23,6 @@ public class Analyzing implements Job {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        System.out.println("Analyzing");
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String discussionIdStr = dataMap.getString("discussionId");
         Long discussionId = Long.parseLong(discussionIdStr);
@@ -39,7 +38,6 @@ public class Analyzing implements Job {
         } catch (IOException e) {
             throw new RuntimeException("GPT에 정보 전달 실패 : " + e.getMessage());
         }
-        System.out.println("Analyzing = " + discussion);
     }
 
 }

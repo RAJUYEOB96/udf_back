@@ -24,7 +24,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
@@ -33,7 +32,7 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor
 @Builder
 @SQLRestriction("is_deleted = false")
-@ToString(exclude = {"myBook", "member", "participants", "comments"})  // 실제 연관관계 있는 필드만 exclude
+@ToString(exclude = {"aladinBook", "member", "participants", "comments"})  // 실제 연관관계 있는 필드만 exclude
 public class Discussion extends BaseEntity {
 
     // === ID === //
@@ -43,9 +42,9 @@ public class Discussion extends BaseEntity {
 
     // === 연관 관계 === //
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_id", nullable = false)
-    private MyBook myBook;  // 어떤 책의 토론인지 // 내가 기록한 책만 토론 주제로 올릴 수 있음
-
+    @JoinColumn(name = "aladin_book_id", nullable = false)
+    private AladinBook aladinBook;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;  // 작성자
@@ -143,10 +142,6 @@ public class Discussion extends BaseEntity {
 
     public void changeContent(String content) {
         this.content = content;
-    }
-
-    public void changeMyBook(MyBook myBook) {
-        this.myBook = myBook;
     }
 
     public void changeStartDate(LocalDateTime startDate) {

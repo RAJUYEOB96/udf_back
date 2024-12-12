@@ -19,7 +19,6 @@ public class Completed implements Job {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        System.out.println("Completed");
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String discussionIdStr = dataMap.getString("discussionId");
 
