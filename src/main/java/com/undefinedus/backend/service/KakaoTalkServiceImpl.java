@@ -10,6 +10,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -32,6 +33,12 @@ public class KakaoTalkServiceImpl implements KakaoTalkService {
     private final MyBookmarkRepository myBookmarkRepository;
 
     private final RestTemplate restTemplate = new RestTemplate();
+
+    @Value("${kakao.restApiKey}")
+    private String restApiKey;
+
+    @Value("${kakao.clientSecretKey}")
+    private String clientSecretKey;
 
     // 랜덤으로 구정 설정하여 메시지 보내기
     @Override
@@ -69,8 +76,6 @@ public class KakaoTalkServiceImpl implements KakaoTalkService {
     // 카카오톡 accessToken 재발급
     private String updateKakaoAccessToken(Member member, String refreshToken) {
         String tokenUrl = "https://kauth.kakao.com/oauth/token";
-        String restApiKey = "433f010a1fa5963afe5402f4fa79bbb4";
-        String clientSecretKey = "TZRwcwKgGbDJh9NrqfQPHP9obzZULtNE";
 
         try {
             // 토큰 갱신을 위한 요청 파라미터
