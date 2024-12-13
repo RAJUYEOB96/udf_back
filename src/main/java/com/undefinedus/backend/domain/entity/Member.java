@@ -16,7 +16,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,8 +28,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
@@ -193,25 +190,25 @@ public class Member extends BaseEntity {
     }
 
     public void updateIsMessageToKakao(boolean messageToKakao) {
-        isMessageToKakao = messageToKakao;
+        this.isMessageToKakao = messageToKakao;
     }
 
     public void updateKakaoMessageIsAgree(boolean kakaoMessageIsAgree) {
-        KakaoMessageIsAgree = kakaoMessageIsAgree;
+        this.KakaoMessageIsAgree = kakaoMessageIsAgree;
     }
-    
+
     public void updateDeleted(boolean deleted) {
-        isDeleted = deleted;
+        this.isDeleted = deleted;
     }
-    
+
     public void updateDeletedAt(LocalDateTime deletedAt) {
         this.deletedAt = deletedAt;
     }
-    
+
     public void updateNickname(String nickname) {
         this.nickname = nickname;
     }
-    
+
     public void updateUsername(String username) {
         this.username = username;
     }

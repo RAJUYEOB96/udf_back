@@ -83,8 +83,6 @@ public class MemberServiceImpl implements MemberService {
         result.put("kakaoRefreshToken", kakaoRefreshToken);
         result.put("result", "new");
 
-
-
         return result;
     }
 
@@ -96,7 +94,6 @@ public class MemberServiceImpl implements MemberService {
         // 회원 가입 시 토큰 저장
         socialMember.updateKakaoAccessToken(requestDTO.getKakaoAccessToken());
         socialMember.updateKakaoRefreshToken(requestDTO.getKakaoRefreshToken());
-
 
         Member savedMember = memberRepository.save(socialMember);
         myPageService.checkMessagePermission(savedMember.getId());
@@ -155,16 +152,17 @@ public class MemberServiceImpl implements MemberService {
         }
 
     }
-    
+
     @Override
     public void deleteMember(Long loginMemberId) {
-        
+
         Member member = memberRepository.findById(loginMemberId)
-                .orElseThrow(() -> new MemberNotFoundException("해당 member를 찾을 수 없습니다. : " + loginMemberId));
-        
+            .orElseThrow(
+                () -> new MemberNotFoundException("해당 member를 찾을 수 없습니다. : " + loginMemberId));
+
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         String withdrawnSuffix = String.format("(탈퇴회원-%s)", uuid);
-        
+
         try {
             member.updateDeleted(true);
             member.updateDeletedAt(LocalDateTime.now());
@@ -175,9 +173,9 @@ public class MemberServiceImpl implements MemberService {
             // 혹시 모를 unique 제약조건 위반 대비
             throw new RuntimeException("회원 탈퇴 처리 중 오류가 발생했습니다.", e);
         }
-    
+
     }
-    
+
     private Member makeSocialMember(RegisterRequestDTO requestDTO) {
 
         // 소셜 로그인 비밀번호는 사용자가 사용하진 않지만 최소한의 보안은 하도록 아래처럼
