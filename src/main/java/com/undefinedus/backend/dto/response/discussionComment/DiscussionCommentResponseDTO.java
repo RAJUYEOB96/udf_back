@@ -18,6 +18,8 @@ public class DiscussionCommentResponseDTO {
 
     private String nickname;
 
+    private String parentNickname;  // 답글 시 부모 댓글 닉네임 이다.
+
     private String honorific; // 칭호 = 초보리더 // version.1 에서는 기본 칭호를 유지할 예정
 
     private Long parentId; // 부모Id // 고유 아이디는 id로 사용
