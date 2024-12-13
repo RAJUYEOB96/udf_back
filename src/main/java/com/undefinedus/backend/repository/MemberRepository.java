@@ -19,24 +19,16 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
         + "where m.username = :username "
         + "and m.isDeleted = false")
     Optional<Member> getWithRoles(@Param("username") String username); // CustomUserDetailsService에서 사용중
-
+    
+    // username으로 조회할 때도 탈퇴하지 않은 회원만 조회
+    @Query("SELECT m FROM Member m WHERE m.username = :username AND m.isDeleted = false")
     Optional<Member> findByUsername(String username);
     
+    // nickname으로 조회할 때도 탈퇴하지 않은 회원만 조회
+    @Query("SELECT m FROM Member m WHERE m.nickname = :nickname AND m.isDeleted = false")
     Optional<Member> findByNickname(String nickname);
     
-    // 아래는 initData할때 필요한 sql, 추후 삭제 될 수 있음
-    @Query("SELECT m FROM Member m " +
-            "LEFT JOIN FETCH m.followings " +
-            "LEFT JOIN FETCH m.followers " +
-            "WHERE m.username = :username")
-    Optional<Member> findByUsernameWithFollows(@Param("username") String username);
+    @Query("SELECT m FROM Member m WHERE m.id = :id AND m.isDeleted = false")
+    Optional<Member> findByIdAndIsDeletedFalse(@Param("id") Long id);
     
-    // 아래는 initData할때 필요한 sql, 추후 삭제 될 수 있음
-    @Modifying
-    @Query(value = "DELETE FROM follow", nativeQuery = true)
-    void deleteAllFollows();
-
-//    // 모든 회원 중 isMessageToKakao = true인 회원들의 id를 가져옴
-//    @Query("select m.id from Member m where m.isMessageToKakao = true")
-//    List<Long> findMessageToKakaoMemberIdList();
 }

@@ -46,6 +46,18 @@ public class MyPageController {
             .body(ApiResponseDTO.success(result));
     }
 
+    @Operation(description = "카카오 메시지 권한 수정")
+    @PostMapping("/kakao/message")
+    public ResponseEntity<ApiResponseDTO<Boolean>> updateProcessKakaoAgree(
+        @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO
+    ) {
+        Long memberId = memberSecurityDTO.getId();
+        boolean result = myPageService.updateMessagePermission(memberId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(ApiResponseDTO.success(result));
+    }
+
     @Operation(description = "카카오 메시지 받기 허용, 비허용")
     @PostMapping("/kakao/update")
     public ResponseEntity<ApiResponseDTO<Boolean>> updateProcessKakaoMessage(
@@ -175,9 +187,10 @@ public class MyPageController {
         return ResponseEntity.status(HttpStatus.OK)
             .body(ApiResponseDTO.success(result));
     }
-    
+
     @DeleteMapping
-    public ResponseEntity<ApiResponseDTO<Void>> deleteMember(@AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO) {
+    public ResponseEntity<ApiResponseDTO<Void>> deleteMember(
+        @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO) {
         Long memberId = memberSecurityDTO.getId();
         myPageService.deleteMember(memberId);
         return ResponseEntity.ok(ApiResponseDTO.success(null));

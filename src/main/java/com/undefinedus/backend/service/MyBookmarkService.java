@@ -11,7 +11,7 @@ public interface MyBookmarkService {
     
     void insertBookMark(Long id, @Valid BookmarkRequestDTO requestDTO);
     
-    ScrollResponseDTO<MyBookmarkResponseDTO> getMyBookmarkList(Long memberId, ScrollRequestDTO requestDTO);
+    ScrollResponseDTO<MyBookmarkResponseDTO> getMyBookmarkList(Long targetMemberId, ScrollRequestDTO requestDTO);
     
     void updateMyBookmark(Long id, Long bookmarkId, @Valid MyBookmarkUpdateRequestDTO requestDTO);
     

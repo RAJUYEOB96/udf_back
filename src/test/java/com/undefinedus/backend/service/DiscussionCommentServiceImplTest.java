@@ -51,6 +51,8 @@ class DiscussionCommentServiceImplTest {
     Member member1;
     Member member2;
     Discussion discussion;
+    DiscussionComment comment1;
+    DiscussionComment comment2;
 
     @BeforeEach
     void setUp() {
@@ -77,17 +79,19 @@ class DiscussionCommentServiceImplTest {
             .build();
 
         // DiscussionComment 객체 생성
-        DiscussionComment comment1 = DiscussionComment.builder()
+        comment1 = DiscussionComment.builder()
             .id(1L)
             .discussion(discussion)
             .member(member1)
             .content("Comment 1")
             .voteType(VoteType.AGREE)
             .build();
-        DiscussionComment comment2 = DiscussionComment.builder()
+        comment2 = DiscussionComment.builder()
             .id(2L)
             .discussion(discussion)
             .member(member2)
+            .isChild(true)
+            .parentId(1L)
             .content("Comment 2")
             .voteType(VoteType.DISAGREE)
             .build();
@@ -191,37 +195,36 @@ class DiscussionCommentServiceImplTest {
         verify(discussionCommentRepository, times(1)).save(any(DiscussionComment.class));
         verify(discussionCommentRepository, times(1)).incrementTotalOrderFrom(anyLong());
     }
-
+    
     @Test
     @DisplayName("댓글 목록을 스크롤 방식으로 조회하는 테스트")
     void testGetCommentList() {
+        // Given
         DiscussionCommentsScrollRequestDTO requestDTO = new DiscussionCommentsScrollRequestDTO();
         requestDTO.setSize(10);
         requestDTO.setLastId(0L);
-        requestDTO.setDiscussionId(42L);
-
+        
+        Long discussionId = 42L;
+        
         Member member = new Member();
-        member.setId(1L); // 멤버 ID 설정
-
+        member.setId(1L);
+        
         Discussion discussion = new Discussion();
-        discussion.changeId(1L); // 토론 ID 설정
+        discussion.changeId(1L);
 
-        DiscussionComment comment1 = DiscussionComment.builder()
-            .id(1L)
-            .discussion(discussion)
-            .member(member)
-            .voteType(VoteType.AGREE)
-            .content("Test Comment")
-            .build();
-
-        List<DiscussionComment> commentList = Arrays.asList(comment1);
-
-        when(discussionCommentRepository.findDiscussionCommentListWithScroll(any())).thenReturn(commentList);
-        when(memberRepository.findById(1L)).thenReturn(Optional.of(member)); // 정확한 멤버 ID로 설정
-
+        List<DiscussionComment> commentList = Arrays.asList(comment2);
+        
+        // When
+        when(discussionCommentRepository.findDiscussionCommentListWithScroll(any(DiscussionCommentsScrollRequestDTO.class), eq(discussionId)))
+                .thenReturn(commentList);
+        when(memberRepository.findById(eq(1L))).thenReturn(Optional.of(member));
+        
         ScrollResponseDTO<DiscussionCommentResponseDTO> result =
-                discussionCommentService.getCommentList(member.getId(), requestDTO);
+                discussionCommentService.getCommentList(member.getId(), requestDTO, discussionId);
 
+        System.out.println("result = " + result);
+        
+        // Then
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
         assertFalse(result.isHasNext());

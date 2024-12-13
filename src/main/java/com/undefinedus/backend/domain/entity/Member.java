@@ -16,7 +16,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,8 +28,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
@@ -38,7 +35,7 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor
 @SuperBuilder
 // @Where 대신 @SQLRestriction 사용
-@SQLRestriction("is_deleted = false")  // 기본 제약만 유지
+//@SQLRestriction("is_deleted = false")  // 기본 제약만 유지 <- 이부분 제약이 많아서 수동으로 적용하기
 @ToString(exclude = {"socialLogin", "followings", "followers"})
 public class Member extends BaseEntity {
 
@@ -48,14 +45,13 @@ public class Member extends BaseEntity {
     private Long id;
 
     // === 기본 정보 === //
-    @Column(length = 40, unique = true, nullable = false)
+    @Column(length = 50, unique = true, nullable = false)   // 회원탈퇴시 처리를 위해 length 50으로 변경
     private String username;    // 아이디 (일반 로그인 유저 : 이메일형식, 소셜 로그인 유저 : 숫자형식(kakaoId))
 
     @Column(length = 100, nullable = false) // 암호화해서 길이 늘어남
     private String password;   // 비밀번호
 
-    @Column(length = 10, unique = true, nullable = false)
-    @Size(min = 2, max = 10)
+    @Column(length = 50, unique = true, nullable = false)  // 회원탈퇴시 처리를 위해 length 50으로 변경
     private String nickname;    // 일반, 소셜 둘다 회원 가입시 임의 작성
 
     // === 프로필 정보 === //
@@ -164,8 +160,7 @@ public class Member extends BaseEntity {
         this.gender = gender;
     }
 
-    public void setNickname(
-        @Size(min = 2, max = 10) String nickname) {
+    public void setNickname(String nickname) {
         this.nickname = nickname;
     }
 
@@ -195,18 +190,26 @@ public class Member extends BaseEntity {
     }
 
     public void updateIsMessageToKakao(boolean messageToKakao) {
-        isMessageToKakao = messageToKakao;
+        this.isMessageToKakao = messageToKakao;
     }
 
     public void updateKakaoMessageIsAgree(boolean kakaoMessageIsAgree) {
-        KakaoMessageIsAgree = kakaoMessageIsAgree;
+        this.KakaoMessageIsAgree = kakaoMessageIsAgree;
     }
-    
+
     public void updateDeleted(boolean deleted) {
-        isDeleted = deleted;
+        this.isDeleted = deleted;
     }
-    
+
     public void updateDeletedAt(LocalDateTime deletedAt) {
         this.deletedAt = deletedAt;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void updateUsername(String username) {
+        this.username = username;
     }
 }

@@ -120,7 +120,7 @@
 
 | 로그인 |
 |----------|
-|![1  로그인](https://github.com/user-attachments/assets/dcf30ebc-eb1a-4656-a720-5fc024c397ca)|
+|![1  로그인](https://github.com/user-attachments/assets/aae25a42-fb91-465b-be18-b24b9a3e95a7)|
 
 ### [회원 가입]
 - 카카오톡으로 로그인 시 카카오 톡 아이디를 입력을 합니다.

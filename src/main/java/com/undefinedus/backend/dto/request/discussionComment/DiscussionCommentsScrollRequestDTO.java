@@ -19,6 +19,4 @@ public class DiscussionCommentsScrollRequestDTO {
     
     @Builder.Default
     private String sort = "asc"; // asc : 오름차순, desc : 내림차순
-
-    private Long discussionId; // 같은 토론의 댓글만 가져오려고 함
 }

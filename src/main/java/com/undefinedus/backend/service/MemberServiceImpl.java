@@ -9,13 +9,16 @@ import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.util.JWTUtil;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -80,8 +83,6 @@ public class MemberServiceImpl implements MemberService {
         result.put("kakaoRefreshToken", kakaoRefreshToken);
         result.put("result", "new");
 
-
-
         return result;
     }
 
@@ -93,7 +94,6 @@ public class MemberServiceImpl implements MemberService {
         // 회원 가입 시 토큰 저장
         socialMember.updateKakaoAccessToken(requestDTO.getKakaoAccessToken());
         socialMember.updateKakaoRefreshToken(requestDTO.getKakaoRefreshToken());
-
 
         Member savedMember = memberRepository.save(socialMember);
         myPageService.checkMessagePermission(savedMember.getId());
@@ -149,6 +149,29 @@ public class MemberServiceImpl implements MemberService {
         if (findMember.isPresent()) {
             log.error("Nickname 이 '{}' 가 이미 존재합니다.", nickname);
             throw new IllegalArgumentException("해당 nickname이 이미 존재합니다.");
+        }
+
+    }
+
+    @Override
+    public void deleteMember(Long loginMemberId) {
+
+        Member member = memberRepository.findById(loginMemberId)
+            .orElseThrow(
+                () -> new MemberNotFoundException("해당 member를 찾을 수 없습니다. : " + loginMemberId));
+
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        String withdrawnSuffix = String.format("(탈퇴회원-%s)", uuid);
+
+        try {
+            member.updateDeleted(true);
+            member.updateDeletedAt(LocalDateTime.now());
+            member.updateUsername(member.getUsername() + withdrawnSuffix);
+            member.updateNickname(member.getNickname() + withdrawnSuffix);
+        } catch (
+            DataIntegrityViolationException e) {
+            // 혹시 모를 unique 제약조건 위반 대비
+            throw new RuntimeException("회원 탈퇴 처리 중 오류가 발생했습니다.", e);
         }
 
     }
