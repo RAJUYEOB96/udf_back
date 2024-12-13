@@ -235,13 +235,15 @@
 |![토론 생성 －１](https://github.com/user-attachments/assets/4848f0c4-4759-410a-bc4f-4770cb63e7e1)![토론 생성(토론 책 선택) －２](https://github.com/user-attachments/assets/fc8294b7-efdc-472e-ad64-ed30fda338de)
 ![토론 생성 －3](https://github.com/user-attachments/assets/a7ad2c33-0818-4e39-b5d5-2beb0ff6a5a4)![토론 생성(시간 선택) －4](https://github.com/user-attachments/assets/14c3bfac-bfc8-4e51-be3c-a8e22448d79e)|
 
-- 토론 수정은 발의 상태와 참석 예정 인원이 없을 시 수정이 가능합니다.
+- 토론 수정, 삭제는 토론을 만든 회원이 발의 상태와 참석 예정 인원이 없는 발의 상태의 토론만 가능합니다.
 - 토론 수정 가능 항목은 토론 주제, 내용, 시작 시간 입니다.
 - 토론 책은 수정이 불가능 합니다.
+- 토론 삭제는 다른 입력 값 없이 휴지통 마크를 누를 시 진행 됩니다.
   
-| 토론 - 수정|
+| 토론 - 수정, 삭제|
 |----------|
-| 발의 수정 이미지 |
+|![토론 자신이 만든 토론](https://github.com/user-attachments/assets/b753de6f-06ba-4dcb-8451-a89f42bfae3f)![토론 자신이 만든 토론 삭제](https://github.com/user-attachments/assets/add8325c-3aab-4bc4-8484-9fb65b4b2332)
+![토론 자신이 만든 토론 수정-1](https://github.com/user-attachments/assets/19b003d8-bef6-48ad-a447-19f3df5d4ffd)![토론 자신이 만든 토론 수정-２](https://github.com/user-attachments/assets/24fafa24-6503-4ce9-9657-1bf96fa0cf4f)|
 
 - 종료가 되면 토론의 책 정보, 주제 소개, 댓글 들이 GPT에게 전달 되어지고, 토론의 결과를 출력합니다.
 
@@ -261,7 +263,7 @@
 
 - 관리자 페이지는 일반 유저는 입장이 불가능하고 보이지 않습니다.
 
-| 관리자 - 신고 처리 |
+| 신고 - 관리자 |
 |----------|
 ||
 
