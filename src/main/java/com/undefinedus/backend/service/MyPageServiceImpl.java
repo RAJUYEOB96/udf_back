@@ -65,7 +65,8 @@ public class MyPageServiceImpl implements MyPageService {
                 }
 
                 member.updateKakaoMessageIsAgree(isMessageToKakao);
-                member.updateIsMessageToKakao(isMessageToKakao);
+                // 현재 카톡에서 동의 받고 실 사용은 마이페이지에서 하는걸로 결론
+                // member.updateIsMessageToKakao(isMessageToKakao);
             }
             return isMessageToKakao;
         } else {
