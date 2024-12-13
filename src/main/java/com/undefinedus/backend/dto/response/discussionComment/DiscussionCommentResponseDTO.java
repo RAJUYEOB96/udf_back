@@ -31,7 +31,7 @@ public class DiscussionCommentResponseDTO {
     private Long totalOrder;
 
     @Builder.Default
-    private boolean isChild = false; // id를 조회하고 나온 것을 가지고 isChild count 해서 조회하면 자식의 ord 를 쉽게 알 수 있다.
+    private Boolean isChild = false; // id를 조회하고 나온 것을 가지고 isChild count 해서 조회하면 자식의 ord 를 쉽게 알 수 있다.
 
     private String voteType;  // 찬성/반대 의견
 
@@ -42,7 +42,7 @@ public class DiscussionCommentResponseDTO {
     private Long dislike;
 
     @Builder.Default
-    private boolean isSelected = false;  // 채택된 답변인지, 댓글의 최상위로 좋아요 많이 받은 3개를 올리기 위한? 잘 모르겠음
+    private Boolean isSelected = false;  // 채택된 답변인지, 댓글의 최상위로 좋아요 많이 받은 3개를 올리기 위한? 잘 모르겠음
 
     private LocalDateTime createTime;
 

@@ -254,7 +254,6 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             long likeCount = discussionComment.getLikes().stream()
                 .filter(commentLike -> commentLike.isLike() == true).count();
             long dislikeCount = discussionComment.getLikes().size() - likeCount;
-            boolean selected = discussionComment.isSelected();
             LocalDateTime createdDate = discussionComment.getCreatedDate();
             Long totalOrder = discussionComment.getTotalOrder();
             DiscussionCommentStatus discussionCommentStatus = discussionComment.getDiscussionCommentStatus();
@@ -277,7 +276,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .content(content)
                 .like(likeCount)
                 .dislike(dislikeCount)
-                .isSelected(selected)
+                .isSelected(false)
                 .createTime(createdDate)
                 .discussionCommentStatus(String.valueOf(discussionCommentStatus))
                 .isReport(isReport)  // 신고 여부 추가
@@ -468,7 +467,6 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             long likeCount = discussionComment.getLikes().stream()
                 .filter(commentLike -> commentLike.isLike() == true).count();
             long dislikeCount = discussionComment.getLikes().size() - likeCount;
-            boolean selected = discussionComment.isSelected();
             LocalDateTime createdDate = discussionComment.getCreatedDate();
             Long totalOrder = discussionComment.getTotalOrder();
             DiscussionCommentStatus discussionCommentStatus = discussionComment.getDiscussionCommentStatus();
@@ -489,7 +487,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .content(content)
                 .like(likeCount)
                 .dislike(dislikeCount)
-                .isSelected(selected)
+                .isSelected(true)
                 .createTime(createdDate)
                 .discussionCommentStatus(String.valueOf(discussionCommentStatus))
                 .build();
