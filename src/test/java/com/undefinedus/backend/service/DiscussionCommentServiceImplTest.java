@@ -51,6 +51,8 @@ class DiscussionCommentServiceImplTest {
     Member member1;
     Member member2;
     Discussion discussion;
+    DiscussionComment comment1;
+    DiscussionComment comment2;
 
     @BeforeEach
     void setUp() {
@@ -77,17 +79,19 @@ class DiscussionCommentServiceImplTest {
             .build();
 
         // DiscussionComment 객체 생성
-        DiscussionComment comment1 = DiscussionComment.builder()
+        comment1 = DiscussionComment.builder()
             .id(1L)
             .discussion(discussion)
             .member(member1)
             .content("Comment 1")
             .voteType(VoteType.AGREE)
             .build();
-        DiscussionComment comment2 = DiscussionComment.builder()
+        comment2 = DiscussionComment.builder()
             .id(2L)
             .discussion(discussion)
             .member(member2)
+            .isChild(true)
+            .parentId(1L)
             .content("Comment 2")
             .voteType(VoteType.DISAGREE)
             .build();
@@ -207,16 +211,8 @@ class DiscussionCommentServiceImplTest {
         
         Discussion discussion = new Discussion();
         discussion.changeId(1L);
-        
-        DiscussionComment comment1 = DiscussionComment.builder()
-                .id(1L)
-                .discussion(discussion)
-                .member(member)
-                .voteType(VoteType.AGREE)
-                .content("Test Comment")
-                .build();
-        
-        List<DiscussionComment> commentList = Arrays.asList(comment1);
+
+        List<DiscussionComment> commentList = Arrays.asList(comment2);
         
         // When
         when(discussionCommentRepository.findDiscussionCommentListWithScroll(any(DiscussionCommentsScrollRequestDTO.class), eq(discussionId)))
@@ -225,6 +221,8 @@ class DiscussionCommentServiceImplTest {
         
         ScrollResponseDTO<DiscussionCommentResponseDTO> result =
                 discussionCommentService.getCommentList(member.getId(), requestDTO, discussionId);
+
+        System.out.println("result = " + result);
         
         // Then
         assertNotNull(result);

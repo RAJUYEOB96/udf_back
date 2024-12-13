@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -192,7 +193,8 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
     @Override
     public ScrollResponseDTO<DiscussionCommentResponseDTO> getCommentList(
-        Long loginMemberId, DiscussionCommentsScrollRequestDTO discussionCommentsScrollRequestDTO, Long discussionId) {
+        Long loginMemberId, DiscussionCommentsScrollRequestDTO discussionCommentsScrollRequestDTO,
+        Long discussionId) {
 
         List<DiscussionComment> discussionCommentList = discussionCommentRepository.findDiscussionCommentListWithScroll(
             discussionCommentsScrollRequestDTO, discussionId);
@@ -206,28 +208,45 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
         // 결과를 담을 리스트
         List<DiscussionCommentResponseDTO> responseDTOList = new ArrayList<>();
-        
+
         // 한번에 신고된 댓글 ID들을 가져옴
-        Set<Long> reportedCommentIds = discussionCommentRepository.findDiscussionCommentIdsByReporterId(loginMemberId);
-        
+        Set<Long> reportedCommentIds = discussionCommentRepository.findDiscussionCommentIdsByReporterId(
+            loginMemberId);
+
         for (DiscussionComment discussionComment : discussionCommentList) {
-            
+
             // Set에서 해당 댓글 ID가 있는지 확인
             boolean isReport = reportedCommentIds.contains(discussionComment.getId());
-            
+
             // 각 토론 댓글의 관련 정보를 추출
-            
+
             Long memberId = discussionComment.getMember().getId();
             String profileImage =
-                    discussionComment.getMember().isDeleted() ? "defaultProfileImage.jpg" : discussionComment.getMember().getProfileImage();
+                discussionComment.getMember().isDeleted() ? "defaultProfileImage.jpg"
+                    : discussionComment.getMember().getProfileImage();
             String nickname =
-                    discussionComment.getMember().isDeleted() ? "탈퇴한 회원" : discussionComment.getMember().getNickname();
+                discussionComment.getMember().isDeleted() ? "탈퇴한 회원"
+                    : discussionComment.getMember().getNickname();
             String honorific =
-                    discussionComment.getMember().isDeleted() ? "탈퇴한 회원입니다" : discussionComment.getMember().getHonorific();
-            
+                discussionComment.getMember().isDeleted() ? "탈퇴한 회원입니다"
+                    : discussionComment.getMember().getHonorific();
+
+
             Long groupId = discussionComment.getGroupId();
             Long commentId = discussionComment.getId();
             Long parentId = discussionComment.getParentId();
+
+            Optional<DiscussionComment> parentComment = null;
+
+            if (parentId != null) {
+                parentComment = discussionCommentRepository.findById(parentId);
+            }
+
+            String parentNickname = null;
+            if (parentComment != null && parentComment.isPresent()) {
+                parentNickname = parentComment.get().getMember().getNickname();
+            }
+
             Long order = discussionComment.getGroupOrder();
             boolean isChild = discussionComment.isChild();
             VoteType voteType = discussionComment.getVoteType();
@@ -249,6 +268,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .nickname(nickname)
                 .honorific(honorific)
                 .parentId(parentId)
+                .parentNickname(parentNickname)
                 .groupId(groupId)
                 .groupOrder(order)
                 .totalOrder(totalOrder)
@@ -427,15 +447,17 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
         for (DiscussionComment discussionComment : bestCommentTop3List) {
             // 각 토론 댓글의 관련 정보를 추출
-            
+
             Long memberId = discussionComment.getMember().getId();
             String profileImage =
-                    discussionComment.getMember().isDeleted() ? "defaultProfileImage.jpg" : discussionComment.getMember().getProfileImage();
+                discussionComment.getMember().isDeleted() ? "defaultProfileImage.jpg"
+                    : discussionComment.getMember().getProfileImage();
             String nickname =
-                    discussionComment.getMember().isDeleted() ? "탈퇴한 회원" : discussionComment.getMember().getNickname();
+                discussionComment.getMember().isDeleted() ? "탈퇴한 회원"
+                    : discussionComment.getMember().getNickname();
             String honorific =
-                    discussionComment.getMember().isDeleted() ? "탈퇴한 회원입니다" :
-                            discussionComment.getMember().getHonorific();
+                discussionComment.getMember().isDeleted() ? "탈퇴한 회원입니다" :
+                    discussionComment.getMember().getHonorific();
 
             Long commentId = discussionComment.getId();
             Long parentId = discussionComment.getParentId();
