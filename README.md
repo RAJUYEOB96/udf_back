@@ -229,7 +229,7 @@
 
 | 토론 |
 |----------|
-|![18  주제 발의](https://github.com/user-attachments/assets/462d14d7-53fe-4ca6-86b1-02a4cbdb55cb)![토론 예정](https://github.com/user-attachments/assets/2b1a7b7a-f5a0-41a9-849a-f31fa9a7c4a4)
+|![18  주제 발의](https://github.com/user-attachments/assets/be48f34d-6c99-48f7-ac2e-3f46cc8dc19e)![토론 예정](https://github.com/user-attachments/assets/2b1a7b7a-f5a0-41a9-849a-f31fa9a7c4a4)
 ![토론 진행 중](https://github.com/user-attachments/assets/c1a26a17-fe51-48a4-b516-115c6d39c844)![19  토론 종료](https://github.com/user-attachments/assets/ed402ebd-1f35-4b56-8ae6-f95b7f942990)|
 
 - 토론 생성 시 토론 시작 시간, 발의 주제, 발의 내용 글을 작성합니다.
