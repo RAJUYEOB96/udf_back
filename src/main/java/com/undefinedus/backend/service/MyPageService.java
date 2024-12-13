@@ -37,6 +37,4 @@ public interface MyPageService {
     MyPageResponseDTO getMyInformation(Long memberId);
 
     boolean updateIsPublic(Long memberId);
-
-    void deleteMember(Long memberId);
 }

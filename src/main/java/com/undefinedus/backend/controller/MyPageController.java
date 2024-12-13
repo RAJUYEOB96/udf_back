@@ -212,12 +212,4 @@ public class MyPageController {
         return ResponseEntity.status(HttpStatus.OK)
             .body(ApiResponseDTO.success(result));
     }
-
-    @DeleteMapping
-    public ResponseEntity<ApiResponseDTO<Void>> deleteMember(
-        @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO) {
-        Long memberId = memberSecurityDTO.getId();
-        myPageService.deleteMember(memberId);
-        return ResponseEntity.ok(ApiResponseDTO.success(null));
-    }
 }

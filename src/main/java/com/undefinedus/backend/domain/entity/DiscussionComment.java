@@ -54,20 +54,20 @@ public class DiscussionComment extends BaseEntity {
     // 대댓글 단순한 버전 =================================
 
     @Column
-    private Long groupId;
+    private Long groupId; // parentId와 동일하다 댓글, 답글을 하나의 그룹으로 묶어 그 그룹의 id라고 보면 됨.
 
     @Column
     private Long parentId; // 부모Id // 고유 아이디는 id로 사용
     
     @Column
-    private Long groupOrder;
+    private Long groupOrder; // 같은 groupId를 가진 댓글, 답글 들의 순서
 
     @Column
     @Builder.Default
-    private boolean isChild = false; // id를 조회하고 나온 것을 가지고 isChild count 해서 조회하면 자식의 ord 를 쉽게 알 수 있다.
+    private boolean isChild = false; // 답글이면 true 이다.
 
     @Column
-    private Long totalOrder; // 자식 포함 전체 댓글의 실제 보여지는 순서
+    private Long totalOrder; // 자식 포함 전체 댓글의 실제 보여지는 순서 (답글이 추가 되면 변경되는 가변적이 순서)
 
     // === 내용 === //
     @Enumerated(EnumType.STRING)
@@ -82,11 +82,6 @@ public class DiscussionComment extends BaseEntity {
     @OneToMany(mappedBy = "comment", orphanRemoval = true)
     @Builder.Default
     private List<CommentLike> likes = new ArrayList<>();  // likeCount, likedByMembers 대체
-    
-    // === 토론 관련 === //
-    @Column(nullable = false)
-    @Builder.Default
-    private boolean isSelected = false;  // 채택된 답변인지, 댓글의 최상위로 좋아요 많이 받은 3개를 올리기 위한? 잘 모르겠음
 
     // === 신고 관련 === //
     @Column(nullable = false)

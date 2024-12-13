@@ -95,7 +95,8 @@ public class MyPageServiceImpl implements MyPageService {
                 }
 
                 member.updateKakaoMessageIsAgree(isMessageToKakao);
-                member.updateIsMessageToKakao(isMessageToKakao);
+                // 현재 카톡에서 동의 받고 실 사용은 마이페이지에서 하는걸로 결론
+                // member.updateIsMessageToKakao(isMessageToKakao);
             }
             return isMessageToKakao;
         } else {
@@ -150,17 +151,6 @@ public class MyPageServiceImpl implements MyPageService {
         member.updateIsPublic(!member.isPublic());
 
         return member.isPublic();
-    }
-
-    @Override
-    public void deleteMember(Long memberId) {
-
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
-
-        member.updateDeleted(true);
-        member.updateDeletedAt(LocalDateTime.now());
-
     }
 
     // 내 정보 불러오기
