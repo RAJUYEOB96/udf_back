@@ -139,8 +139,10 @@
 ![24-4  일반 회원 가입(이메일 코드 입력)](https://github.com/user-attachments/assets/d71c8bcb-fa2b-490c-a543-50b2b34fbdce)![３  카카오 회원 가입시 권한 확인](https://github.com/user-attachments/assets/b899f47a-95ae-42ed-9c8e-e2edac456971)|
 
 - 마지막으로 회원의 취향을 3가지 선택하면 회원 가입이 되고 메인 화면으로 넘어 갑니다.
-- 카카오톡으로 회원 가입을 하더라도 취향 선택은 동일 합니다.
+- 카카오톡으로 회원 가입을 하더라도 취향 선택은 동일하게 진행 됩니다.
 
+| 회원 가입 - 취향 선택 |
+|----------|
 |![24-5  일반 회원 가입(취향 선택)](https://github.com/user-attachments/assets/2265059e-8e97-4356-8599-7b06b7563f3b)![24-６  일반 회원 가입 완료](https://github.com/user-attachments/assets/656f7671-43d9-438b-b863-4b8b88ebfdd6)|
 
 ### [메인]
@@ -192,12 +194,13 @@
 
 ### [책 갈피]
 - 책의 상태와 상관 없이 책 담기한 책 중 마음에드는 책 구절을 회원이 작성하여 저장합니다.
-- 카카오톡 메시지 권한을 체크하고 마이페이지에서 책갈피 카카오톡 메세지 발송에 체크한 회원에 한하여 매일 12시 회원이 저장한 책갈피의 내용(구절)을 카카오톡으로 보냅니다.
+- 카카오톡 메시지 권한을 체크하고 마이 페이지에서 책갈피 카카오톡 메세지 발송에 체크한 회원에 한하여 매일 12시 회원이 저장한 책갈피의 내용(구절)중 무작위로 하나를 선택하여 카카오톡으로 보냅니다.
+- 동일한 책에 여러 구절을 저장할 수 있습니다.
 
 | 책 갈피 |
 |----------|
-|![14-1  책갈피](https://github.com/user-attachments/assets/0473bfad-79f5-4a36-a733-76d2182e0389)![14-2  책갈피 추가](https://github.com/user-attachments/assets/7b9c5b2c-44bd-4f26-9789-6b9f58ce1b50)
-![14-3  책갈피 카카오톡](https://github.com/user-attachments/assets/33db1ebd-bede-4b99-a778-f84796f2764f)|
+|![14-1  책갈피](https://github.com/user-attachments/assets/0473bfad-79f5-4a36-a733-76d2182e0389)![14-2  책갈피 추가](https://github.com/user-attachments/assets/22d910e2-c542-4956-b223-2922f365df35)
+![14-3  책갈피 추가](https://github.com/user-attachments/assets/cd89a9c7-dd22-4eda-9fb9-a0ac390b3a47)![14-4  책갈피 카카오톡](https://github.com/user-attachments/assets/bca3d081-1c0d-46f0-b332-f024c3310d8c)|
 
 ### [소셜]
 - 닉네임 검색 시 닉네임의 일부분만 해당되어도 출력이 되지만, 닉네임에 검색어의 글자가 포함되어 있더라도 닉네임의 글자 순서에 맞지 않으면 검색이 되지 않습니다.
@@ -287,11 +290,12 @@
 
 ### [마이 페이지]
 - 마이페이지에서는 회원의 비밀번호, 취향 등의 개인정보를 수정 할 수 있으며, 일반 로그인 회원은 카카오톡과 연동을 할 수 있습니다.
-- 다음 버전에서 구현할 업적, 칭호 또한 변경 가능합니다.
+- 회원가입을 할 때 카카오로 회원가입을 하지 못한 회원은 카카오 연동하기를 누를 시 카카오 회원 가입 api로 넘어갑니다.
+- 회원 탈퇴 시 회원이 
 
 | 마이 페이지 |
 |----------|
-|![21  마이페이지](https://github.com/user-attachments/assets/b3b8209c-a4f6-4cf8-ad93-f2567e0253de)|
+|![21  마이페이지](https://github.com/user-attachments/assets/b3b8209c-a4f6-4cf8-ad93-f2567e0253de)![마이페이지 - 회원 탈퇴](https://github.com/user-attachments/assets/db51ac5e-16c7-4fe1-94ff-00f01615982d)|
 
 ### [통계]
 - 로그인한 회원의 다 읽은 책에 한하여 카테고리별로 총 몇 권을 읽었는지와 가장 많이 읽은 카테고리를 순위 별로 보여집니다.
