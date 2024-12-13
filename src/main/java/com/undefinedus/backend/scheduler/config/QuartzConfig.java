@@ -116,7 +116,7 @@ public class QuartzConfig {
 
         Trigger repeatTrigger = TriggerBuilder.newTrigger()
             .withIdentity("KakaoTalkCronTrigger")
-            .withSchedule(CronScheduleBuilder.cronSchedule("0 0 12 * * ?")) // 오후 12시
+            .withSchedule(CronScheduleBuilder.cronSchedule("0 10 10 * * ?")) // 오후 12시
             .build();
 
         scheduler.scheduleJob(kakaoTalkDetail, repeatTrigger);
