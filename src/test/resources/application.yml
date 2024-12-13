@@ -91,3 +91,7 @@ cloud:
       static: ap-northeast-2
     s3:
       bucket: gongchaekbucket
+
+kakao:
+  restApiKey: test-key
+  clientSecretKey: test-secret
