@@ -7,21 +7,15 @@ import com.undefinedus.backend.service.AladinBookService;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@Log4j2
 @RequestMapping("/api/aladinApi")
 public class AladinAPIController {
 
@@ -30,9 +24,9 @@ public class AladinAPIController {
     // 키워드 검색
     @GetMapping("/keyword")
     public ResponseEntity<ApiResponseDTO<Map<String, Object>>> getKeywordAladinAPIList(
-        @RequestParam(name = "page") Integer page,
-        @RequestParam(name = "keyword") String keyword,
-        @RequestParam(name = "sort") String sort
+        @RequestParam("page") Integer page,
+        @RequestParam("keyword") String keyword,
+        @RequestParam("sort") String sort
     ) {
 
         Map<String, Object> result = aladinBookService.searchKeywordAladinAPI(

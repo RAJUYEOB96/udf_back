@@ -1,6 +1,7 @@
 package com.undefinedus.backend.dto.response.report;
 
 import com.undefinedus.backend.domain.entity.Report;
+import com.undefinedus.backend.domain.enums.ReportStatus;
 import com.undefinedus.backend.domain.enums.ReportTargetType;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -29,18 +30,22 @@ public class ReportResponseDTO {
     
     private String commentContent;    // 신고한 댓글 내용
     
+    private ReportStatus status; // // 처리 상태 (PENDING, TEMPORARY_ACCEPTED, ACCEPTED, REJECTED)
+    
     
     public static ReportResponseDTO from(Report report) {
         return ReportResponseDTO.builder()
                 .id(report.getId())
-                .reporterNickname(report.getReporter().getNickname())
-                .reportedNickname(report.getReported().getNickname())
+                // 사용자가 소프트 딜리트 처리 되었을 경우 생각
+                .reporterNickname(report.getReporter() != null ? report.getReporter().getNickname() : "삭제된 사용자")
+                .reportedNickname(report.getReported() != null ? report.getReported().getNickname() : "삭제된 사용자")
                 .reportReason(report.getReportReason())
                 .reportTime(report.getCreatedDate())
                 .targetType(report.getTargetType())
                 .discussionTitle(report.getDiscussion() != null ? report.getDiscussion().getTitle() : null)
                 .discussionContent(report.getDiscussion()!= null? report.getDiscussion().getContent() : null)
                 .commentContent(report.getComment()!= null? report.getComment().getContent() : null)
+                .status(report.getStatus())
                 .build();
     }
 }

@@ -36,7 +36,7 @@ public interface MyBookRepository extends JpaRepository<MyBook, Long>, MyBookRep
             "JOIN member m ON mb.member_id = m.id " +
             "JOIN aladin_book ab ON mb.isbn13 = ab.isbn13 " +
             "WHERE m.id = :memberId " +
-            "ORDER BY ab.customer_review_rank DESC, ab.title ASC " +
+            "ORDER BY mb.my_rating DESC, ab.title ASC " +
             "LIMIT 5")
     List<String> findTop5Isbn13ByMemberId(@Param("memberId") Long memberId);
 

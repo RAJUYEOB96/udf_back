@@ -33,6 +33,9 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
         // memberId 와 일치 하지 않는 것만 들고 오기 위해 ne (not equal)
         builder.and(member.id.ne(memberId));
         
+        // @SQLRestriction("is_deleted = false") 제거하고 수동으로 추가
+        builder.and(member.isDeleted.isFalse());
+        
         // ADMIN role을 가지고 있지 않는 것만 들고 오기
         builder.and(member.memberRoleList.contains(MemberType.ADMIN).not());
 
@@ -86,6 +89,9 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
         // memberId 와 일치 하지 않는 것만 들고 오기 위해 ne (not equal)
         builder.and(member.id.ne(memberId));
         
+        // @SQLRestriction("is_deleted = false") 제거하고 수동으로 추가
+        builder.and(member.isDeleted.isFalse());
+        
         // ADMIN role을 가지고 있지 않는 것만 들고 오기
         builder.and(member.memberRoleList.contains(MemberType.ADMIN).not());
 
@@ -111,6 +117,8 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
         if ("팔로워".equals(requestDTO.getTabCondition())) {
             // 나를 팔로우하는 사람들 조회 (팔로워)
             builder.and(follow.following.id.eq(memberId));
+            // 삭제된 팔로워 제외
+            builder.and(follow.follower.isDeleted.isFalse());  // 여기 추가
             
             // 검색어 처리 (팔로워 닉네임 검색)
             if (StringUtils.hasText(requestDTO.getSearch())) {
@@ -145,7 +153,8 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
         } else if ("팔로잉".equals(requestDTO.getTabCondition())) {
             // 내가 팔로우하는 사람들 조회 (팔로잉)
             builder.and(follow.follower.id.eq(memberId));
-            
+            // 삭제된 팔로워 제외
+            builder.and(follow.following.isDeleted.isFalse());  // 여기를 수정
             // 검색어 처리 (팔로잉 닉네임 검색)
             if (StringUtils.hasText(requestDTO.getSearch())) {
                 builder.and(follow.following.nickname.startsWith(requestDTO.getSearch()));
@@ -190,7 +199,8 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
         if ("팔로워".equals(requestDTO.getTabCondition())) {
             // 나를 팔로우하는 사람들 조회 (팔로워)
             builder.and(follow.following.id.eq(memberId));
-            
+            // 삭제된 팔로워 제외
+            builder.and(follow.follower.isDeleted.isFalse());  // 여기 추가
             // 검색어 처리 (팔로워 닉네임 검색)
             if (StringUtils.hasText(requestDTO.getSearch())) {
                 builder.and(follow.follower.nickname.startsWith(requestDTO.getSearch()));
@@ -204,7 +214,8 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
         } else if ("팔로잉".equals(requestDTO.getTabCondition())) {
             // 내가 팔로우하는 사람들 조회 (팔로잉)
             builder.and(follow.follower.id.eq(memberId));
-            
+            // 삭제된 팔로워 제외
+            builder.and(follow.following.isDeleted.isFalse());  // 여기를 수정
             // 검색어 처리 (팔로잉 닉네임 검색)
             if (StringUtils.hasText(requestDTO.getSearch())) {
                 builder.and(follow.following.nickname.startsWith(requestDTO.getSearch()));
@@ -217,7 +228,8 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
                     .fetchOne();
         } else {
             throw new TabConditionNotEqualException("해당 TabCondition이 일치하지 않습니다. : " + requestDTO.getTabCondition());
-        }    }
+        }
+    }
 
 
     // 모든 회원 중 isMessageToKakao = true인 회원들의 id를 가져옴
@@ -228,7 +240,9 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
         BooleanBuilder builder = new BooleanBuilder();
 
         builder.and(member.isMessageToKakao.eq(true));
-
+        
+        // @SQLRestriction("is_deleted = false") 제거하고 수동으로 추가
+        builder.and(member.isDeleted.isFalse());
 
         return queryFactory
             .select(member.id).distinct()

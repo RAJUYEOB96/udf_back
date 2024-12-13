@@ -35,9 +35,6 @@ public class AladinBookServiceImpl implements AladinBookService {
     private final AladinBookRepository aladinBookRepository;
     private final MemberRepository memberRepository;
     private final MyBookRepository myBookRepository;
-
-
-    //    private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
     @Override

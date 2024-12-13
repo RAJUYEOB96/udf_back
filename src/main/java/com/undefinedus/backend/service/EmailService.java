@@ -31,7 +31,7 @@ public class EmailService {
         
         try {
             MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
             helper.setFrom(fromEmail);
             helper.setTo(toEmail);
@@ -44,7 +44,7 @@ public class EmailService {
                             "<div style='background-color:#f8f9fa;padding:15px;font-size:18px;'>" +
                             "<strong>%s</strong>" +
                             "</div>" +
-                            "<p>이 인증 코드는 5분간 유효합니다.</p>" +
+                            "<p>이 인증 코드는 3분간 유효합니다.</p>" +
                             "</div>",
                     verificationCode
             );

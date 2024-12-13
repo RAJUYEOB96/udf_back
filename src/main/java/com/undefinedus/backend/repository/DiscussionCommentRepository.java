@@ -5,6 +5,7 @@ import com.undefinedus.backend.domain.enums.VoteType;
 import com.undefinedus.backend.repository.queryDSL.DiscussionCommentsRepositoryCustom;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,10 +16,10 @@ public interface DiscussionCommentRepository extends JpaRepository<DiscussionCom
     DiscussionCommentsRepositoryCustom {
 
     @Query(nativeQuery = true,
-        value = "SELECT dc.comment_order FROM discussion_comment dc " +
+        value = "SELECT dc.group_order FROM discussion_comment dc " +
             "WHERE dc.discussion_id = :discussionId " +
             "AND dc.parent_id = :discussionCommentId " +
-            "ORDER BY dc.comment_order DESC " +
+            "ORDER BY dc.group_order DESC " +
             "LIMIT 1")
     Optional<Long> findTopOrder(@Param("discussionId") Long discussionId,
         @Param("discussionCommentId") Long discussionCommentId);
@@ -61,11 +62,18 @@ public interface DiscussionCommentRepository extends JpaRepository<DiscussionCom
             + " JOIN comment_like l ON dc.id = l.comment_id"
             + " WHERE dc.discussion_id = :discussionId"
             + " AND dc.discussion_comment_status = 'ACTIVE'"
+            + " AND dc.is_child = false"
             + " GROUP BY dc.id"
+            + " HAVING"
+            + " COUNT(CASE WHEN l.is_like = true THEN 1 ELSE null END)"
+            + " > COUNT(CASE WHEN l.is_like = false THEN 1 ELSE null END)"
             + " ORDER BY "
             + " COUNT(CASE WHEN l.is_like = true THEN 1 ELSE null END) DESC,"
             + " SUM(CASE WHEN l.is_like = false THEN 1 ELSE 0 END) ASC,"
             + " dc.created_date ASC"
             + " LIMIT 3")
     Optional<List<DiscussionComment>> findBest3CommentList(@Param("discussionId") Long discussionId);
+    
+    @Query("SELECT r.comment.id FROM Report r WHERE r.reporter.id = :reporterId")
+    Set<Long> findDiscussionCommentIdsByReporterId(@Param("reporterId") Long reporterId);
 }

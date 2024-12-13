@@ -37,4 +37,9 @@ public class QuartzTrigger {
 
     @Column
     private Date startTimeEasy;
+    
+    public void updateStartTimeEasy(Date startTimeEasy) {
+        this.startTime = startTimeEasy.getTime();
+        this.startTimeEasy = startTimeEasy;
+    }
 }

@@ -21,7 +21,6 @@ public class InProgress implements Job {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        System.out.println("InProgress");
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         String discussionIdStr = dataMap.getString("discussionId");
 

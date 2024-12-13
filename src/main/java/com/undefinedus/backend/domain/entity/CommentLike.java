@@ -18,12 +18,12 @@ import lombok.ToString;
 
 @Entity
 @Table(
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_comment_like",
-                        columnNames = {"comment_id", "member_id"}
-                )
-        }
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_comment_like",
+            columnNames = {"comment_id", "member_id"}
+        )
+    }
 )
 @Getter
 @NoArgsConstructor
@@ -31,19 +31,19 @@ import lombok.ToString;
 @Builder
 @ToString(exclude = {"comment", "member"})
 public class CommentLike {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id", nullable = false)
     private DiscussionComment comment;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
-    
+
     @Column(nullable = false)
     private boolean isLike; // true: 좋아요, false: 싫어요
 }

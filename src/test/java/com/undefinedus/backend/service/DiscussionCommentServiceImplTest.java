@@ -51,6 +51,8 @@ class DiscussionCommentServiceImplTest {
     Member member1;
     Member member2;
     Discussion discussion;
+    DiscussionComment comment1;
+    DiscussionComment comment2;
 
     @BeforeEach
     void setUp() {
@@ -77,17 +79,19 @@ class DiscussionCommentServiceImplTest {
             .build();
 
         // DiscussionComment 객체 생성
-        DiscussionComment comment1 = DiscussionComment.builder()
+        comment1 = DiscussionComment.builder()
             .id(1L)
             .discussion(discussion)
             .member(member1)
             .content("Comment 1")
             .voteType(VoteType.AGREE)
             .build();
-        DiscussionComment comment2 = DiscussionComment.builder()
+        comment2 = DiscussionComment.builder()
             .id(2L)
             .discussion(discussion)
             .member(member2)
+            .isChild(true)
+            .parentId(1L)
             .content("Comment 2")
             .voteType(VoteType.DISAGREE)
             .build();
@@ -117,30 +121,45 @@ class DiscussionCommentServiceImplTest {
     }
 
     @Test
-    @DisplayName("토론에 댓글을 작성하는 테스트")
+    @DisplayName("댓글 작성 테스트")
     void testWriteComment() {
+        // Given
         Long discussionId = 1L;
         Long memberId = 1L;
-
         DiscussionCommentRequestDTO requestDTO = DiscussionCommentRequestDTO.builder()
-            .voteType(String.valueOf(VoteType.DISAGREE))
-            .content("Test Comment")
+            .voteType(String.valueOf(VoteType.AGREE))
+            .content("테스트 댓글")
             .build();
 
-        Discussion discussion = new Discussion();
-        Member member = new Member();
+        Discussion discussion = Discussion.builder()
+            .id(discussionId)
+            .build();
+        Member member = Member.builder()
+            .id(memberId)
+            .build();
+        DiscussionComment savedComment = DiscussionComment.builder()
+            .id(1L)
+            .discussion(discussion)
+            .member(member)
+            .voteType(VoteType.AGREE)
+            .content("테스트 댓글")
+            .build();
 
-        // Mocking the repository methods
         when(discussionRepository.findById(discussionId)).thenReturn(Optional.of(discussion));
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
-        when(discussionCommentRepository.findMaxGroupId()).thenReturn(1L);
-        when(discussionCommentRepository.findTopTotalOrder(discussionId)).thenReturn(Optional.of(1L));
-        when(discussionParticipantRepository.findByDiscussionAndMember(discussion, member)) // Mocking the call to discussionParticipantRepository
-            .thenReturn(Optional.of(new DiscussionParticipant())); // 필요한 리턴값 설정
+        when(discussionCommentRepository.findTopTotalOrder(discussionId)).thenReturn(Optional.of(0L));
+        when(discussionCommentRepository.save(any(DiscussionComment.class))).thenReturn(savedComment);
 
+        // When
         discussionCommentService.writeComment(discussionId, memberId, requestDTO);
 
+        // Then
+        verify(discussionRepository).findById(discussionId);
+        verify(memberRepository).findById(memberId);
+        verify(discussionCommentRepository).findTopTotalOrder(discussionId);
         verify(discussionCommentRepository, times(1)).save(any(DiscussionComment.class));
+        verify(discussionParticipantRepository).findByDiscussionAndMember(discussion, member);
+        verify(discussionParticipantRepository).save(any(DiscussionParticipant.class));
     }
 
     @Test
@@ -176,35 +195,36 @@ class DiscussionCommentServiceImplTest {
         verify(discussionCommentRepository, times(1)).save(any(DiscussionComment.class));
         verify(discussionCommentRepository, times(1)).incrementTotalOrderFrom(anyLong());
     }
-
+    
     @Test
     @DisplayName("댓글 목록을 스크롤 방식으로 조회하는 테스트")
     void testGetCommentList() {
+        // Given
         DiscussionCommentsScrollRequestDTO requestDTO = new DiscussionCommentsScrollRequestDTO();
         requestDTO.setSize(10);
         requestDTO.setLastId(0L);
-
+        
+        Long discussionId = 42L;
+        
         Member member = new Member();
-        member.setId(1L); // 멤버 ID 설정
-
+        member.setId(1L);
+        
         Discussion discussion = new Discussion();
-        discussion.changeId(1L); // 토론 ID 설정
+        discussion.changeId(1L);
 
-        DiscussionComment comment1 = DiscussionComment.builder()
-            .id(1L)
-            .discussion(discussion)
-            .member(member)
-            .voteType(VoteType.AGREE)
-            .content("Test Comment")
-            .build();
+        List<DiscussionComment> commentList = Arrays.asList(comment2);
+        
+        // When
+        when(discussionCommentRepository.findDiscussionCommentListWithScroll(any(DiscussionCommentsScrollRequestDTO.class), eq(discussionId)))
+                .thenReturn(commentList);
+        when(memberRepository.findById(eq(1L))).thenReturn(Optional.of(member));
+        
+        ScrollResponseDTO<DiscussionCommentResponseDTO> result =
+                discussionCommentService.getCommentList(member.getId(), requestDTO, discussionId);
 
-        List<DiscussionComment> commentList = Arrays.asList(comment1);
-
-        when(discussionCommentRepository.findDiscussionCommentListWithScroll(any())).thenReturn(commentList);
-        when(memberRepository.findById(1L)).thenReturn(Optional.of(member)); // 정확한 멤버 ID로 설정
-
-        ScrollResponseDTO<DiscussionCommentResponseDTO> result = discussionCommentService.getCommentList(requestDTO);
-
+        System.out.println("result = " + result);
+        
+        // Then
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
         assertFalse(result.isHasNext());

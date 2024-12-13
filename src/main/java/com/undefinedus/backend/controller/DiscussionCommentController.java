@@ -1,12 +1,13 @@
 package com.undefinedus.backend.controller;
 
 import com.undefinedus.backend.dto.MemberSecurityDTO;
+import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentRequestDTO;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentsScrollRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
-import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentRequestDTO;
 import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentResponseDTO;
 import com.undefinedus.backend.service.DiscussionCommentService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -33,8 +34,8 @@ public class DiscussionCommentController {
     @PostMapping("/writeComment/{discussionId}")
     public ResponseEntity<ApiResponseDTO<Void>> writeComment(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-        @PathVariable(name = "discussionId") Long discussionId,
-        @RequestBody DiscussionCommentRequestDTO discussionCommentRequestDTO
+        @PathVariable("discussionId") Long discussionId,
+        @Valid @RequestBody DiscussionCommentRequestDTO discussionCommentRequestDTO
     ) {
 
         Long memberId = memberSecurityDTO.getId();
@@ -49,9 +50,9 @@ public class DiscussionCommentController {
     @PostMapping("/writeComment/{discussionId}/{discussionCommentId}")
     public ResponseEntity<ApiResponseDTO<Void>> writeReply(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-        @PathVariable(name = "discussionId") Long discussionId,
-        @PathVariable(name = "discussionCommentId") Long discussionCommentId,
-        @RequestBody DiscussionCommentRequestDTO discussionCommentRequestDTO
+        @PathVariable("discussionId") Long discussionId,
+        @PathVariable("discussionCommentId") Long discussionCommentId,
+        @Valid @RequestBody DiscussionCommentRequestDTO discussionCommentRequestDTO
     ) {
 
         Long memberId = memberSecurityDTO.getId();
@@ -65,19 +66,24 @@ public class DiscussionCommentController {
 
     // 베스트 3 댓글 목록
     @GetMapping("/bestComment/{discussionId}")
-    public ResponseEntity<ApiResponseDTO<List<DiscussionCommentResponseDTO>>> getBest3CommentsList(@PathVariable(name = "discussionId") Long discussionId) {
+    public ResponseEntity<ApiResponseDTO<List<DiscussionCommentResponseDTO>>> getBest3CommentsList(
+        @PathVariable("discussionId") Long discussionId) {
 
-        List<DiscussionCommentResponseDTO> best3CommentByCommentLikes = discussionCommentService.getBest3CommentByCommentLikes(discussionId);
+        List<DiscussionCommentResponseDTO> best3CommentByCommentLikes = discussionCommentService.getBest3CommentByCommentLikes(
+            discussionId);
         return ResponseEntity.ok(ApiResponseDTO.success(best3CommentByCommentLikes));
     }
 
-    @GetMapping
+    // 댓글 리스트
+    @GetMapping("/{discussionId}")
     public ResponseEntity<ApiResponseDTO<ScrollResponseDTO<DiscussionCommentResponseDTO>>> getCommentList(
-        @ModelAttribute DiscussionCommentsScrollRequestDTO requestDTO
+            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+            @PathVariable("discussionId") Long discussionId,
+            @ModelAttribute DiscussionCommentsScrollRequestDTO requestDTO
     ) {
-
+        
         ScrollResponseDTO<DiscussionCommentResponseDTO> response = discussionCommentService.getCommentList(
-            requestDTO);
+            memberSecurityDTO.getId(), requestDTO, discussionId);
 
         return ResponseEntity.ok(ApiResponseDTO.success(response));
     }
@@ -114,7 +120,7 @@ public class DiscussionCommentController {
     @DeleteMapping("/{commentId}")
     public ResponseEntity<ApiResponseDTO<Void>> deleteComment(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
-        @PathVariable(name = "commentId") Long commentId
+        @PathVariable("commentId") Long commentId
     ) {
 
         Long memberId = memberSecurityDTO.getId();

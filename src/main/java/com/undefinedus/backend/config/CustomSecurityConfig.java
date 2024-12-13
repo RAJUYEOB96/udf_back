@@ -59,10 +59,15 @@ public class CustomSecurityConfig {
         });
         
         // 실행전 JWT를 확인하는 설정, 로그인 말고도 다른걸 할때 체크하는지는 알아봐야함
-        // TODO : 좀더 어떤 역할을 하는지 알아볼 필요!!
+        // - 모든 요청에 대해 JWT 토큰을 검증
+        // - UsernamePasswordAuthenticationFilter 이전에 실행됨
+        // - 즉, 사용자 인증 전에 먼저 JWT 토큰을 확인
+        // - 유효한 JWT가 있다면 해당 사용자는 이미 인증된 것으로 처리
         http.addFilterBefore(new JWTCheckFilter(), UsernamePasswordAuthenticationFilter.class);
         
         // 익셉션 발생시 행동 설정
+        // - 접근 거부(403 Forbidden) 발생 시 CustomAccessDeniedHandler가 처리
+        // - 예: 권한이 없는 사용자가 관리자 페이지 접근 시도할 때
         http.exceptionHandling(config -> {
             config.accessDeniedHandler(new CustomAccessDeniedHandler());
         });
@@ -77,11 +82,16 @@ public class CustomSecurityConfig {
     
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        // CORS는 "다른 출처(도메인)"에서 리소스를 요청할 수 있게 허용하는 보안 메커니즘입니다.
+        // "다른 출처"란 프로토콜(http/https), 도메인(gongchaek.site), 포트(5173/8080)중 하나라도 다른 경우를 말합니다.
         
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // TODO : 모든 출처 허용 -> 나중에 마지막에 바꾸어야 할듯
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        // - "*" 패턴은 모든 출처(도메인)에서의 요청을 허용한다는 의미
+        // - 보안상 위험할 수 있으므로 프로덕션 환경에서는
+        // - 실제 클라이언트 도메인만 명시적으로 허용하는 것이 좋음
+        // - 예: "https://gongchaek.site"
+//        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         
         // GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS 메소드 허용
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"));
@@ -98,13 +108,19 @@ public class CustomSecurityConfig {
         ));
         
         // 자격 증명 허용
+        // - 인증 정보(쿠키, HTTP 인증)를 포함한 요청을 허용할지 설정
+        // - true로 설정하면 클라이언트에서 credentials: 'include' 옵션으로
+        //   쿠키나 인증 헤더를 포함한 요청을 보낼 수 있음
+        // - JWT를 사용할 때는 일반적으로 true로 설정
         configuration.setAllowCredentials(true);
         
-        // 아래는 어디에 필요한거지?
-        configuration.addAllowedOrigin("http://localhost:5173");
-        configuration.addAllowedOrigin("http://gongchaek.site");
-        configuration.addAllowedOrigin("https://gongchaek.site");
-        configuration.addAllowedOrigin("http://localhost:8080");
+        // - 특정 도메인에서의 요청을 명시적으로 허용
+        // - 개발 환경(localhost)과 프로덕션 환경(gongchaek.site)의
+        //   클라이언트 도메인을 등록
+        // - setAllowCredentials(true)와 함께 사용할 때는
+        //   와일드카드(*) 대신 명시적인 도메인을 지정해야 함
+        configuration.addAllowedOrigin("http://localhost:5173");  // 로컬 프론트엔드
+        configuration.addAllowedOrigin("https://gongchaek.site"); // 배포된 프론트엔드
         
         // URL 기반 CORS 구성 소스 생성
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

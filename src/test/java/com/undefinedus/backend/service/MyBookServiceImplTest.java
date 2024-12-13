@@ -44,6 +44,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)  // JUnit5에서 Mockito를 사용하기 위한 설정
 class MyBookServiceImplTest {
@@ -117,19 +118,16 @@ class MyBookServiceImplTest {
         // given: 테스트 조건 설정
         // memberId로 Member를 찾으면 testMember를 반환하도록 설정
         when(memberRepository.findById(anyLong())).thenReturn(Optional.of(testMember));
-        // memberId와 isbn13으로 MyBook을 찾으면 testMyBook을 반환하도록 설정
+        // 존재하지 않는 책으로 설정
         when(myBookRepository.findByMemberIdAndIsbn13(anyLong(), anyString()))
-                .thenReturn(Optional.of(testMyBook));
+                .thenReturn(Optional.empty());
         
         // when: 테스트할 메서드 실행
         boolean result = myBookService.existsBook(1L, "9788956746425");
         
         // then: 결과 검증
-        // 결과가 true인지 확인
-        assertThat(result).isTrue();
-        // memberRepository.findById가 1L 파라미터로 호출되었는지 검증
+        assertThat(result).isFalse(); // 결과가 false인지 확인
         verify(memberRepository).findById(1L);
-        // myBookRepository.findByMemberIdAndIsbn13이 정확한 파라미터로 호출되었는지 검증
         verify(myBookRepository).findByMemberIdAndIsbn13(1L, "9788956746425");
     }
     
@@ -236,6 +234,14 @@ class MyBookServiceImplTest {
                 .status(BookStatus.WISH.name())
                 .build();
         
+        // Mock save 동작 정의 추가
+        when(myBookRepository.save(any(MyBook.class))).thenAnswer(invocation -> {
+            MyBook book = invocation.getArgument(0);
+            // ID 설정 (실제 DB에서처럼 ID가 생성되는 것을 시뮬레이션)
+            ReflectionTestUtils.setField(book, "id", 1L);
+            return book;
+        });
+        
         // when: 테스트할 메서드 실행
         myBookService.insertNewBookByStatus(1L, testAladinBook, wishRequestDTO);
         
@@ -265,6 +271,14 @@ class MyBookServiceImplTest {
                 .startDate(LocalDate.now().minusDays(5))
                 .endDate(LocalDate.now())
                 .build();
+        
+        // Mock save 동작 정의 추가
+        when(myBookRepository.save(any(MyBook.class))).thenAnswer(invocation -> {
+            MyBook book = invocation.getArgument(0);
+            // ID 설정 (실제 DB에서처럼 ID가 생성되는 것을 시뮬레이션)
+            ReflectionTestUtils.setField(book, "id", 1L);
+            return book;
+        });
         
         // when: 테스트할 메서드 실행
         myBookService.insertNewBookByStatus(1L, testAladinBook, stoppedRequestDTO);
@@ -656,41 +670,35 @@ class MyBookServiceImplTest {
     @Nested
     @DisplayName("내 책장 기록 삭제  테스트")
     class DeleteMyBookTest {
-        
+
         @Test
-        @DisplayName("내 책 삭제 성공 테스트")
+        @DisplayName("내 책 하드 딜리트 성공 테스트")
         void testDeleteMyBook() {
             // given
             Long memberId = 1L;
             Long bookId = 1L;
-            
+
             MyBook myBook = MyBook.builder()
-                    .id(bookId)
-                    .member(Member.builder().id(memberId).build())
-                    .build();
-            
-            when(myBookRepository.findByIdAndMemberId(bookId, memberId)) // 이 메소드가 호출되면
-                    .thenReturn(Optional.of(myBook));                   // myBook을 반환하도록 설정
-            
+                .id(bookId)
+                .member(Member.builder().id(memberId).build())
+                .build();
+
+            when(myBookRepository.findByIdAndMemberId(bookId, memberId))
+                .thenReturn(Optional.of(myBook));
+
             // when
-            myBookService.deleteMyBook(memberId, bookId); // 실제 삭제 메소드 호출
-            
+            myBookService.deleteMyBook(memberId, bookId);
+
             // then
-            // 1. findByIdAndMemberId 메소드가 정확히 한 번 호출되었는지 검증
-            // - bookId와 memberId 파라미터로 호출되었는지 확인
+            // 1. findByIdAndMemberId 메서드 호출 검증
             verify(myBookRepository).findByIdAndMemberId(bookId, memberId);
-            // 2. deleteByIdAndMemberId 메소드가 정확히 한 번 호출되었는지 검증
-            // - bookId와 memberId 파라미터로 호출되었는지 확인
-            verify(myBookRepository).deleteByIdAndMemberId(bookId, memberId);
-            
-            // 참고: verify()로 할 수 있는 다른 검증들
-//            verify(myBookRepository, times(1)).findByIdAndMemberId(bookId, memberId);  // 정확히 1번 호출
-//            verify(myBookRepository, never()).otherMethod();  // 이 메소드는 절대 호출되지 않았어야 함 otherMethod는 예시
-//            verify(myBookRepository, atLeastOnce()).findByIdAndMemberId(bookId, memberId);  // 최소 1번 이상 호출
-            // 호출 순서도 검증 가능
-            //InOrder inOrder = inOrder(myBookRepository);
-            //inOrder.verify(myBookRepository).findByIdAndMemberId(bookId, memberId);
-            //inOrder.verify(myBookRepository).deleteByIdAndMemberId(bookId, memberId);
+
+            // 2. delete 메서드 호출 검증
+            verify(myBookRepository).delete(myBook);
+
+            // 3. 다른 메서드 호출 확인 (deleteByIdAndMemberId 등이 호출되지 않아야 함)
+            verify(myBookRepository, never()).save(any(MyBook.class));
+            verify(myBookRepository, never()).deleteByIdAndMemberId(anyLong(), anyLong());
         }
         
         @Test
@@ -737,6 +745,7 @@ class MyBookServiceImplTest {
     @DisplayName("다른 회원의 도서 목록 무한 스크롤 조회 테스트")
     class GetOtherMemberBookListTest {
         
+        
         @Test
         @DisplayName("로그인한 회원이 동일한 책을 가지고 있는 경우")
         void getOtherMemberBookList_WithLoginMemberHavingSameBook() {
@@ -750,14 +759,18 @@ class MyBookServiceImplTest {
             
             // 다른 회원의 책 목록 생성
             List<MyBook> otherMemberBooks = new ArrayList<>(Arrays.asList(
-                    createMyBook(5L, "책5", "12345", BookStatus.READING),  // COMPLETED -> READING으로 변경 (다른 회원의 상태)
-                    createMyBook(4L, "책4", "12344", BookStatus.READING),  // null -> READING으로 변경 (status는 null이 될 수 없음)
-                    createMyBook(3L, "책3", "12343", BookStatus.READING)   // null -> READING으로 변경 (status는 null이 될 수 없음)
+                    createMyBook(5L, "책5", "12345", BookStatus.READING),
+                    createMyBook(4L, "책4", "12344", BookStatus.READING),
+                    createMyBook(3L, "책3", "12343", BookStatus.READING)
             ));
             
-            // 로그인한 회원이 가진 책 생성 (isbn13이 "12345"인 책을 가지고 있음)
+            // 로그인한 회원이 가진 책 생성
             MyBook loginMemberBook = createMyBook(6L, "책5", "12345", BookStatus.COMPLETED);
             Set<MyBook> loginMemberBooks = new HashSet<>(Collections.singletonList(loginMemberBook));
+            
+            // Member 모킹 추가
+            Member targetMember = createMember(targetMemberId);
+            when(memberRepository.findByIdAndIsDeletedFalse(targetMemberId)).thenReturn(Optional.of(targetMember));
             
             when(myBookRepository.findBooksWithScroll(eq(targetMemberId), any(ScrollRequestDTO.class)))
                     .thenReturn(otherMemberBooks);
@@ -774,15 +787,11 @@ class MyBookServiceImplTest {
             assertThat(result.getContent()).hasSize(3);
             assertThat(result.isHasNext()).isFalse();
             
-            // 첫 번째 책(isbn13: "12345")은 타겟 회원의 상태값을 가져야 함
             MyBookResponseDTO firstBook = result.getContent().get(0);
             assertThat(firstBook.getStatus()).isEqualTo(BookStatus.READING.name());
             
-            // 나머지 책들은 다른 회원의 상태값(READING)이어야 함
-            assertThat(result.getContent().get(1).getStatus()).isEqualTo(
-                    BookStatus.READING.name());  // null -> READING으로 변경
-            assertThat(result.getContent().get(2).getStatus()).isEqualTo(
-                    BookStatus.READING.name());  // null -> READING으로 변경
+            assertThat(result.getContent().get(1).getStatus()).isEqualTo(BookStatus.READING.name());
+            assertThat(result.getContent().get(2).getStatus()).isEqualTo(BookStatus.READING.name());
         }
         
         @Test
@@ -797,14 +806,19 @@ class MyBookServiceImplTest {
                     .build();
             
             List<MyBook> otherMemberBooks = new ArrayList<>(Arrays.asList(
-                    createMyBook(5L, "책5", "12345", BookStatus.READING),  // null -> READING으로 변경
-                    createMyBook(4L, "책4", "12344", BookStatus.READING),  // null -> READING으로 변경
-                    createMyBook(3L, "책3", "12343", BookStatus.READING)   // null -> READING으로 변경
+                    createMyBook(5L, "책5", "12345", BookStatus.READING),
+                    createMyBook(4L, "책4", "12344", BookStatus.READING),
+                    createMyBook(3L, "책3", "12343", BookStatus.READING)
             ));
             
             // 로그인한 회원은 다른 책을 가지고 있음
             MyBook loginMemberBook = createMyBook(6L, "다른책", "99999");
             Set<MyBook> loginMemberBooks = new HashSet<>(Collections.singletonList(loginMemberBook));
+            
+            
+            // Member 모킹 추가
+            Member targetMember = createMember(targetMemberId);
+            when(memberRepository.findByIdAndIsDeletedFalse(targetMemberId)).thenReturn(Optional.of(targetMember));
             
             when(myBookRepository.findBooksWithScroll(eq(targetMemberId), any(ScrollRequestDTO.class)))
                     .thenReturn(otherMemberBooks);
@@ -821,10 +835,19 @@ class MyBookServiceImplTest {
             assertThat(result.getContent()).hasSize(3);
             assertThat(result.isHasNext()).isFalse();
             
-            // 모든 책에 다른 회원의 상태값(READING)이 있어야 함
             assertThat(result.getContent())
                     .extracting(MyBookResponseDTO::getStatus)
-                    .containsOnly(BookStatus.READING.name());  // containsOnlyNulls()
+                    .containsOnly(BookStatus.READING.name());
+        }
+        
+        // Member 생성 헬퍼 메서드 추가
+        private Member createMember(Long id) {
+            return Member.builder()
+                    .id(id)
+                    .username("user" + id)
+                    .password("password")
+                    .nickname("nickname" + id)
+                    .build();
         }
         
         // ISBN을 지정할 수 있도록 createMyBook 메서드 수정
@@ -870,6 +893,10 @@ class MyBookServiceImplTest {
             Long myBookId = 1L;
             String isbn13 = "12345";
             
+            Member targetMember = createMember(targetMemberId);
+            when(memberRepository.findByIdAndIsDeletedFalse(targetMemberId))
+                    .thenReturn(Optional.of(targetMember));
+            
             // 대상 회원의 책 설정
             MyBook targetMemberBook = createMyBook(myBookId, "테스트 책", isbn13, BookStatus.READING);
             
@@ -906,6 +933,10 @@ class MyBookServiceImplTest {
             Long myBookId = 1L;
             String isbn13 = "12345";
             
+            Member targetMember = createMember(targetMemberId);
+            when(memberRepository.findByIdAndIsDeletedFalse(targetMemberId))
+                    .thenReturn(Optional.of(targetMember));
+            
             MyBook targetMemberBook = createMyBook(myBookId, "테스트 책", isbn13, BookStatus.READING);
             
             when(myBookRepository.findByIdAndMemberIdWithAladinBook(myBookId, targetMemberId))
@@ -937,6 +968,10 @@ class MyBookServiceImplTest {
             Long targetMemberId = 2L;
             Long invalidBookId = 999L;
             
+            Member targetMember = createMember(targetMemberId);
+            when(memberRepository.findByIdAndIsDeletedFalse(targetMemberId))
+                    .thenReturn(Optional.of(targetMember));
+            
             when(myBookRepository.findByIdAndMemberIdWithAladinBook(invalidBookId, targetMemberId))
                     .thenReturn(Optional.empty());
             
@@ -950,6 +985,16 @@ class MyBookServiceImplTest {
             verify(calendarStampRepository, never()).countByMemberIdAndMyBookId(anyLong(), anyLong());
             verify(myBookRepository, never()).findByMemberIdAndIsbn13(anyLong(), anyString());
         }
+    }
+    
+    // Member 생성 헬퍼 메서드 추가
+    private Member createMember(Long id) {
+        return Member.builder()
+                .id(id)
+                .username("user" + id)
+                .password("password")
+                .nickname("nickname" + id)
+                .build();
     }
     
     // 테스트에 필요한 MyBook 객체 생성 헬퍼 메소드

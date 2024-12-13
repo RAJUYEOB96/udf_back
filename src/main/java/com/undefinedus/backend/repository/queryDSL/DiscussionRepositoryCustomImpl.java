@@ -43,7 +43,7 @@ public class DiscussionRepositoryCustomImpl implements DiscussionRepositoryCusto
         
         // 검색어 처리 (글 제목과 책 제목 동시에 검색)
         if (StringUtils.hasText(requestDTO.getSearch())) {
-            builder.and(qDiscussion.myBook.aladinBook.title.containsIgnoreCase(requestDTO.getSearch())
+            builder.and(qDiscussion.aladinBook.title.containsIgnoreCase(requestDTO.getSearch())
                     .or(qDiscussion.title.containsIgnoreCase(requestDTO.getSearch())));
         }
         

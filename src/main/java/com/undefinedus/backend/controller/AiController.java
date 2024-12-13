@@ -23,12 +23,10 @@ public class AiController {
 
     // 회원이 읽은 책들 기반 gpt 추천 도서 목록(gpt가 추천 책의 isbn13을 출력하지 않음)
     @GetMapping("/recommended")
-    public ResponseEntity<ApiResponseDTO<List<AladinApiResponseDTO>>> getGPTRecommendedBookLIst(
+    public ResponseEntity<ApiResponseDTO<List<AladinApiResponseDTO>>> getPerplexityRecommendedBookList(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO) {
 
         Long memberId = memberSecurityDTO.getId();
-
-        System.out.println("memberId : " + memberId);
 
         List<AladinApiResponseDTO> perplexityRecommendBookList = aiService.getPerplexityRecommendBookList(
             memberId);
@@ -39,7 +37,7 @@ public class AiController {
     // 토론 게시판의 정보들을 가지고 gpt가 결론낸것 보기
     @GetMapping("/discussion/{discussionId}")
     public ResponseEntity<ApiResponseDTO<DiscussionGPTResponseDTO>> getDiscussionGTP(
-        @PathVariable(name = "discussionId") Long discussionId) {
+        @PathVariable("discussionId") Long discussionId) {
 
         DiscussionGPTResponseDTO discussionGPTResult = aiService.getDiscussionGPTResult(
             discussionId);

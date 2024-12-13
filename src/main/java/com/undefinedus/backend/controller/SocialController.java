@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Log4j2
 @RequestMapping("/api/social")
 public class SocialController {
-    // TODO: 프로필 이미지에 대한 것들은 나중에 추가하기
     private final SocialService socialService;
     private final MyBookService myBookService;
     private final MyBookmarkService myBookmarkService;
@@ -174,7 +173,7 @@ public class SocialController {
         ScrollResponseDTO<MyBookmarkResponseDTO> response =
                 myBookmarkService.getMyBookmarkList(targetMemberId, requestDTO);
         
-        return ResponseEntity.ok(ApiResponseDTO.success((response)));
+        return ResponseEntity.ok(ApiResponseDTO.success(response));
     }
     
     // 소셜 책갈피 상세(SOCIAL_0014)의 책갈피 담기 기능
@@ -187,7 +186,7 @@ public class SocialController {
         
         myBookmarkService.insertOtherMemberBookmarkToMe(LoginMemberId, targetBookmarkId);
         
-        return ResponseEntity.ok(ApiResponseDTO.success((null)));
+        return ResponseEntity.ok(ApiResponseDTO.success(null));
         
     }
 }

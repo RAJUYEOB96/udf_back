@@ -10,9 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DiscussionScrollRequestDTO {
-    
-    // 검색의 searchType은  작가/책 제목 둘다 동시에 할 예정
-    
+
     @Builder.Default
     private Long lastId = 0L; // 마지막으로 로드된 항목의 ID
     
@@ -26,6 +24,4 @@ public class DiscussionScrollRequestDTO {
     
     @Builder.Default
     private String status = "PROPOSED";   // 탭 구분 (예: PROPOSED, SCHEDULED, IN_PROGRESS, ANALYZING, COMPLETED, BLOCKED)
-    
-    // 추가 필터링이나 검색 조건을 위한 필드들을 여기에 추가
 }

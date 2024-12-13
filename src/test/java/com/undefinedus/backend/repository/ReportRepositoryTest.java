@@ -16,7 +16,6 @@ import com.undefinedus.backend.domain.enums.ReportStatus;
 import com.undefinedus.backend.domain.enums.ReportTargetType;
 import com.undefinedus.backend.domain.enums.VoteType;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
-import com.undefinedus.backend.exception.social.TabConditionNotEqualException;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
-import org.assertj.core.api.Assertions;
 import org.hibernate.Hibernate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -147,8 +145,8 @@ class ReportRepositoryTest {
 
         // Discussion 데이터 생성
         discussion = Discussion.builder()
-            .myBook(myBook)  // MyBook 객체 (책 정보)
             .member(reported)  // 작성자 (Member 객체)
+            .aladinBook(aladinBook)  // 이 부분 추가
             .title("책에 대해 어떻게 생각하시나요?")  // 토론 제목
             .content("이 책은 정말 흥미롭고 생각할 거리를 많이 던져주는 작품입니다.")  // 토론 내용
             .status(DiscussionStatus.PROPOSED)  // 토론 상태 (기본값 PROPOSED)
@@ -164,12 +162,11 @@ class ReportRepositoryTest {
             .member(reported)
             .groupId(1L)
             .parentId(0L)
-            .order(1L)
+            .groupOrder(1L)
             .isChild(false)
             .totalOrder(1L)
             .voteType(VoteType.AGREE)
             .content("I agree with this point.")
-            .isSelected(false)
             .discussionCommentStatus(DiscussionCommentStatus.ACTIVE)
             .isDeleted(false)
             .deletedAt(null)
@@ -182,12 +179,11 @@ class ReportRepositoryTest {
             .member(reported)
             .groupId(1L)
             .parentId(0L)
-            .order(2L)
+            .groupOrder(2L)
             .isChild(false)
             .totalOrder(2L)
             .voteType(VoteType.DISAGREE)
             .content("I disagree with this point.")
-            .isSelected(false)
             .discussionCommentStatus(DiscussionCommentStatus.ACTIVE)
             .isDeleted(false)
             .deletedAt(null)
@@ -200,12 +196,11 @@ class ReportRepositoryTest {
             .member(reporter)
             .groupId(2L)
             .parentId(1L)
-            .order(1L)
+            .groupOrder(1L)
             .isChild(true)
             .totalOrder(3L)
             .voteType(VoteType.AGREE)
             .content("I support your view on this.")
-            .isSelected(false)
             .discussionCommentStatus(DiscussionCommentStatus.ACTIVE)
             .isDeleted(false)
             .deletedAt(null)
@@ -316,8 +311,8 @@ class ReportRepositoryTest {
         // given
         // 여러 개의 Discussion을 만들어서 각각 신고
         Discussion discussion1 = Discussion.builder()
-                .myBook(myBook)
                 .member(reported)
+                .aladinBook(aladinBook)  // 이 부분 추가
                 .title("토론 제목 1")
                 .content("토론 내용 1")
                 .status(DiscussionStatus.PROPOSED)
@@ -328,8 +323,8 @@ class ReportRepositoryTest {
         discussionRepository.save(discussion1);
         
         Discussion discussion2 = Discussion.builder()
-                .myBook(myBook)
                 .member(reported)
+                .aladinBook(aladinBook)  // 이 부분 추가
                 .title("토론 제목 2")
                 .content("토론 내용 2")
                 .status(DiscussionStatus.PROPOSED)
@@ -380,8 +375,8 @@ class ReportRepositoryTest {
     void testGetCompletedReportList() {
         // given
         Discussion discussion1 = Discussion.builder()
-                .myBook(myBook)
                 .member(reported)
+                .aladinBook(aladinBook)  // 이 부분 추가
                 .title("토론 제목 1")
                 .content("토론 내용 1")
                 .status(DiscussionStatus.PROPOSED)
@@ -392,8 +387,8 @@ class ReportRepositoryTest {
         discussionRepository.save(discussion1);
         
         Discussion discussion2 = Discussion.builder()
-                .myBook(myBook)
                 .member(reported)
+                .aladinBook(aladinBook)  // 이 부분 추가
                 .title("토론 제목 2")
                 .content("토론 내용 2")
                 .status(DiscussionStatus.PROPOSED)
@@ -408,12 +403,11 @@ class ReportRepositoryTest {
                 .member(reported)
                 .groupId(2L)
                 .parentId(0L)
-                .order(1L)
+                .groupOrder(1L)
                 .isChild(false)
                 .totalOrder(1L)
                 .voteType(VoteType.AGREE)
                 .content("Test comment")
-                .isSelected(false)
                 .discussionCommentStatus(DiscussionCommentStatus.ACTIVE)
                 .isDeleted(false)
                 .deletedAt(null)
@@ -474,8 +468,8 @@ class ReportRepositoryTest {
         // 여러 개의 Discussion을 만들어서 각각 신고
         for (int i = 0; i < 5; i++) {
             Discussion newDiscussion = Discussion.builder()
-                    .myBook(myBook)
                     .member(reported)
+                    .aladinBook(aladinBook)  // 이 부분 추가
                     .title("토론 제목 " + i)
                     .content("토론 내용 " + i)
                     .status(DiscussionStatus.PROPOSED)

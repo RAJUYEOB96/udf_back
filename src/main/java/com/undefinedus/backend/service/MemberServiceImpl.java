@@ -6,15 +6,19 @@ import com.undefinedus.backend.domain.enums.MemberType;
 import com.undefinedus.backend.domain.enums.PreferencesType;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
+import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.util.JWTUtil;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -33,6 +37,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final MyPageService myPageService;
+    private final KakaoTalkService kakaoTalkService;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -46,10 +52,12 @@ public class MemberServiceImpl implements MemberService {
             kakaoAccessToken);
 
         // 기존에 DB에 회원 정보가 있는 경우 / 없는 경우
-        Optional<Member> isRegister = memberRepository.findByUsername("kakao_" + kakaoInfo.get("kakaoId"));
+        Optional<Member> isRegister = memberRepository.findByUsername(
+            "kakao_" + kakaoInfo.get("kakaoId"));
 
         if (isRegister.isPresent()) {
 
+            isRegister.get().updateKakaoAccessToken(kakaoAccessToken);
             isRegister.get().updateKakaoRefreshToken(kakaoRefreshToken);
 
             MemberSecurityDTO memberSecurityDTO = entityToDTOWithSocial(isRegister.get());
@@ -59,17 +67,20 @@ public class MemberServiceImpl implements MemberService {
             String accessToken = JWTUtil.generateAccessToken(claims);
             String refreshToken = JWTUtil.generateRefreshToken(claims);
 
-            log.info("kakaoAccessToken : " + kakaoAccessToken);
-
             claims.put("accessToken", accessToken);
             claims.put("refreshToken", refreshToken);
+            claims.put("kakaoRefreshToken", kakaoRefreshToken);
+            claims.put("kakaoAccessToken", kakaoAccessToken);
 
             result.put("result", "exists");
             result.put("member", claims);
+
             return result;
         }
 
         result.put("kakaoId", kakaoInfo.get("kakaoId"));
+        result.put("kakaoAccessToken", kakaoAccessToken);
+        result.put("kakaoRefreshToken", kakaoRefreshToken);
         result.put("result", "new");
 
         return result;
@@ -80,10 +91,14 @@ public class MemberServiceImpl implements MemberService {
 
         Member socialMember = makeSocialMember(requestDTO);
 
+        // 회원 가입 시 토큰 저장
+        socialMember.updateKakaoAccessToken(requestDTO.getKakaoAccessToken());
+        socialMember.updateKakaoRefreshToken(requestDTO.getKakaoRefreshToken());
+
         Member savedMember = memberRepository.save(socialMember);
+        myPageService.checkMessagePermission(savedMember.getId());
 
         return entityToDTOWithSocial(savedMember);
-
     }
 
     @Override
@@ -93,6 +108,8 @@ public class MemberServiceImpl implements MemberService {
             .password(passwordEncoder.encode(requestDTO.getPassword()))
             .nickname(requestDTO.getNickname())
             // 나중에 수정되면 바꿔야함
+            // 이미지는 리액트에서 아이콘으로 처리하니까
+            // 여기서는 그냥 "default" 정도로 세팅해도 될듯?
             .profileImage("defaultProfileImage.jpg")
             .birth(requestDTO.getBirth())
             .gender(requestDTO.getGender())
@@ -136,6 +153,29 @@ public class MemberServiceImpl implements MemberService {
 
     }
 
+    @Override
+    public void deleteMember(Long loginMemberId) {
+
+        Member member = memberRepository.findById(loginMemberId)
+            .orElseThrow(
+                () -> new MemberNotFoundException("해당 member를 찾을 수 없습니다. : " + loginMemberId));
+
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        String withdrawnSuffix = String.format("(탈퇴회원-%s)", uuid);
+
+        try {
+            member.updateDeleted(true);
+            member.updateDeletedAt(LocalDateTime.now());
+            member.updateUsername(member.getUsername() + withdrawnSuffix);
+            member.updateNickname(member.getNickname() + withdrawnSuffix);
+        } catch (
+            DataIntegrityViolationException e) {
+            // 혹시 모를 unique 제약조건 위반 대비
+            throw new RuntimeException("회원 탈퇴 처리 중 오류가 발생했습니다.", e);
+        }
+
+    }
+
     private Member makeSocialMember(RegisterRequestDTO requestDTO) {
 
         // 소셜 로그인 비밀번호는 사용자가 사용하진 않지만 최소한의 보안은 하도록 아래처럼
@@ -173,7 +213,6 @@ public class MemberServiceImpl implements MemberService {
         } else {
             throw new IllegalStateException("취향이 선택되어지지 않았습니다.");
         }
-
 
         return member;
     }

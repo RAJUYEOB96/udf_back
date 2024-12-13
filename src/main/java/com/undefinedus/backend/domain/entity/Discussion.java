@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Temporal;
@@ -23,7 +24,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
@@ -31,9 +33,8 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@SQLDelete(sql = "UPDATE discussion SET is_deleted = true, deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("is_deleted = false")
-@ToString(exclude = {"myBook", "member", "participants", "comments"})  // 실제 연관관계 있는 필드만 exclude
+@ToString(exclude = {"aladinBook", "member", "participants", "comments"})  // 실제 연관관계 있는 필드만 exclude
 public class Discussion extends BaseEntity {
 
     // === ID === //
@@ -43,10 +44,11 @@ public class Discussion extends BaseEntity {
 
     // === 연관 관계 === //
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_id", nullable = false)
-    private MyBook myBook;  // 어떤 책의 토론인지 // 내가 기록한 책만 토론 주제로 올릴 수 있음
-
+    @JoinColumn(name = "aladin_book_id", nullable = false)
+    private AladinBook aladinBook;
+    
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE)  // 추가
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;  // 작성자
 
@@ -92,7 +94,8 @@ public class Discussion extends BaseEntity {
     @Column
     private Integer disagreePercent; // 여긴 반대 우리가 계산해서 넣기 (100 - agreePercent)
 
-    @Column(length = 1000)
+    @Column(columnDefinition = "LONGTEXT")
+    @Lob
     private String reasoning;  // AI의 결과 도출 근거
 
     // === 조회수 관련 === //
@@ -131,6 +134,7 @@ public class Discussion extends BaseEntity {
     public void changeDeleted(boolean b) {
         isDeleted = b;
     }
+
     public void changeDeletedAt(LocalDateTime localDateTime) {
         deletedAt = localDateTime;
     }
@@ -143,12 +147,12 @@ public class Discussion extends BaseEntity {
         this.content = content;
     }
 
-    public void changeMyBook(MyBook myBook) {
-        this.myBook = myBook;
-    }
-
     public void changeStartDate(LocalDateTime startDate) {
         this.startDate = startDate;
+    }
+
+    public void changeClosedAt(LocalDateTime closedAt) {
+        this.closedAt = closedAt;
     }
 
     public void changeStatus(DiscussionStatus status) {
@@ -157,10 +161,6 @@ public class Discussion extends BaseEntity {
 
     public void changeId(Long id) {
         this.id = id;
-    }
-
-    public void changeMember(Member member) {
-        this.member = member;
     }
 
     public void changeParticipants(
