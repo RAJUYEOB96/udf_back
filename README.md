@@ -78,17 +78,16 @@
 
 - **백엔드 담당**
   -
-    - Quartz Scheduler를 활용한 kakao 메시지 보내기, 토론 생성
-    - 알라딘 api를 활용한 베스트셀러, 추천 도서 등의 책 정보 출력
-    - Chat GPT, Perplexity api를 활용한 회원 맞춤 책 추천, 토론 결과 출력
-    - Spring Data JPA 를 활용하여 회원의 책 통계 정보 출력
     -  
 
 ### 김용
 
 - **백엔드 담당**
   - 
-    -
+    - Quartz Scheduler를 활용한 kakao 메시지 보내기, 토론 생성
+    - 알라딘 api를 활용한 베스트셀러, 추천 도서 등의 책 정보 출력
+    - Chat GPT, Perplexity api를 활용한 회원 맞춤 책 추천, 토론 결과 출력
+    - Spring Data JPA 를 활용하여 회원의 책 통계 정보 출력
 
 ### 라주엽
 
