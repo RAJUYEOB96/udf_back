@@ -174,13 +174,21 @@
 
 - 만약 이미 담았던 책이라면 상세페이지에서 책 담기 버튼이 4가지의 상태에 따른 다른 아이콘으로 변경되어 출력됩니다.
 
-| 책 담기 |
+| 책 담기 - 이미 있는 책일 시 마크 변화 |
 |----------|
-|![이미 책을 담은 책](https://github.com/user-attachments/assets/06b876b3-7f3a-4d68-8ef3-500cdeae9c82)|
+|![책 담기 - 읽고 있는 책](https://github.com/user-attachments/assets/b748ed6e-a114-46d4-9308-e689c71a34c9)![책 담기 - 다 읽은 책](https://github.com/user-attachments/assets/227c7929-6a8b-4c72-8660-c27911822eac)
+![책 담기 - 읽고 싶은 책](https://github.com/user-attachments/assets/3d1a476c-e8c9-49f6-8e2e-f3a62b5ffc90)![책 담기 - 중단한 책](https://github.com/user-attachments/assets/a598bd2d-b544-4ce3-a042-f6cd649afd41)|
+
+- 책 담기에서 책 수정이 가능하고 수정 정보는 책의 상태 선택에 따라 달라집니다.
+
+| 책 담기 - 이미 담은 책 수정 |
+|----------|
+|![책 담기 - 책 상태 수정 하기](https://github.com/user-attachments/assets/1ea98b0b-17a2-4559-a05a-89bc51557408)|
+
 
 ### [책 갈피]
-- 책 담기를 한 책 중 마음에드는 책의 구절을 저장합니다.
-- 카카오톡 메시지 권한을 체크한 회원에 한하여 매일 12시 회원이 저장한 책갈피의 내용(구절)을 카카오톡으로 보냅니다.
+- 책의 상태와 상관 없이 책 담기한 책 중 마음에드는 책 구절을 회원이 작성하여 저장합니다.
+- 카카오톡 메시지 권한을 체크하고 마이페이지에서 책갈피 카카오톡 메세지 발송에 체크한 회원에 한하여 매일 12시 회원이 저장한 책갈피의 내용(구절)을 카카오톡으로 보냅니다.
 
 | 책 갈피 |
 |----------|
@@ -188,19 +196,30 @@
 ![14-3  책갈피 카카오톡](https://github.com/user-attachments/assets/33db1ebd-bede-4b99-a778-f84796f2764f)|
 
 ### [소셜]
+- 닉네임 검색 시 닉네임의 일부분만 해당되어도 출력이 되지만, 닉네임에 검색어의 글자가 포함되어 있더라도 닉네임의 글자 순서에 맞지 않으면 검색이 되지 않습니다.
 - 다른 회원의 책 담기 목록, 책갈피를 확인 할 수 있습니다.
+- 검색하여 나온 리스트에서도 팔로잉을 할 수 있습니다.
 - 회원을 팔로잉한 이후에는 검색할 필요 없이 바로 팔로잉한 회원의 페이지로 넘어 갈 수 있습니다.
 
 | 소셜 |
 |----------|
-|![15  소셜 초기 화면](https://github.com/user-attachments/assets/0a1d63e2-9ad7-4e12-8fa0-21e9c80731be)![16-2  검색한 회원의 소셜 화면](https://github.com/user-attachments/assets/6f0440ba-5cb3-4400-8618-d58452a55efd)
-![17-2  팔로잉,팔로우](https://github.com/user-attachments/assets/f2cdcdd9-3b35-4cf0-958c-6075d0ff6c47)|
+|![소셜 초기](https://github.com/user-attachments/assets/f905f779-d661-4f3f-b2ad-cec867aabeb2)![소셜 회원 검색](https://github.com/user-attachments/assets/f0c52fd1-d54c-4ee0-b1ea-cdc8b4d255f2)
+![소셜 팔로잉 리스트](https://github.com/user-attachments/assets/d03f066d-240d-460a-8bc4-a9b9d9f589d7)![소셜 팔로잉 회원의 책장](https://github.com/user-attachments/assets/741404d4-1109-411b-be0b-176bcbc88056)|
+
+### [책 추천]
+- 알라딘 api를 활용하여 알라딘의 주간 베스트, 회원이 선택한 카테고리 별 추천 도서가 출력 되고
+- perplexity에게 회원이 읽은 책 중 별점을 많이 매긴 순으로 5권을 전달하여 그 책과 같은 카테고리, 다른 책을 perplexity가 추천 하여 출력이 됩니다.
+
+| 책 추천 |
+|----------|
+|![책 추천 - 1](https://github.com/user-attachments/assets/747ec4c5-cb25-464c-874b-20b5408c92a8)![책 추천 - 2](https://github.com/user-attachments/assets/e19df3b2-2b53-436f-8303-00b8491055a8)|
 
 ### [토론]
 - 토론을 생성할 때 발의 게시판으로 이동이 되며 발의 중일때는 토론을 시작 할 수 없습니다.
 - 토론 글은 발의, 예정, 진행 중, 종료 총 4 단계의 상태가 있으며, 발의에서 예정으로 넘어 갈때
-- 발의 상태에서 토론에 참석 버튼을 누른 회원들이 찬성 2, 반대 2 총 4명이어야 한다.
-- 토론 진행은 토론을 만들때 정한 시작시간에 이루어 지며 종료시간은 시작시간에서 24시간 뒤이다.
+- 발의 상태에서 토론에 참석 버튼을 누른 회원들이 찬성 2, 반대 2 총 4명이어야 합니다.
+- 토론 진행은 토론을 만들때 정한 시작시간에 이루어 지며 종료시간은 시작시간에서 24시간 뒤입니다.
+- 토론이 토론 예정이 될 때 발의 때 존재하던 찬성, 반대 참석 카운트는 사라지고 토론 진행 시 카운트 되는 찬성, 반대 수로 바뀝니다.
 
 | 토론 |
 |----------|
@@ -210,7 +229,7 @@
 - 토론 생성 시 토론 시작 시간, 토론 주제, 주제 소개 글을 작성합니다.
 - 시작 시간은 토론 생성날의 24시간 후 7일 전의 날짜만 설정 가능합니다.
 
-| 토론 |
+| 토론 - 생성|
 |----------|
 |![토론 생성 －１](https://github.com/user-attachments/assets/4848f0c4-4759-410a-bc4f-4770cb63e7e1)![토론 생성(토론 책 선택) －２](https://github.com/user-attachments/assets/fc8294b7-efdc-472e-ad64-ed30fda338de)
 ![토론 생성 －3](https://github.com/user-attachments/assets/a7ad2c33-0818-4e39-b5d5-2beb0ff6a5a4)![토론 생성(시간 선택) －4](https://github.com/user-attachments/assets/14c3bfac-bfc8-4e51-be3c-a8e22448d79e)|
@@ -222,14 +241,16 @@
 | 토론 진행 이미지 |
 
 ### [설정]
-- 
+- 회원의 정보를 수정할 수 있습니다.
+- 회원의 프로필 사진, 닉네임은 설정 페이지에서 바로 수정이 가능합니다.
 
 | 설정 |
 |----------|
-|![20  설정](https://github.com/user-attachments/assets/ce9378fe-cd4d-4e4d-93e8-029fdf670ee5)|
+|![20  설정](https://github.com/user-attachments/assets/ce9378fe-cd4d-4e4d-93e8-029fdf670ee5)![설정 － 닉네임 수정](https://github.com/user-attachments/assets/9f9ebb9f-1cae-4bec-b7c0-bba6998070a9)｜
+
 
 ### [마이 페이지]
-- 마이페이지에서는 회원의 비밀번호, 닉네임, 취향 등의 개인정보를 수정 할 수 있으며, 일반 로그인 회원은 카카오톡과 연동을 할 수 있습니다.
+- 마이페이지에서는 회원의 비밀번호, 취향 등의 개인정보를 수정 할 수 있으며, 일반 로그인 회원은 카카오톡과 연동을 할 수 있습니다.
 - 다음 버전에서 구현할 업적, 칭호 또한 변경 가능합니다.
 
 | 마이 페이지 |
@@ -238,22 +259,25 @@
 
 ### [통계]
 - 로그인한 회원의 다 읽은 책에 한하여 카테고리별로 총 몇 권을 읽었는지와 가장 많이 읽은 카테고리를 순위 별로 보여집니다.
-- 회원이 책에 대해 하루 하루 기록한 정보를 달력에 저장하고 기록한 날을 클릭 시 그 날 기록한 내용을 리스트로 보여집니다.
+- 회원이 다 읽은 책을 등록시 달력에 저장하고 기록한 날을 클릭 시 그 날 기록한 내용을 리스트로 보여집니다.
 - 연/월별 통계는 현재 년도로 부터 3년 간의 기록을 보여집니다.
 - 그래프로 연도 당 어떤 카테고리의 책을 읽었는지를 보여집니다.
 - 회원이 기록한 책의 년도 부터 현재의 연도 까지 선택이 가능하며 특정 연도를 선택할 시 그 연도의 월별 통계를 알 수 있습니다.
 
 | 통계 |
 |----------|
-|![22  통계 메인](https://github.com/user-attachments/assets/a9d8d904-cbcb-4a5b-9dad-992a285032e2){회원의 달력 이미지 추가}
-![23-1  통계 연도](https://github.com/user-attachments/assets/7da29c86-fc64-48b8-8c8f-98a9b9639d88)![23-2  통계 연도](https://github.com/user-attachments/assets/9b7923ca-1502-4070-87c3-54a43057797f)|
+|![통계](https://github.com/user-attachments/assets/a9d8d904-cbcb-4a5b-9dad-992a285032e2)
+![통계 － 달력 - 1](https://github.com/user-attachments/assets/98e6763d-3dcb-450e-9e29-3f82814a52b3)![통계 － 달력 - 2](https://github.com/user-attachments/assets/2a680593-0ad8-4d12-95e3-65ecc02a3867)
+![통계 - 월, 연도 별 - 1](https://github.com/user-attachments/assets/2d6c8e2c-1fdd-4c45-b4d2-7b45775968bb)![통계 - 월, 연도 별 - 2](https://github.com/user-attachments/assets/75046c36-ac98-4842-9f23-ad5fc576daff)
+![통계 - 월, 연도 별 - 3](https://github.com/user-attachments/assets/a78800a4-3191-4fce-9141-e923b9415448)|
 
-### []
-- 
+### [알림 설정]
+- 홈페이지에서 사용되는 각 알림들을 체크하는 페이지 입니다.
+- 현제 버전에서는 책갈피 카카오톡 메시지, 내 책장 공개 여부의 기능이 구현되어 있고, 다음 버전에서 구현 하지 못한 알림 설정들을 구현 할 예정입니다. 
 
-|  |
+| 알림 설정 |
 |----------|
-||
+|![마이페이지 － 알람 설정](https://github.com/user-attachments/assets/a670cb62-20f8-4b32-aa6c-f0dcae4b4979)|
 
 ### []
 - 
