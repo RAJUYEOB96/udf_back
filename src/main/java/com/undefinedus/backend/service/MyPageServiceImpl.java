@@ -123,17 +123,6 @@ public class MyPageServiceImpl implements MyPageService {
         return member.isPublic();
     }
 
-    @Override
-    public void deleteMember(Long memberId) {
-
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
-
-        member.updateDeleted(true);
-        member.updateDeletedAt(LocalDateTime.now());
-
-    }
-
     // 내 정보 불러오기
     @Override
     public MyPageResponseDTO getMyInformation(Long memberId) {
