@@ -1,7 +1,6 @@
 package com.undefinedus.backend.service;
 
 import com.undefinedus.backend.domain.entity.Member;
-import com.undefinedus.backend.domain.entity.SocialLogin;
 import com.undefinedus.backend.domain.enums.PreferencesType;
 import com.undefinedus.backend.dto.response.myPage.MyPageResponseDTO;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
@@ -74,6 +73,27 @@ public class MyPageServiceImpl implements MyPageService {
         }
     }
 
+    // 카카오 회원의 카카오톡 메시지 권한을 수정
+    @Override
+    public Boolean updateMessagePermission(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
+
+        Boolean KakaoMessageIsAgree = member.isKakaoMessageIsAgree();
+
+        if (KakaoMessageIsAgree != null) {
+
+            member.updateKakaoMessageIsAgree(!KakaoMessageIsAgree);
+
+        } else {
+
+            return null;
+
+        }
+
+        return member.isKakaoMessageIsAgree();
+    }
+
     // 카카오톡 메시지를 받을지 회원이 체크하는 메서드
     @Override
     public boolean updateMessageToKakao(Long memberId) {
@@ -101,18 +121,18 @@ public class MyPageServiceImpl implements MyPageService {
 
         return member.isPublic();
     }
-    
+
     @Override
     public void deleteMember(Long memberId) {
-        
+
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
-        
+            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
+
         member.updateDeleted(true);
         member.updateDeletedAt(LocalDateTime.now());
-        
+
     }
-    
+
     // 내 정보 불러오기
     @Override
     public MyPageResponseDTO getMyInformation(Long memberId) {
@@ -126,7 +146,7 @@ public class MyPageServiceImpl implements MyPageService {
             .profileImage(member.getProfileImage())
             .birth(member.getBirth())
             .gender(member.getGender())
-            .isSocial(member.getSocialLogin()!=null)
+            .isSocial(member.getSocialLogin() != null)
             .preferences(member.getPreferences())
             .isPublic(member.isPublic())
             .isMessageToKakao(member.isMessageToKakao())

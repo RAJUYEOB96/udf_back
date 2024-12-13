@@ -12,6 +12,8 @@ public interface MyPageService {
 
     Boolean checkMessagePermission(Long memberId);
 
+    Boolean updateMessagePermission(Long memberId);
+
     boolean updateMessageToKakao(Long memberId);
 
     Map<String, String> updateNicknameAndProfileImage(Long memberId, String nickname,
@@ -31,6 +33,6 @@ public interface MyPageService {
     MyPageResponseDTO getMyInformation(Long memberId);
 
     boolean updateIsPublic(Long memberId);
-    
+
     void deleteMember(Long memberId);
 }

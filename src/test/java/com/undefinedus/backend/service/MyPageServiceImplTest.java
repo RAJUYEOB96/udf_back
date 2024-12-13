@@ -92,6 +92,20 @@ public class MyPageServiceImplTest {
     }
 
     @Test
+    @DisplayName("카카오 권한동의 수정 테스트")
+    void updateKakaoMessageAgree() {
+        // given
+        given(memberRepository.findById(1L)).willReturn(Optional.of(mockMember));
+
+        // when
+        Boolean response = myPageService.updateMessagePermission(1L);
+
+        // then
+        Assertions.assertNotNull(response); // 응답이 null이 아닌지 확인
+        assertFalse(response);
+    }
+
+    @Test
     @DisplayName("유저 정보 받아오기 테스트")
     void getMyInformation() {
         // given
