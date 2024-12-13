@@ -203,7 +203,7 @@
 
 | 소셜 |
 |----------|
-|![소셜 초기](https://github.com/user-attachments/assets/f905f779-d661-4f3f-b2ad-cec867aabeb2)![Uploading 소셜 검색.png…]()
+|![소셜 초기](https://github.com/user-attachments/assets/f905f779-d661-4f3f-b2ad-cec867aabeb2)![소셜 검색](https://github.com/user-attachments/assets/5920ca2a-19c1-4204-b2e6-04ffe5de82f9)
 ![소셜 팔로잉 리스트](https://github.com/user-attachments/assets/d03f066d-240d-460a-8bc4-a9b9d9f589d7)![소셜 팔로잉 회원의 책장](https://github.com/user-attachments/assets/741404d4-1109-411b-be0b-176bcbc88056)|
 
 ### [책 추천]
