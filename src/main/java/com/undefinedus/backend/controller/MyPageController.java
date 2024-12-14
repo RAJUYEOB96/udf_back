@@ -1,7 +1,9 @@
 package com.undefinedus.backend.controller;
 
+import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.myPage.PasswordRequestDTO;
+import com.undefinedus.backend.dto.request.myPage.SocializeRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.myPage.MyPageResponseDTO;
 import com.undefinedus.backend.service.MyPageService;
@@ -13,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,9 +33,31 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/myPage")
+@Log4j2
 public class MyPageController {
 
     private final MyPageService myPageService;
+
+    @Operation(description = "일반회원 -> 카카오 회원 전환")
+    @PatchMapping("/socialize")
+    public Map<String, Object> socializeMember(
+        @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+        @RequestBody SocializeRequestDTO socializeRequestDTO
+    ) {
+        Map<String, Object> result = new HashMap<>();
+
+        Long memberId = memberSecurityDTO.getId();
+        try {
+            Member updatedMember = myPageService.socializeMember(memberId, socializeRequestDTO);
+
+            result.put("member", updatedMember);
+            result.put("result", "success");
+            return result;
+        } catch (Exception e) {
+            log.error("socialRegister Error : ", e);
+            return Map.of("result", "error", "msg", e.getMessage());
+        }
+    }
 
     @Operation(description = "카카오 메시지 권한 확인")
     @GetMapping("/kakao/message")
@@ -186,13 +211,5 @@ public class MyPageController {
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(ApiResponseDTO.success(result));
-    }
-
-    @DeleteMapping
-    public ResponseEntity<ApiResponseDTO<Void>> deleteMember(
-        @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO) {
-        Long memberId = memberSecurityDTO.getId();
-        myPageService.deleteMember(memberId);
-        return ResponseEntity.ok(ApiResponseDTO.success(null));
     }
 }

@@ -1,7 +1,9 @@
 package com.undefinedus.backend.service;
 
 import com.undefinedus.backend.domain.entity.Member;
+import com.undefinedus.backend.domain.entity.SocialLogin;
 import com.undefinedus.backend.domain.enums.PreferencesType;
+import com.undefinedus.backend.dto.request.myPage.SocializeRequestDTO;
 import com.undefinedus.backend.dto.response.myPage.MyPageResponseDTO;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.MemberRepository;
@@ -35,6 +37,34 @@ public class MyPageServiceImpl implements MyPageService {
     private final MemberRepository memberRepository;
     private final S3Service s3Service;
     private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public Member socializeMember(Long memberId, SocializeRequestDTO socializeRequestDTO) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
+
+        try {
+            member.updateKakaoAccessToken(socializeRequestDTO.getKakaoAccessToken());
+            member.updateKakaoRefreshToken(socializeRequestDTO.getKakaoRefreshToken());
+            member.updateUsername(socializeRequestDTO.getUsername());
+            member.updatePassword(
+                passwordEncoder.encode("pw_" + socializeRequestDTO.getUsername()));
+
+            SocialLogin socialLogin = SocialLogin.builder()
+                .provider("KAKAO")
+                .providerId(socializeRequestDTO.getUsername().split("_")[1])
+                .member(member)
+                .build();
+
+            member.setSocialLogin(socialLogin);
+
+            checkMessagePermission(memberId);
+
+            return member;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     // 카카오 회원이 카카오톡 메시지 권한을 허용했는지 체크
     @Override
@@ -121,17 +151,6 @@ public class MyPageServiceImpl implements MyPageService {
         member.updateIsPublic(!member.isPublic());
 
         return member.isPublic();
-    }
-
-    @Override
-    public void deleteMember(Long memberId) {
-
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + memberId));
-
-        member.updateDeleted(true);
-        member.updateDeletedAt(LocalDateTime.now());
-
     }
 
     // 내 정보 불러오기
