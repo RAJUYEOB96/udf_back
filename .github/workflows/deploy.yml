@@ -102,4 +102,4 @@ jobs:
             ps -ef | grep java
 
             echo "8080 포트 사용 현황:"
-            netstat -tnlp | grep 8080 || true
+            ss -tunlp | grep 8080 || true
