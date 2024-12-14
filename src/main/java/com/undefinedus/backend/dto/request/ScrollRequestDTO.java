@@ -17,7 +17,7 @@ public class ScrollRequestDTO {
     private Long lastId = 0L; // 마지막으로 로드된 항목의 ID
     
     @Builder.Default
-    private int size = 10;    // 한 번에 로드할 항목 수
+    private int size = 30;    // 한 번에 로드할 항목 수
     
     @Builder.Default
     private String sort = "desc"; // asc : 오름차순, desc : 내림차순
@@ -38,5 +38,9 @@ public class ScrollRequestDTO {
     
     public void makeStatusNull() {  // 널로 해서 전체를 확정적으로 가져오기 위해
         this.status = null;
+    }
+    
+    public void updateSize(Integer newSize) {
+        this.size = newSize;
     }
 }

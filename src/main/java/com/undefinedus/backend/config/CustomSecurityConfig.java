@@ -121,6 +121,8 @@ public class CustomSecurityConfig {
         //   와일드카드(*) 대신 명시적인 도메인을 지정해야 함
         configuration.addAllowedOrigin("http://localhost:5173");  // 로컬 프론트엔드
         configuration.addAllowedOrigin("https://gongchaek.site"); // 배포된 프론트엔드
+        configuration.addAllowedOrigin("http://www.localhost:5173");  // 로컬 프론트엔드
+        configuration.addAllowedOrigin("https://www.gongchaek.site"); // 배포된 프론트엔드
         
         // URL 기반 CORS 구성 소스 생성
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

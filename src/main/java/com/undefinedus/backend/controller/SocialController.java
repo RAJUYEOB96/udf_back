@@ -109,6 +109,8 @@ public class SocialController {
         // 보낼때 lastId(필요 없지만), lastNickname 둘다 보내기
         Long memberId = memberSecurityDTO.getId();
         
+        requestDTO.updateSize(100); // 팔로우 리스트는 기본 100개 씩 검색
+        
         ScrollResponseDTO<OtherMemberInfoResponseDTO> response = socialService.getOtherMemberFollows(memberId,
                 targetMemberId, requestDTO);
         
