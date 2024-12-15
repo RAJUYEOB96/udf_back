@@ -7,6 +7,7 @@ import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.service.AiService;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -14,6 +15,7 @@ import org.quartz.JobExecutionException;
 import org.springframework.stereotype.Component;
 
 @Component
+@Log4j2
 @RequiredArgsConstructor
 public class Analyzing implements Job {
 
@@ -32,6 +34,8 @@ public class Analyzing implements Job {
 
         discussion.changeStatus(DiscussionStatus.ANALYZING);
         discussionRepository.save(discussion);
+
+        log.info("{}번 토론이 {}상태로 변경 되었습니다.", discussion.getId(), discussion.getStatus());
 
         try {
             aiService.discussionInfoToGPT(discussionId);
