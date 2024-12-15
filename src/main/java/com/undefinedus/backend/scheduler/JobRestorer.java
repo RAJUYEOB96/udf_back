@@ -3,11 +3,15 @@ package com.undefinedus.backend.scheduler;
 import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.repository.DiscussionRepository;
+import com.undefinedus.backend.scheduler.config.QuartzConfig;
 import com.undefinedus.backend.scheduler.entity.QuartzTrigger;
 import com.undefinedus.backend.scheduler.repository.QuartzTriggerRepository;
+import com.undefinedus.backend.service.AiService;
 import jakarta.annotation.PostConstruct;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.quartz.Job;
 import org.quartz.JobBuilder;
@@ -17,21 +21,19 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Log4j2
 @Component
+@RequiredArgsConstructor
 public class JobRestorer {
 
-    @Autowired
-    private DiscussionRepository discussionRepository;
+    private final DiscussionRepository discussionRepository;
+    private final Scheduler scheduler;
+    private final QuartzTriggerRepository quartzTriggerRepository;
+    private final QuartzConfig quartzConfig;
+    private final AiService aiService;
 
-    @Autowired
-    private Scheduler scheduler; // Quartz Scheduler
-
-    @Autowired
-    private QuartzTriggerRepository quartzTriggerRepository;
 
     @PostConstruct
     public void restoreJobs() {
@@ -43,17 +45,21 @@ public class JobRestorer {
                 discussion.getStatus() != DiscussionStatus.COMPLETED &&
                 discussion.getStatus() != DiscussionStatus.BLOCKED) {
 
-                List<DiscussionStatus> statusList = getStatusListForProcessing(discussion.getStatus());
+                List<DiscussionStatus> statusList = getStatusListForProcessing(
+                    discussion.getStatus());
 
                 for (DiscussionStatus status : statusList) {
                     try {
                         String jobName = "discussion_" + discussion.getId() + "_" + status;
                         String jobGroup = status.name();
-                        String triggerName = "trigger_changeStatus_" + discussion.getId() + "_" + status;
+                        String triggerName =
+                            "trigger_changeStatus_" + discussion.getId() + "_" + status;
                         String triggerGroup = status.name();
 
-                        QuartzTrigger quartzTrigger = quartzTriggerRepository.findByTriggerName(triggerName)
-                            .orElseThrow(() -> new JobExecutionException("Trigger not found for " + triggerName));
+                        QuartzTrigger quartzTrigger = quartzTriggerRepository.findByTriggerName(
+                                triggerName)
+                            .orElseThrow(() -> new JobExecutionException(
+                                "Trigger not found for " + triggerName));
 
                         Date startTime = new Date(quartzTrigger.getStartTime());
 
@@ -65,7 +71,8 @@ public class JobRestorer {
                                 .build();
 
                             String jobClassName = getJobClassNameForStatus(status);
-                            Class<? extends Job> jobClass = (Class<? extends Job>) Class.forName(jobClassName);
+                            Class<? extends Job> jobClass = (Class<? extends Job>) Class.forName(
+                                jobClassName);
 
                             JobDetail jobDetail = JobBuilder.newJob(jobClass)
                                 .withIdentity(jobName, jobGroup)
@@ -74,15 +81,40 @@ public class JobRestorer {
 
                             scheduler.scheduleJob(jobDetail, trigger);
 
-                            log.info("토론 ID: {}에 대한 {} 상태의 작업이 예약되었습니다.", discussion.getId(), status);
+                            log.info("토론 ID: {}에 대한 {} 상태의 작업이 예약되었습니다.", discussion.getId(),
+                                status);
                         } else {
 
-                            log.info("토론 ID: {}에 대한 {} 상태의 작업 예약을 건너뛰었습니다. (시작 시간이 이미 지났음)", discussion.getId(), status);
+                            // 발의 중에서 다음으로 넘어가지 못한 토론 중 참여 인원 2:2 이상 되지 못한 토론 삭제
+                            if (discussion.getStatus() == DiscussionStatus.PROPOSED
+                                && discussion.getStartDate()
+                                .isBefore(LocalDateTime.now())) {
+
+                                proposedDiscussion(discussion);
+                            } else if (discussion.getStatus() == DiscussionStatus.ANALYZING
+                                && discussion.getStartDate()
+                                .isBefore(LocalDateTime.now())) {
+
+                                aiService.discussionInfoToGPT(discussion.getId());
+                                discussion.changeStatus(status);
+                            }
+
+                            // 이미 시작 시간을 지난 경우 상태를 직접 업데이트
+                            discussion.changeStatus(status);
+                            discussionRepository.save(discussion);
+
+                            log.info("{}번 토론의 상태를 {}로 즉시 변경했습니다. (예약 시간 초과)", discussion.getId(),
+                                status);
                         }
+
                     } catch (SchedulerException | ClassNotFoundException e) {
 
-                        log.info("토론 ID: {}에 대한 {} 상태의 작업 예약 중 오류가 발생했습니다.", discussion.getId(), discussion.getStatus());
+                        log.info("{}번 {} 상태의 토론 작업 예약 중 오류가 발생했습니다.", discussion.getId(),
+                            discussion.getStatus());
                         e.printStackTrace();
+                    } catch (Exception e) {
+
+                        throw new RuntimeException(e);
                     }
                 }
             }
@@ -125,6 +157,29 @@ public class JobRestorer {
                 return "com.undefinedus.backend.scheduler.job.Scheduled";
             default:
                 throw new IllegalArgumentException("Unknown status: " + status);
+        }
+    }
+
+    private void proposedDiscussion(Discussion discussion) throws Exception {
+
+        // 참가자의 동의 및 반대 수 계산
+        Long agreeCount = discussion.getParticipants().stream()
+            .filter(participant -> participant.isAgree() == true).count();
+        Long disagreeCount = discussion.getParticipants().size() - agreeCount;
+
+        // 조건에 맞지 안으면 삭제
+        if (agreeCount < 2 && disagreeCount < 2) {
+
+            discussion.changeDeleted(true);
+            discussion.changeDeletedAt(LocalDateTime.now());
+            quartzConfig.removeJob(discussion.getId());
+            log.info("{}상태의 {}번 토론이 참여 인원이 충족 되지 안아 토론이 삭제 되었습니다.", discussion.getStatus(),
+                discussion.getId());
+        } else {
+
+            // 발의 중에서 다음으로 넘어가지 못한 토론 중 참여 인원 2:2 이상인 토론 재실행
+            quartzConfig.scheduleDiscussionJobs(discussion.getStartDate(),
+                discussion.getId());
         }
     }
 }
