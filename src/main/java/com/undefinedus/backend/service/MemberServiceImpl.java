@@ -8,6 +8,7 @@ import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.MemberRepository;
+import com.undefinedus.backend.repository.SocialLoginRepository;
 import com.undefinedus.backend.util.JWTUtil;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final MyPageService myPageService;
     private final KakaoTalkService kakaoTalkService;
+    private final SocialLoginRepository socialLoginRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -159,7 +161,18 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findById(loginMemberId)
             .orElseThrow(
                 () -> new MemberNotFoundException("해당 member를 찾을 수 없습니다. : " + loginMemberId));
-
+        
+        SocialLogin socialLogin = null;
+        
+        if(member.getSocialLogin() != null) {
+            socialLogin = member.getSocialLogin();
+            // 단순히 엔티티를 삭제하기 전에
+            // 먼저 연관관계를 정리(null로 설정)해주어야 합니다
+            member.setSocialLogin(null);  // 연관관계 제거
+            socialLoginRepository.delete(socialLogin);
+            socialLoginRepository.flush(); // 즉시 반영
+        }
+        
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         String withdrawnSuffix = String.format("(탈퇴회원-%s)", uuid);
 
