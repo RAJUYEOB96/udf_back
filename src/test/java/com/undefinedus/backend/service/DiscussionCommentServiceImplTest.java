@@ -426,13 +426,16 @@ class DiscussionCommentServiceImplTest {
                 CommentLike.builder().isLike(true).build()    // 좋아요
             ))
             .build();
+        
+        Long loginMemberId = 2L;
 
         List<DiscussionComment> bestCommentTop3List = Arrays.asList(comment3, comment1, comment2);
 
         when(discussionCommentRepository.findBest3CommentList(discussion.getId())).thenReturn(
             Optional.of(bestCommentTop3List));
 
-        List<DiscussionCommentResponseDTO> results = discussionCommentService.getBest3CommentByCommentLikes(discussion.getId());
+        List<DiscussionCommentResponseDTO> results =
+                discussionCommentService.getBest3CommentByCommentLikes(loginMemberId, discussion.getId());
         for (DiscussionCommentResponseDTO dto : results) {
             System.out.println("dto = " + dto);
         }

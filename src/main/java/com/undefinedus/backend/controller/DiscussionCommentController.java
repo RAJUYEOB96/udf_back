@@ -67,10 +67,11 @@ public class DiscussionCommentController {
     // 베스트 3 댓글 목록
     @GetMapping("/bestComment/{discussionId}")
     public ResponseEntity<ApiResponseDTO<List<DiscussionCommentResponseDTO>>> getBest3CommentsList(
-        @PathVariable("discussionId") Long discussionId) {
+            @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
+            @PathVariable("discussionId") Long discussionId) {
 
         List<DiscussionCommentResponseDTO> best3CommentByCommentLikes = discussionCommentService.getBest3CommentByCommentLikes(
-            discussionId);
+            memberSecurityDTO.getId(), discussionId);
         return ResponseEntity.ok(ApiResponseDTO.success(best3CommentByCommentLikes));
     }
 
