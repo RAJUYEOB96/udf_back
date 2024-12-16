@@ -14,6 +14,7 @@ import com.undefinedus.backend.domain.enums.DiscussionCommentStatus;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.domain.enums.ReportStatus;
 import com.undefinedus.backend.domain.enums.ReportTargetType;
+import com.undefinedus.backend.domain.enums.ViewStatus;
 import com.undefinedus.backend.domain.enums.VoteType;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.report.ReportRequestDTO;
@@ -293,7 +294,7 @@ class ReportServiceImplTest {
 
         Discussion blockedDiscussion = discussionRepository.findById(discussion.getId())
             .orElseThrow();
-        assertThat(blockedDiscussion.getStatus()).isEqualTo(DiscussionStatus.BLOCKED);
+        assertThat(blockedDiscussion.getViewStatus()).isEqualTo(ViewStatus.BLOCKED);
     }
 
     @Test
@@ -526,7 +527,7 @@ class ReportServiceImplTest {
             .build();
 
         Report savedReport = reportRepository.save(report);
-        discussion.changeStatus(DiscussionStatus.BLOCKED);  // 토론 상태를 BLOCKED로 변경
+        discussion.changeViewStatus(ViewStatus.BLOCKED);  // 토론 상태를 BLOCKED로 변경
 
         entityManager.flush();
         entityManager.clear();
@@ -558,7 +559,7 @@ class ReportServiceImplTest {
             .build();
 
         Report savedReport = reportRepository.save(report);
-        discussion.changeStatus(DiscussionStatus.BLOCKED);  // 토론 상태를 BLOCKED로 변경
+        discussion.changeViewStatus(ViewStatus.BLOCKED);  // 토론 상태를 BLOCKED로 변경
 
         entityManager.flush();
         entityManager.clear();
@@ -673,7 +674,7 @@ class ReportServiceImplTest {
             .orElseThrow();
 
         assertThat(approvedReport.getStatus()).isEqualTo(ReportStatus.ACCEPTED);
-        assertThat(blockedDiscussion.getStatus()).isEqualTo(DiscussionStatus.BLOCKED);
+        assertThat(blockedDiscussion.getViewStatus()).isEqualTo(ViewStatus.BLOCKED);
     }
 
     @Test

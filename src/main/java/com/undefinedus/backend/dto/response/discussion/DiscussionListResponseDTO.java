@@ -1,5 +1,6 @@
 package com.undefinedus.backend.dto.response.discussion;
 
+import com.undefinedus.backend.domain.enums.ViewStatus;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
@@ -41,4 +42,6 @@ public class DiscussionListResponseDTO {
     private String cover; // discussion 에서 myBook에 있는 isbn13을 뽑아 cover 링크를 뽑아 저장
 
     private String status; // 게시물 상태
+    
+    private ViewStatus viewStatus; // Blocked 되었는지에 대한 필드
 }

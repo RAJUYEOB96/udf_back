@@ -23,5 +23,5 @@ public interface DiscussionCommentService {
 
     void deleteComment(Long memberId, Long commentId);
 
-    List<DiscussionCommentResponseDTO> getBest3CommentByCommentLikes(Long discussionId);
+    List<DiscussionCommentResponseDTO> getBest3CommentByCommentLikes(Long loginMemberId, Long discussionId);
 }

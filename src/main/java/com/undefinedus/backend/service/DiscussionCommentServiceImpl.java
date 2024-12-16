@@ -278,7 +278,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .dislike(dislikeCount)
                 .isSelected(false)
                 .createTime(createdDate)
-                .discussionCommentStatus(String.valueOf(discussionCommentStatus))
+                .viewStatus(discussionCommentStatus)
                 .isReport(isReport)  // 신고 여부 추가
                 .build();
 
@@ -434,7 +434,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
     }
 
     @Override
-    public List<DiscussionCommentResponseDTO> getBest3CommentByCommentLikes(Long discussionId) {
+    public List<DiscussionCommentResponseDTO> getBest3CommentByCommentLikes(Long loginMemberId, Long discussionId) {
 
         List<DiscussionComment> bestCommentTop3List = discussionCommentRepository.findBest3CommentList(
             discussionId).orElseThrow(
@@ -443,9 +443,15 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
         // 결과를 담을 리스트
         List<DiscussionCommentResponseDTO> responseDTOList = new ArrayList<>();
+        
+        // 한번에 신고된 댓글 ID들을 가져옴
+        Set<Long> reportedCommentIds = discussionCommentRepository.findDiscussionCommentIdsByReporterId(loginMemberId);
 
         for (DiscussionComment discussionComment : bestCommentTop3List) {
             // 각 토론 댓글의 관련 정보를 추출
+            
+            // Set에서 해당 댓글 ID가 있는지 확인
+            boolean isReport = reportedCommentIds.contains(discussionComment.getId());
 
             Long memberId = discussionComment.getMember().getId();
             String profileImage =
@@ -489,7 +495,8 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .dislike(dislikeCount)
                 .isSelected(true)
                 .createTime(createdDate)
-                .discussionCommentStatus(String.valueOf(discussionCommentStatus))
+                .viewStatus(discussionCommentStatus)
+                .isReport(isReport)
                 .build();
 
             responseDTOList.add(dto);
