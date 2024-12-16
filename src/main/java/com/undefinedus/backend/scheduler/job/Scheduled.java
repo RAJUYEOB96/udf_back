@@ -49,7 +49,7 @@ public class Scheduled implements Job {
                 discussionForChangeStatus.changeStatus(DiscussionStatus.SCHEDULED);
 
                 discussionRepository.save(discussionForChangeStatus);
-
+                log.info("{}번 토론이 {}상태로 변경 되었습니다.", discussion.getId(), discussion.getStatus());
             } else {
 
                 // 관련된 Job, discussion 삭제
@@ -57,6 +57,7 @@ public class Scheduled implements Job {
                 // 관련된 discussion 소프트 딜리트
                 discussion.changeDeleted(true);
                 discussion.changeDeletedAt(LocalDateTime.now());
+                log.info("{}상태의 {}번 토론이 참여 인원이 없어 삭제 되었습니다.", discussion.getId(), discussion.getStatus());
             }
 
 

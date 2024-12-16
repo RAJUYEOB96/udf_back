@@ -43,7 +43,7 @@ public class QuartzConfig {
 
         // PROPOSED -> SCHEDULED (시작 3시간 전)
 //        LocalDateTime startDateTime = targetTime.minusHours(3);
-        LocalDateTime startDateTime = targetTime.minusMinutes(3); // 3분전
+        LocalDateTime startDateTime = targetTime.minusMinutes(2); // 3분전
         Date startDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
         JobDetail scheduleDetail = JobBuilder.newJob(Scheduled.class)
@@ -75,7 +75,7 @@ public class QuartzConfig {
 
         // IN_PROGRESS -> ANALYZING (시작 24시간 후)
 //        startDateTime = targetTime.plusHours(24);
-        startDateTime = targetTime.plusSeconds(30); // 30초 뒤
+        startDateTime = targetTime.plusSeconds(10); // 30초 뒤
         startDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
         JobDetail analyzingDetail = JobBuilder.newJob(Analyzing.class)
@@ -92,7 +92,7 @@ public class QuartzConfig {
 
         // ANALYZING -> COMPLETED (시작 25시간 후, 분석에 1시간 가정)
 //        startDateTime = targetTime.plusHours(25);
-        startDateTime = targetTime.plusSeconds(30); // 30초 뒤
+        startDateTime = targetTime.plusMinutes(2); // 2분 뒤
         startDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
         JobDetail completedDetail = JobBuilder.newJob(Completed.class)
@@ -116,13 +116,13 @@ public class QuartzConfig {
 
         Trigger repeatTrigger = TriggerBuilder.newTrigger()
             .withIdentity("KakaoTalkCronTrigger")
-            .withSchedule(CronScheduleBuilder.cronSchedule("0 10 10 * * ?")) // 오후 12시
+            .withSchedule(CronScheduleBuilder.cronSchedule("0 0 12 * * ?")) // 오후 12시
             .build();
 
         scheduler.scheduleJob(kakaoTalkDetail, repeatTrigger);
     }
 
-    private void saveQuartzDiscussionJobDetail(Long discussionId, DiscussionStatus newStatus) {
+    public void saveQuartzDiscussionJobDetail(Long discussionId, DiscussionStatus newStatus) {
         QuartzJobDetail quartzJobDetail = new QuartzJobDetail();
         quartzJobDetail.setSchedName("discussion");
         quartzJobDetail.setJobName("discussion_" + discussionId + "_" + newStatus);
@@ -132,7 +132,7 @@ public class QuartzConfig {
         quartzJobDetailRepository.save(quartzJobDetail);
     }
 
-    private void saveQuartzDiscussionTrigger(Long discussionId, Date executionTime,
+    public void saveQuartzDiscussionTrigger(Long discussionId, Date executionTime,
         DiscussionStatus newStatus) {
         QuartzTrigger quartzTrigger = new QuartzTrigger();
         quartzTrigger.setTriggerName(

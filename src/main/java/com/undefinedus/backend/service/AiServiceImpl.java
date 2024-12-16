@@ -14,10 +14,13 @@ import com.undefinedus.backend.repository.MyBookRepository;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -26,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class AiServiceImpl implements AiService {
@@ -44,26 +48,36 @@ public class AiServiceImpl implements AiService {
     @Override
     public List<AladinApiResponseDTO> getPerplexityRecommendBookList(Long memberId) {
         List<AladinApiResponseDTO> allBooks = new ArrayList<>();
-        List<String> isbnList = new ArrayList<>();
+        Set<String> processedIsbns = new HashSet<>(); // 이미 처리한 ISBN 저장
 
         while (allBooks.size() < 5) {
             // Perplexity API에서 ISBN 목록 가져오기
             List<String> isbn13List = memberBookIsbn13ListToPerplexity(memberId);
 
-            isbnList.addAll(isbn13List);
+            for (String isbn : isbn13List) {
 
-            for (String isbn : isbnList) {
-                List<AladinApiResponseDTO> books = aladinBookService.detailAladinAPI(isbn);
-                if (books != null && !books.isEmpty()) {
-                    allBooks.add(books.get(0));
-                    if (allBooks.size() >= 5) {
-                        break;
+                System.out.println("isbn = " + isbn);
+                // 중복 ISBN 확인
+                if (!processedIsbns.contains(isbn)) {
+                    List<AladinApiResponseDTO> books = aladinBookService.detailAladinAPI(isbn);
+
+                    System.out.println("books = " + books);
+                    if (books != null && !books.isEmpty()) {
+                        AladinApiResponseDTO book = books.get(0);
+
+                        // 중복 책 정보 확인
+                        if (allBooks.stream()
+                            .noneMatch(b -> b.getIsbn13().equals(book.getIsbn13()))) {
+                            allBooks.add(book);
+                            processedIsbns.add(isbn); // 처리한 ISBN 기록
+
+                            if (allBooks.size() >= 5) {
+                                break;
+                            }
+                        }
                     }
                 }
             }
-
-            // 이미 처리한 ISBN 제거
-            isbnList.clear();
         }
 
         return allBooks.subList(0, Math.min(allBooks.size(), 5));
@@ -75,19 +89,26 @@ public class AiServiceImpl implements AiService {
         String isbn13List = String.join(", ", best5Isbn13ByMemberId);
 
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "llama-3.1-sonar-small-128k-online");
+        requestBody.put("model", "llama-3.1-sonar-huge-128k-online");
         requestBody.put("messages", Arrays.asList(
-            Map.of("role", "user", "content", "Search for books similar to the ones I provide by their ISBN13 numbers, " +
-                "and recommend exactly five different books. " +
-                "The recommended books must be different from the provided books and should not have duplicate ISBN13 numbers among them. " +
-                "Please ensure the books are available on Aladin, focusing specifically on domestic (Korean) publications. " +
-                "If the provided books belong to fewer than five categories, you may select books from available categories " +
-                "and allow 2 to 4 categories to be duplicated to ensure a total of five recommendations " +
-                "while including all categories from the provided books. " +
-                "If the books belong to five or more categories, select one book per category for a total of five recommendations. " +
-                "Output only the ISBN13 numbers of the five recommended books, each on a new line, without any prefixes, explanations, or labels. "
-                + "Please recommend new ISBN numbers different from the provided ISBN13s." +
-                "The isbn13 list is: " + isbn13List)
+            Map.of("role", "user", "content",
+                "Search for books similar to the ones I provide by their ISBN13 numbers, " +
+                    "and recommend exactly 20 different books. " +
+                    "The recommended books must be different from the provided books and should not have duplicate ISBN13 numbers among them. "
+                    +
+                    "Please ensure the books are available on Aladin, focusing specifically on domestic (Korean) publications. "
+                    +
+                    "If the provided books belong to fewer than fifteen categories, you may select books from available categories "
+                    +
+                    "and allow some categories to be duplicated to ensure a total of fifteen recommendations "
+                    +
+                    "while including all categories from the provided books. " +
+                    "If the books belong to fifteen or more categories, select one book per category for a total of fifteen recommendations. "
+                    +
+                    "Output only the ISBN13 numbers of the fifteen recommended books, each on a new line, without any prefixes, explanations, or labels. "
+                    +
+                    "Please recommend new ISBN numbers different from the provided ISBN13s. " +
+                    "The isbn13 list is: " + isbn13List)
         ));
 
         String response = webClient.post()
@@ -106,11 +127,16 @@ public class AiServiceImpl implements AiService {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(response);
-            String content = jsonNode.path("choices").get(0).path("message").path("content").asText();
-            return Arrays.stream(content.split("\n"))
+            String content = jsonNode.path("choices").get(0).path("message").path("content")
+                .asText();
+
+            // 쉼표와 공백을 기준으로 ISBN13 분리
+            List<String> collect = Arrays.stream(content.split("[,\\s]+")) // 쉼표나 공백으로 분리
                 .map(String::trim)
-                .filter(isbn -> !isbn.isEmpty())
+                .filter(isbn -> isbn.matches("\\d+")) // 숫자로만 구성된 값 필터링
                 .collect(Collectors.toList());
+
+            return collect;
         } catch (Exception e) {
             throw new RuntimeException("ISBN13 파싱 실패: " + e.getMessage(), e);
         }
@@ -131,29 +157,33 @@ public class AiServiceImpl implements AiService {
         String information = formatAladinBookToJson(aladinBookDTO); // 변환된 DTO를 JSON으로 변환
 
         String title = discussion.getTitle();
-
         String content = discussion.getContent();
 
         String agreeListJson = formatCommentsToJson(discussion, VoteType.AGREE);
-
         String disagreeListJson = formatCommentsToJson(discussion, VoteType.DISAGREE);
 
         String promptText = String.format("""
-            Analyze the provided information about a book, a discussion's title, and the content, along with categorized comments. Your task is to provide the following analysis:
+            Analyze the provided book information, discussion title, content, and categorized comments. Based on your analysis, provide the following details:
+
+            A summary conclusion of the discussion.
+            A final decision on the overall sentiment:
+            If the conclusion is in favor, set the result to true.
+            If the conclusion is against, set the result to false.
+            If the result is null, it means the conclusion is unclear or the favor and against arguments are equally valid. 
+            However, if the conclusion leans more towards true, the result should be true, and if the conclusion leans more towards false, the result should be false.
                         
-            - A summary conclusion of the discussion.
-            - A final decision on the overall sentiment:
-              - **true** if the majority of comments are in favor, and the reasoning supports this conclusion.
-              - **false** if the majority of comments are against, and the reasoning supports this conclusion.
-              - **null** if the comments are evenly split between in favor and against, or if the reasoning does not clearly support one side.
-            - The percentage of comments that are in favor (agreePercent) as an integer. If there are no comments, set this to 0.
-            - The percentage of comments that are against (disagreePercent) calculated as 100 - agreePercent. If there are no comments, set this to 0.
-            - A reasoning explaining the decision based on the comments, with the majority opinion and the sentiment behind the arguments considered.
-                        
+            Based on the conclusion:
+            If the conclusion leans more towards being in favor, provide the validity of the favor conclusion as a percentage (agreePercent) and calculate the validity of the against conclusion as 100 - agreePercent (disagreePercent).
+            Similarly, if the conclusion leans more towards being against, provide the validity of the against conclusion as a percentage (disagreePercent) and calculate the validity of the favor conclusion as 100 - disagreePercent (agreePercent).
+            For example, if the favor conclusion is deemed 80Percent valid, and the against conclusion 20Percent valid, write agreePercent: 80 and disagreePercent: 20.
+            If there are no comments, set both agreePercent and disagreePercent to 0.
+            Provide reasoning for the conclusion and percentages. Base the reasoning on the comments and arguments provided.
+            When the conclusion is null, write all the reasoning and end with "As a result, the overall conclusion is neutral.
+
             Please provide the output in Korean.
-                        
+
             The response should be in JSON format with this exact structure:
-            
+
             {
               "conclusion": "your conclusion here",
               "result": true/false/null,
@@ -161,9 +191,9 @@ public class AiServiceImpl implements AiService {
               "disagreePercent": number,
               "reasoning": "your reasoning here"
             }
-                        
+
             Here is the information you need to analyze:
-                        
+
             Book Information: %s
             Discussion Title: %s
             Discussion Content: %s
@@ -187,7 +217,6 @@ public class AiServiceImpl implements AiService {
             throw new RuntimeException("AladinBook JSON 변환 실패 : " + aladinBookForGPTResponseDTO, e);
         }
     }
-
 
     private String formatCommentsToJson(Discussion discussion, VoteType voteType) {
         List<Map<String, Object>> comments = discussion.getComments().stream()

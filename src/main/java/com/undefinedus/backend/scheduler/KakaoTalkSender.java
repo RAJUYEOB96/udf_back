@@ -8,14 +8,17 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
 @Component
+@Log4j2
 public class KakaoTalkSender {
 
     // 나에게 보내기
 
     private static final String KAKAO_API_URL = "https://kapi.kakao.com/v2/api/talk/memo/default/send";
+
 
     public void sendMessage(String accessToken, String phrase, String title) {
         try {
@@ -34,7 +37,7 @@ public class KakaoTalkSender {
 
             int responseCode = connection.getResponseCode();
             if (responseCode == 200) {
-                System.out.println("카카오 메시지 전송 성공");
+                log.info("카카오 메시지 전송 성공");
             } else {
                 // 실패한 경우 응답 내용 확인
                 try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getErrorStream()))) {
@@ -43,8 +46,8 @@ public class KakaoTalkSender {
                     while ((inputLine = in.readLine()) != null) {
                         response.append(inputLine);
                     }
-                    System.out.println("카카오 메시지 전송 실패: " + responseCode);
-                    System.out.println("응답 내용: " + response.toString());
+                    log.error("카카오 메시지 전송 실패: " + responseCode);
+                    log.error("응답 내용: " + response.toString());
                 }
             }
         } catch (Exception e) {

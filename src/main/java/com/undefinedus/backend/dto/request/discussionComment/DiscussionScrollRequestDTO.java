@@ -15,7 +15,7 @@ public class DiscussionScrollRequestDTO {
     private Long lastId = 0L; // 마지막으로 로드된 항목의 ID
     
     @Builder.Default
-    private int size = 10;    // 한 번에 로드할 항목 수
+    private int size = 30;    // 한 번에 로드할 항목 수
     
     @Builder.Default
     private String sort = "desc"; // asc : 오름차순, desc : 내림차순
