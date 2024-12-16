@@ -278,7 +278,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .dislike(dislikeCount)
                 .isSelected(false)
                 .createTime(createdDate)
-                .discussionCommentStatus(String.valueOf(discussionCommentStatus))
+                .viewStatus(discussionCommentStatus)
                 .isReport(isReport)  // 신고 여부 추가
                 .build();
 
@@ -489,7 +489,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .dislike(dislikeCount)
                 .isSelected(true)
                 .createTime(createdDate)
-                .discussionCommentStatus(String.valueOf(discussionCommentStatus))
+                .viewStatus(discussionCommentStatus)
                 .build();
 
             responseDTOList.add(dto);

@@ -2,6 +2,7 @@ package com.undefinedus.backend.scheduler;
 
 import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
+import com.undefinedus.backend.domain.enums.ViewStatus;
 import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.scheduler.config.QuartzConfig;
 import com.undefinedus.backend.scheduler.entity.QuartzTrigger;
@@ -43,7 +44,7 @@ public class JobRestorer {
         for (Discussion discussion : discussionList) {
             if (discussion.getDeletedAt() == null &&
                 discussion.getStatus() != DiscussionStatus.COMPLETED &&
-                discussion.getStatus() != DiscussionStatus.BLOCKED) {
+                discussion.getViewStatus() != ViewStatus.BLOCKED) {
 
                 List<DiscussionStatus> statusList = getStatusListForProcessing(
                     discussion.getStatus());

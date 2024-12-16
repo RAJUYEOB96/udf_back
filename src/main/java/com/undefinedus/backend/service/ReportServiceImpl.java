@@ -8,6 +8,7 @@ import com.undefinedus.backend.domain.enums.DiscussionCommentStatus;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.domain.enums.ReportStatus;
 import com.undefinedus.backend.domain.enums.ReportTargetType;
+import com.undefinedus.backend.domain.enums.ViewStatus;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.report.ReportRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
@@ -84,7 +85,7 @@ public class ReportServiceImpl implements ReportService {
                 reportRepository.saveAll(discussionReports);  // 변경된 신고들을 저장
 
                 // 상태 변경 후 토론 상태를 BLOCKED로 변경
-                discussion.changeStatus(DiscussionStatus.BLOCKED);
+                discussion.changeViewStatus(ViewStatus.BLOCKED);
                 discussionRepository.save(discussion);  // 변경된 토론 저장
                 entityManager.flush();
             }
@@ -225,7 +226,7 @@ public class ReportServiceImpl implements ReportService {
         report.changeStatus(ReportStatus.ACCEPTED);
 
         Optional.ofNullable(report.getDiscussion())
-            .ifPresent(discussion -> discussion.changeStatus(DiscussionStatus.BLOCKED));
+            .ifPresent(discussion -> discussion.changeViewStatus(ViewStatus.BLOCKED));
 
         Optional.ofNullable(report.getComment())
             .ifPresent(
