@@ -1,6 +1,7 @@
 package com.undefinedus.backend.domain.entity;
 
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
+import com.undefinedus.backend.domain.enums.ViewStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -109,6 +110,11 @@ public class Discussion extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private Long views = 0L;    // 조회수 기본값 0으로 초기화
+    
+    // == Blocked 되었는지 관련 == //
+    @Column(nullable = false)
+    @Builder.Default
+    private ViewStatus viewStatus = ViewStatus.ACTIVE;
 
     // === Soft Delete 관련 === //
     @Column(nullable = false)
@@ -186,5 +192,9 @@ public class Discussion extends BaseEntity {
 
     public void changeReasoning(String reasoning) {
         this.reasoning = reasoning;
+    }
+    
+    public void changeViewStatus(ViewStatus viewStatus) {
+        this.viewStatus = viewStatus;
     }
 }

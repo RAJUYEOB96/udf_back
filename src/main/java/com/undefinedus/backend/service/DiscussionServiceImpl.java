@@ -165,6 +165,7 @@ public class DiscussionServiceImpl implements DiscussionService {
                 .status(String.valueOf(discussion.getStatus()))
                 .agreePercent(discussion.getAgreePercent())
                 .disagreePercent(discussion.getDisagreePercent())
+                .viewStatus(discussion.getViewStatus())
                 .build();
 
             responseDTOList.add(dto);
@@ -249,6 +250,7 @@ public class DiscussionServiceImpl implements DiscussionService {
             .disagreePercent(discussion.getDisagreePercent())
             .isReport(isReport)
             .isAgree(isAgree)
+            .viewStatus(discussion.getViewStatus())
             .build();
 
         return discussionDetailResponseDTO;

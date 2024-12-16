@@ -23,15 +23,6 @@ class DiscussionRepositoryTest {
     }
 
     @Test
-    @DisplayName("status 값 COMPLETED, BLOCKED 뺴고 조회")
-    public void findAll() {
-        List<Discussion> allByStatusNotClosed =
-            discussionRepository.findAllByStatusNotClosed();
-
-        System.out.println(allByStatusNotClosed);
-    }
-
-    @Test
     @DisplayName("토론 게시물 아이디 및 참여 인원 조회")
     public void findByIdWithParticipants() {
 
