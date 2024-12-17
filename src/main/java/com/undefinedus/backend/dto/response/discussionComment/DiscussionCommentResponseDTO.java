@@ -1,6 +1,6 @@
 package com.undefinedus.backend.dto.response.discussionComment;
 
-import com.undefinedus.backend.domain.enums.DiscussionCommentStatus;
+import com.undefinedus.backend.domain.enums.ViewStatus;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
@@ -47,7 +47,7 @@ public class DiscussionCommentResponseDTO {
 
     private LocalDateTime createTime;
 
-    private DiscussionCommentStatus viewStatus;
+    private ViewStatus viewStatus;
     
     private Boolean isReport;
 }
