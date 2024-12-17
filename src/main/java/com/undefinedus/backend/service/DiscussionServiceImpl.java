@@ -142,6 +142,7 @@ public class DiscussionServiceImpl implements DiscussionService {
             String isbn13 = discussion.getAladinBook().getIsbn13();
             LocalDateTime startDateTime = discussion.getStartDate();
             LocalDateTime closedAt = discussion.getClosedAt();
+            long count = discussion.getComments() != null ? discussion.getComments().stream().count() : 0;
 
             AladinBook aladinBook = discussion.getAladinBook();
 
@@ -161,6 +162,7 @@ public class DiscussionServiceImpl implements DiscussionService {
                 .startDateTime(startDateTime)
                 .closedAt(closedAt)
                 .views(views)
+                .commentCount(count)
                 .cover(cover)
                 .status(String.valueOf(discussion.getStatus()))
                 .agreePercent(discussion.getAgreePercent())
