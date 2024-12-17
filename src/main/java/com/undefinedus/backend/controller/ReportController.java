@@ -5,6 +5,7 @@ import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.report.ReportRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
+import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentResponseDTO;
 import com.undefinedus.backend.dto.response.report.ReportResponseDTO;
 import com.undefinedus.backend.service.ReportService;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +44,7 @@ public class ReportController {
     }
 
     @PostMapping("/comment/{commentId}")
-    public ResponseEntity<ApiResponseDTO<Void>> reportComment(
+    public ResponseEntity<ApiResponseDTO<DiscussionCommentResponseDTO>> reportComment(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @PathVariable("commentId") Long commentId,
         @RequestBody ReportRequestDTO reportRequestDTO
@@ -53,10 +54,11 @@ public class ReportController {
         
         // TODO : 신고를 두번 할 수 없음, 그래서 ResponseDTO에 isReport(boolean)을 만들어서 넣어줘야 할듯
         // 그래서 프론트에서 true면 신고하기가 안보이고, false면 신고하기 보이는 방식으로
-        reportService.reportComment(memberId, commentId, reportRequestDTO);
+        DiscussionCommentResponseDTO discussionCommentResponseDTO = reportService.reportComment(
+            memberId, commentId, reportRequestDTO);
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(ApiResponseDTO.success(null));
+            .body(ApiResponseDTO.success(discussionCommentResponseDTO));
     }
 
     @GetMapping

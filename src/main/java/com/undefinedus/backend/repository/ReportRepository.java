@@ -2,6 +2,7 @@ package com.undefinedus.backend.repository;
 
 import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.entity.DiscussionComment;
+import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.Report;
 import com.undefinedus.backend.domain.enums.ReportStatus;
 import com.undefinedus.backend.repository.queryDSL.ReportRepositoryCustom;
@@ -24,6 +25,9 @@ public interface ReportRepository extends JpaRepository<Report, Long>, ReportRep
 
     // 댓글에 대한 신고 리스트
     List<Report> findByCommentAndStatus(DiscussionComment discussionComment, ReportStatus status);
+
+    // 회원이 그 댓글을 신고 했는지 확인
+    Optional<Report> findByReporterAndComment(Member reporter, DiscussionComment comment);
     
     @Query("SELECT r from Report r "
             + "left join fetch r.reporter "
@@ -34,5 +38,6 @@ public interface ReportRepository extends JpaRepository<Report, Long>, ReportRep
     Optional<Report> findByIdWithAll(@Param("reportId") Long reportId);
     
     Boolean existsByReporterIdAndDiscussionId(Long loginMemberId, Long discussionId);
-    
+
+
 }
