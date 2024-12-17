@@ -311,9 +311,8 @@ class ReportServiceImplTest {
         entityManager.clear();
 
         // given 객체 재조회
-        Member updatedReporter = memberRepository.findById(reporter.getId()).orElseThrow();
-        DiscussionComment updatedComment = discussionCommentRepository.findById(comment.getId())
-            .orElseThrow();
+        Member updatedReporter = memberRepository.getOne(reporter.getId()); // getOne()을 사용해 직접 조회
+        DiscussionComment updatedComment = discussionCommentRepository.getOne(comment.getId()); // getOne() 사용
 
         // then
         List<Report> reports = reportRepository.findAll();

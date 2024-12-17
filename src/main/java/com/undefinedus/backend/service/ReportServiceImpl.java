@@ -10,6 +10,7 @@ import com.undefinedus.backend.domain.enums.ViewStatus;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import com.undefinedus.backend.dto.request.report.ReportRequestDTO;
 import com.undefinedus.backend.dto.response.ScrollResponseDTO;
+import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentResponseDTO;
 import com.undefinedus.backend.dto.response.report.ReportResponseDTO;
 import com.undefinedus.backend.exception.discussion.DiscussionNotFoundException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
@@ -40,6 +41,7 @@ public class ReportServiceImpl implements ReportService {
     private final ReportRepository reportRepository;
     private final DiscussionCommentRepository discussionCommentRepository;
     private final EntityManager entityManager;
+    private final DiscussionCommentService discussionCommentService;
 
     // 토론 신고
     @Override
@@ -90,9 +92,12 @@ public class ReportServiceImpl implements ReportService {
         }
     }
 
-    // 댓글, 답글 신고
+    // 댓글, 답글 신고, 신고 시 그 댓글, 답글의 정보를 같이 넘겨 준다.
     @Override
-    public void reportComment(Long reporterId, Long commentId, ReportRequestDTO reportRequestDTO) {
+    public DiscussionCommentResponseDTO reportComment(Long reporterId, Long commentId,
+        ReportRequestDTO reportRequestDTO) {
+
+        DiscussionCommentResponseDTO discussionCommentResponseDTO = null;
 
         String reason = reportRequestDTO.getReason();
 
@@ -128,14 +133,18 @@ public class ReportServiceImpl implements ReportService {
                 for (Report r : commentReports) {
                     r.changeStatus(ReportStatus.TEMPORARY_ACCEPTED);
                 }
-                reportRepository.saveAll(commentReports);  // 변경된 신고들을 저장
+                reportRepository.saveAll(commentReports);// 변경된 신고들을 저장
 
                 // 상태 변경 후 댓글 상태를 BLOCKED로 변경
                 discussionComment.changeViewStatus(ViewStatus.BLOCKED);
-                discussionCommentRepository.save(discussionComment);  // 변경된 댓글 저장
+                discussionCommentRepository.save(discussionComment);// 변경된 댓글 저장
                 entityManager.flush();
             }
         }
+
+        discussionCommentResponseDTO = discussionCommentService.getComment(discussionComment, reporter);
+
+        return discussionCommentResponseDTO;
     }
 
     @Override

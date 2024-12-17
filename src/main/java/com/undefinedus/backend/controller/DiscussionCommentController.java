@@ -91,30 +91,32 @@ public class DiscussionCommentController {
 
     // 댓글에 좋아요 달기
     @PatchMapping("/addLike/{discussionCommentId}")
-    public ResponseEntity<ApiResponseDTO<Void>> addLike(
+    public ResponseEntity<ApiResponseDTO<DiscussionCommentResponseDTO>> addLike(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @PathVariable Long discussionCommentId
     ) {
 
         Long memberId = memberSecurityDTO.getId();
 
-        discussionCommentService.addLike(memberId, discussionCommentId);
+        DiscussionCommentResponseDTO discussionCommentResponseDTO = discussionCommentService.addLike(
+            memberId, discussionCommentId);
 
-        return ResponseEntity.ok().body(ApiResponseDTO.success(null));
+        return ResponseEntity.ok().body(ApiResponseDTO.success(discussionCommentResponseDTO));
     }
 
     // 댓글에 싫어요 달기
     @PatchMapping("/addDislike/{discussionCommentId}")
-    public ResponseEntity<ApiResponseDTO<Void>> addDislike(
+    public ResponseEntity<ApiResponseDTO<DiscussionCommentResponseDTO>> addDislike(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @PathVariable Long discussionCommentId
     ) {
 
         Long memberId = memberSecurityDTO.getId();
 
-        discussionCommentService.addDislike(memberId, discussionCommentId);
+        DiscussionCommentResponseDTO discussionCommentResponseDTO = discussionCommentService.addDislike(
+            memberId, discussionCommentId);
 
-        return ResponseEntity.ok().body(ApiResponseDTO.success(null));
+        return ResponseEntity.ok().body(ApiResponseDTO.success(discussionCommentResponseDTO));
     }
 
     // 필요 시 사용 // 댓글 삭제
