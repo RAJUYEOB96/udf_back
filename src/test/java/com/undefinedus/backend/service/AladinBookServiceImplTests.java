@@ -27,6 +27,8 @@ class AladinBookServiceImplTests {
     @DisplayName("알라딘 api 검색 호출 테스트")
     public void searchKeywordAladinAPITest() {
 
+        Long memberId = 1L;
+
         String keyword = "삼국지";
 
         int page = 1;
@@ -36,7 +38,8 @@ class AladinBookServiceImplTests {
         Map<String, Object> aladinApiResponseDTOS = aladinBookService.searchKeywordAladinAPI(
             page,
             keyword,
-            sort);
+            sort,
+            memberId);
 
 
         // 결과를 반복하여 출력

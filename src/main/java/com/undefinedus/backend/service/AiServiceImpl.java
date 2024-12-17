@@ -11,16 +11,9 @@ import com.undefinedus.backend.dto.response.discussion.DiscussionGPTResponseDTO;
 import com.undefinedus.backend.exception.discussion.DiscussionNotFoundException;
 import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MyBookRepository;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -28,6 +21,9 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -41,9 +37,10 @@ public class AiServiceImpl implements AiService {
     private final WebClient webClient;
 
     private static final String API_URL = "https://api.perplexity.ai/chat/completions";
-
     @Value("${spring.ai.perplexity.api-key}")
     private String apiKey;
+    private static final int MAX_RETRY_COUNT = 5; // 최대 재시도 횟수
+    private static final long RETRY_DELAY_MS = 2000; // 재시도 간 딜레이 시간 (2초)
 
     @Override
     public List<AladinApiResponseDTO> getPerplexityRecommendBookList(Long memberId) {
@@ -54,8 +51,12 @@ public class AiServiceImpl implements AiService {
             // Perplexity API에서 ISBN 목록 가져오기
             List<String> isbn13List = memberBookIsbn13ListToPerplexity(memberId);
 
-            for (String isbn : isbn13List) {
+            if (isbn13List.isEmpty()) {
+                // ISBN 목록이 비어 있으면 계속 진행하지 않고 종료
+                break;
+            }
 
+            for (String isbn : isbn13List) {
                 System.out.println("isbn = " + isbn);
                 // 중복 ISBN 확인
                 if (!processedIsbns.contains(isbn)) {
@@ -70,6 +71,8 @@ public class AiServiceImpl implements AiService {
                             .noneMatch(b -> b.getIsbn13().equals(book.getIsbn13()))) {
                             allBooks.add(book);
                             processedIsbns.add(isbn); // 처리한 ISBN 기록
+
+                            System.out.println("책 추가됨: " + book.getIsbn13());
 
                             if (allBooks.size() >= 5) {
                                 break;
@@ -96,31 +99,51 @@ public class AiServiceImpl implements AiService {
                     "and recommend exactly 20 different books. " +
                     "The recommended books must be different from the provided books and should not have duplicate ISBN13 numbers among them. "
                     +
-                    "Please ensure the books are available on Aladin, focusing specifically on domestic (Korean) publications. "
-                    +
-                    "If the provided books belong to fewer than fifteen categories, you may select books from available categories "
-                    +
-                    "and allow some categories to be duplicated to ensure a total of fifteen recommendations "
-                    +
+                    "Please ensure the books are available on Aladin, focusing specifically on domestic (Korean) publications. " +
+                    "If the provided books belong to fewer than fifteen categories, you may select books from available categories " +
+                    "and allow some categories to be duplicated to ensure a total of fifteen recommendations " +
                     "while including all categories from the provided books. " +
-                    "If the books belong to fifteen or more categories, select one book per category for a total of fifteen recommendations. "
-                    +
-                    "Output only the ISBN13 numbers of the fifteen recommended books, each on a new line, without any prefixes, explanations, or labels. "
-                    +
+                    "If the books belong to fifteen or more categories, select one book per category for a total of fifteen recommendations. " +
+                    "Output only the ISBN13 numbers of the fifteen recommended books, each on a new line, without any prefixes, explanations, or labels. " +
                     "Please recommend new ISBN numbers different from the provided ISBN13s. " +
                     "The isbn13 list is: " + isbn13List)
         ));
 
-        String response = webClient.post()
-            .uri(API_URL)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
-            .bodyValue(requestBody)
-            .retrieve()
-            .bodyToMono(String.class)
-            .block();
+        // Perplexity API 호출 및 재시도 로직 추가
+        return makeApiRequestWithRetry(requestBody);
+    }
 
-        return parseIsbn13FromAnswer(response);
+    private List<String> makeApiRequestWithRetry(Map<String, Object> requestBody) {
+        int retryCount = 0;
+        while (retryCount < MAX_RETRY_COUNT) {
+            try {
+                String response = webClient.post()
+                    .uri(API_URL)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+                // 응답 파싱
+                return parseIsbn13FromAnswer(response);
+            } catch (Exception e) {
+                retryCount++;
+                log.error("Perplexity API 호출 실패 (재시도 " + retryCount + "): " + e.getMessage());
+
+                if (retryCount < MAX_RETRY_COUNT) {
+                    try {
+                        Thread.sleep(RETRY_DELAY_MS); // 재시도 전 대기
+                    } catch (InterruptedException interruptedException) {
+                        Thread.currentThread().interrupt();
+                    }
+                } else {
+                    throw new RuntimeException("Perplexity API 호출 실패: 최대 재시도 횟수 초과", e);
+                }
+            }
+        }
+        return Collections.emptyList(); // 최대 재시도 횟수 초과 시 빈 리스트 반환
     }
 
     private List<String> parseIsbn13FromAnswer(String response) {
@@ -141,7 +164,6 @@ public class AiServiceImpl implements AiService {
             throw new RuntimeException("ISBN13 파싱 실패: " + e.getMessage(), e);
         }
     }
-
 
     @Override
     @Transactional
@@ -169,9 +191,9 @@ public class AiServiceImpl implements AiService {
             A final decision on the overall sentiment:
             If the conclusion is in favor, set the result to true.
             If the conclusion is against, set the result to false.
-            If the result is null, it means the conclusion is unclear or the favor and against arguments are equally valid. 
+            If the result is null, it means the conclusion is unclear or the favor and against arguments are equally valid.
             However, if the conclusion leans more towards true, the result should be true, and if the conclusion leans more towards false, the result should be false.
-                        
+
             Based on the conclusion:
             If the conclusion leans more towards being in favor, provide the validity of the favor conclusion as a percentage (agreePercent) and calculate the validity of the against conclusion as 100 - agreePercent (disagreePercent).
             Similarly, if the conclusion leans more towards being against, provide the validity of the against conclusion as a percentage (disagreePercent) and calculate the validity of the favor conclusion as 100 - disagreePercent (agreePercent).
