@@ -381,19 +381,13 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
         return getComment(discussionComment, member);
     }
 
-
-
     @Override
     public DiscussionCommentResponseDTO getComment(DiscussionComment discussionComment, Member member) {
 
         Optional<Report> commentReported = reportRepository.findByReporterAndComment(
             member, discussionComment);
 
-        Optional<DiscussionComment> parentComment = null;
-        if (discussionComment.getParentId() != null) {
-            parentComment = discussionCommentRepository.findById(
-                discussionComment.getParentId());
-        }
+        Optional<DiscussionComment> parentComment = discussionCommentRepository.findById(discussionComment.getParentId() != null ? discussionComment.getParentId() : 0L);
 
         List<CommentLike> commentLikeList = commentLikeRepository.findByComment(discussionComment);
 
@@ -407,11 +401,12 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             .memberId(discussionComment.getMember().getId())
             .profileImage(discussionComment.getMember().getProfileImage())
             .nickname(discussionComment.getMember().getNickname())
-            .parentNickname(parentComment.isPresent() ? parentComment.get().getMember().getNickname() : null)
+            .parentNickname(
+                parentComment.map(comment -> comment.getMember().getNickname()).orElse(null))
             .honorific(discussionComment.getMember().getHonorific())
-            .parentId(discussionComment.getParentId())
-            .groupId(discussionComment.getGroupId())
-            .groupOrder(discussionComment.getGroupOrder())
+            .parentId(parentComment.map(DiscussionComment::getId).orElse(null))
+            .groupId(discussionComment.getGroupId() != null ? discussionComment.getGroupId() : null)
+            .groupOrder(discussionComment.getGroupOrder() != null ? discussionComment.getGroupOrder() : null)
             .totalOrder(discussionComment.getTotalOrder())
             .isChild(discussionComment.isChild())
             .voteType(String.valueOf(discussionComment.getVoteType()))
@@ -425,13 +420,6 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
         return discussionCommentResponseDTO;
     }
-
-
-
-
-
-
-
 
     @Override
     public void deleteComment(Long memberId, Long commentId) {

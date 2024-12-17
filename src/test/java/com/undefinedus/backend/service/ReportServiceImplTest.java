@@ -78,7 +78,6 @@ class ReportServiceImplTest {
     private Report report;
     private Report report2;
 
-
     @BeforeEach
     void setUp() {
         // Member 데이터 생성
@@ -235,7 +234,6 @@ class ReportServiceImplTest {
 
         discussionCommentRepository.save(comment3);
 
-
         entityManager.flush();
         entityManager.clear();
     }
@@ -312,7 +310,8 @@ class ReportServiceImplTest {
 
         // given 객체 재조회
         Member updatedReporter = memberRepository.getOne(reporter.getId()); // getOne()을 사용해 직접 조회
-        DiscussionComment updatedComment = discussionCommentRepository.getOne(comment.getId()); // getOne() 사용
+        DiscussionComment updatedComment = discussionCommentRepository.getOne(
+            comment.getId()); // getOne() 사용
 
         // then
         List<Report> reports = reportRepository.findAll();
@@ -368,7 +367,8 @@ class ReportServiceImplTest {
             .reported(reported)  // 신고 당한 사람 (Member 객체)
             .targetType(ReportTargetType.DISCUSSION)  // 신고 대상 타입 (토론)
             .reportReason("불쾌감을 주는 내용")  // 신고 사유
-            .status(ReportStatus.PENDING)  // 신고 처리 상태 (PENDING, TEMPORARY_ACCEPTED, ACCEPTED, REJECTED)
+            .status(
+                ReportStatus.PENDING)  // 신고 처리 상태 (PENDING, TEMPORARY_ACCEPTED, ACCEPTED, REJECTED)
             .discussion(discussion)  // 신고 당한 토론 (Discussion 객체)
             .build();
         reportRepository.save(report);
@@ -378,7 +378,8 @@ class ReportServiceImplTest {
             .reported(reported2)  // 신고 당한 사람 (Member 객체)
             .targetType(ReportTargetType.DISCUSSION_COMMENT)  // 신고 대상 타입 (댓글)
             .reportReason("부적절한 언행")  // 신고 사유
-            .status(ReportStatus.PENDING)  // 신고 처리 상태 (PENDING, TEMPORARY_ACCEPTED, ACCEPTED, REJECTED)
+            .status(
+                ReportStatus.PENDING)  // 신고 처리 상태 (PENDING, TEMPORARY_ACCEPTED, ACCEPTED, REJECTED)
             .comment(comment2)  // 신고 당한 댓글 (DiscussionComment 객체)
             .build();
         reportRepository.save(report2);
@@ -406,7 +407,8 @@ class ReportServiceImplTest {
         // 추가적인 검증
         assertThat(result.getContent())
             .extracting("targetType")
-            .containsExactlyInAnyOrder(ReportTargetType.DISCUSSION, ReportTargetType.DISCUSSION_COMMENT);
+            .containsExactlyInAnyOrder(ReportTargetType.DISCUSSION,
+                ReportTargetType.DISCUSSION_COMMENT);
     }
 
     @Test
