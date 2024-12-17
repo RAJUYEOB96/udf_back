@@ -1,5 +1,6 @@
 package com.undefinedus.backend.dto.response.discussion;
 
+import com.undefinedus.backend.domain.enums.ViewStatus;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
@@ -48,5 +49,7 @@ public class DiscussionDetailResponseDTO {
     private Boolean isReport;   // 로그인 사용자가 볼때 신고 했었는지
     
     private String isAgree; // isAgree, disAgree, null
+    
+    private ViewStatus viewStatus;  // Blocked 되었는지에 대한 필드
 
 }

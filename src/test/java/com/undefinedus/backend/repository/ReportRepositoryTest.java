@@ -10,10 +10,10 @@ import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.entity.Report;
 import com.undefinedus.backend.domain.enums.BookStatus;
-import com.undefinedus.backend.domain.enums.DiscussionCommentStatus;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.domain.enums.ReportStatus;
 import com.undefinedus.backend.domain.enums.ReportTargetType;
+import com.undefinedus.backend.domain.enums.ViewStatus;
 import com.undefinedus.backend.domain.enums.VoteType;
 import com.undefinedus.backend.dto.request.ScrollRequestDTO;
 import jakarta.persistence.EntityManager;
@@ -167,7 +167,7 @@ class ReportRepositoryTest {
             .totalOrder(1L)
             .voteType(VoteType.AGREE)
             .content("I agree with this point.")
-            .discussionCommentStatus(DiscussionCommentStatus.ACTIVE)
+            .viewStatus(ViewStatus.ACTIVE)
             .isDeleted(false)
             .deletedAt(null)
             .build();
@@ -184,7 +184,7 @@ class ReportRepositoryTest {
             .totalOrder(2L)
             .voteType(VoteType.DISAGREE)
             .content("I disagree with this point.")
-            .discussionCommentStatus(DiscussionCommentStatus.ACTIVE)
+            .viewStatus(ViewStatus.ACTIVE)
             .isDeleted(false)
             .deletedAt(null)
             .build();
@@ -201,7 +201,7 @@ class ReportRepositoryTest {
             .totalOrder(3L)
             .voteType(VoteType.AGREE)
             .content("I support your view on this.")
-            .discussionCommentStatus(DiscussionCommentStatus.ACTIVE)
+            .viewStatus(ViewStatus.ACTIVE)
             .isDeleted(false)
             .deletedAt(null)
             .build();
@@ -408,7 +408,7 @@ class ReportRepositoryTest {
                 .totalOrder(1L)
                 .voteType(VoteType.AGREE)
                 .content("Test comment")
-                .discussionCommentStatus(DiscussionCommentStatus.ACTIVE)
+                .viewStatus(ViewStatus.ACTIVE)
                 .isDeleted(false)
                 .deletedAt(null)
                 .build();

@@ -5,7 +5,8 @@ import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.entity.DiscussionComment;
 import com.undefinedus.backend.domain.entity.DiscussionParticipant;
 import com.undefinedus.backend.domain.entity.Member;
-import com.undefinedus.backend.domain.enums.DiscussionCommentStatus;
+import com.undefinedus.backend.domain.entity.Report;
+import com.undefinedus.backend.domain.enums.ViewStatus;
 import com.undefinedus.backend.domain.enums.VoteType;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentRequestDTO;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentsScrollRequestDTO;
@@ -20,6 +21,7 @@ import com.undefinedus.backend.repository.DiscussionCommentRepository;
 import com.undefinedus.backend.repository.DiscussionParticipantRepository;
 import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MemberRepository;
+import com.undefinedus.backend.repository.ReportRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +45,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
     private final DiscussionCommentRepository discussionCommentRepository;
     private final CommentLikeRepository commentLikeRepository;
     private final DiscussionParticipantRepository discussionParticipantRepository;
+    private final ReportRepository reportRepository;
 
     // 댓글 달기
     @Override
@@ -231,7 +234,6 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 discussionComment.getMember().isDeleted() ? "탈퇴한 회원입니다"
                     : discussionComment.getMember().getHonorific();
 
-
             Long groupId = discussionComment.getGroupId();
             Long commentId = discussionComment.getId();
             Long parentId = discussionComment.getParentId();
@@ -256,7 +258,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             long dislikeCount = discussionComment.getLikes().size() - likeCount;
             LocalDateTime createdDate = discussionComment.getCreatedDate();
             Long totalOrder = discussionComment.getTotalOrder();
-            DiscussionCommentStatus discussionCommentStatus = discussionComment.getDiscussionCommentStatus();
+            ViewStatus viewStatus = discussionComment.getViewStatus();
 
             // DTO 객체 생성 후 리스트에 추가
             DiscussionCommentResponseDTO dto = DiscussionCommentResponseDTO.builder()
@@ -278,7 +280,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .dislike(dislikeCount)
                 .isSelected(false)
                 .createTime(createdDate)
-                .discussionCommentStatus(String.valueOf(discussionCommentStatus))
+                .viewStatus(viewStatus)
                 .isReport(isReport)  // 신고 여부 추가
                 .build();
 
@@ -302,7 +304,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void addLike(Long memberId, Long discussionCommentId) {
+    public DiscussionCommentResponseDTO addLike(Long memberId, Long discussionCommentId) {
 
         DiscussionComment discussionComment = discussionCommentRepository.findById(
             discussionCommentId).orElseThrow(() -> new DiscussionCommentNotFoundException(
@@ -321,7 +323,8 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             if (existingLikeOpt.isLike()) {
 
                 commentLikeRepository.deleteById(existingLikeOpt.getId());
-                return;
+
+                return getComment(discussionComment, member);
             }
             // 기존 상태가 싫어요라면 싫어요를 삭제
             commentLikeRepository.delete(existingLikeOpt);
@@ -334,11 +337,13 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             .build();
 
         commentLikeRepository.save(commentLike);
+
+        return getComment(discussionComment, member);
     }
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void addDislike(Long memberId, Long discussionCommentId) {
+    public DiscussionCommentResponseDTO addDislike(Long memberId, Long discussionCommentId) {
 
         DiscussionComment discussionComment = discussionCommentRepository.findById(
             discussionCommentId).orElseThrow(() -> new DiscussionCommentNotFoundException(
@@ -357,7 +362,10 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             if (!existingLikeOpt.isLike()) {
 
                 commentLikeRepository.deleteById(existingLikeOpt.getId());
-                return;
+
+
+
+                return getComment(discussionComment, member);
             }
             commentLikeRepository.deleteById(existingLikeOpt.getId());
         }
@@ -369,7 +377,61 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             .build();
 
         commentLikeRepository.save(commentLike);
+
+        return getComment(discussionComment, member);
     }
+
+
+
+    @Override
+    public DiscussionCommentResponseDTO getComment(DiscussionComment discussionComment, Member member) {
+
+        Optional<Report> commentReported = reportRepository.findByReporterAndComment(
+            member, discussionComment);
+
+        Optional<DiscussionComment> parentComment = null;
+        if (discussionComment.getParentId() != null) {
+            parentComment = discussionCommentRepository.findById(
+                discussionComment.getParentId());
+        }
+
+        List<CommentLike> commentLikeList = commentLikeRepository.findByComment(discussionComment);
+
+        long likeCount = commentLikeList.stream()
+            .filter(commentLike -> commentLike.isLike() == true).count();
+        long dislikeCount = commentLikeList.size() - likeCount;
+
+        DiscussionCommentResponseDTO discussionCommentResponseDTO = DiscussionCommentResponseDTO.builder()
+            .commentId(discussionComment.getId())
+            .discussionId(discussionComment.getDiscussion().getId())
+            .memberId(discussionComment.getMember().getId())
+            .profileImage(discussionComment.getMember().getProfileImage())
+            .nickname(discussionComment.getMember().getNickname())
+            .parentNickname(parentComment.isPresent() ? parentComment.get().getMember().getNickname() : null)
+            .honorific(discussionComment.getMember().getHonorific())
+            .parentId(discussionComment.getParentId())
+            .groupId(discussionComment.getGroupId())
+            .groupOrder(discussionComment.getGroupOrder())
+            .totalOrder(discussionComment.getTotalOrder())
+            .isChild(discussionComment.isChild())
+            .voteType(String.valueOf(discussionComment.getVoteType()))
+            .content(discussionComment.getContent())
+            .like(likeCount)
+            .dislike(dislikeCount)
+            .createTime(discussionComment.getCreatedDate())
+            .viewStatus(discussionComment.getViewStatus())
+            .isReport(commentReported.isPresent())
+            .build();
+
+        return discussionCommentResponseDTO;
+    }
+
+
+
+
+
+
+
 
     @Override
     public void deleteComment(Long memberId, Long commentId) {
@@ -434,7 +496,8 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
     }
 
     @Override
-    public List<DiscussionCommentResponseDTO> getBest3CommentByCommentLikes(Long discussionId) {
+    public List<DiscussionCommentResponseDTO> getBest3CommentByCommentLikes(Long loginMemberId,
+        Long discussionId) {
 
         List<DiscussionComment> bestCommentTop3List = discussionCommentRepository.findBest3CommentList(
             discussionId).orElseThrow(
@@ -444,8 +507,15 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
         // 결과를 담을 리스트
         List<DiscussionCommentResponseDTO> responseDTOList = new ArrayList<>();
 
+        // 한번에 신고된 댓글 ID들을 가져옴
+        Set<Long> reportedCommentIds = discussionCommentRepository.findDiscussionCommentIdsByReporterId(
+            loginMemberId);
+
         for (DiscussionComment discussionComment : bestCommentTop3List) {
             // 각 토론 댓글의 관련 정보를 추출
+
+            // Set에서 해당 댓글 ID가 있는지 확인
+            boolean isReport = reportedCommentIds.contains(discussionComment.getId());
 
             Long memberId = discussionComment.getMember().getId();
             String profileImage =
@@ -469,7 +539,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             long dislikeCount = discussionComment.getLikes().size() - likeCount;
             LocalDateTime createdDate = discussionComment.getCreatedDate();
             Long totalOrder = discussionComment.getTotalOrder();
-            DiscussionCommentStatus discussionCommentStatus = discussionComment.getDiscussionCommentStatus();
+            ViewStatus viewStatus = discussionComment.getViewStatus();
 
             // DTO 객체 생성 후 리스트에 추가
             DiscussionCommentResponseDTO dto = DiscussionCommentResponseDTO.builder()
@@ -489,7 +559,8 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .dislike(dislikeCount)
                 .isSelected(true)
                 .createTime(createdDate)
-                .discussionCommentStatus(String.valueOf(discussionCommentStatus))
+                .viewStatus(viewStatus)
+                .isReport(isReport)
                 .build();
 
             responseDTOList.add(dto);
@@ -497,4 +568,6 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
         return responseDTOList;
     }
+
+
 }

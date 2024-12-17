@@ -21,6 +21,7 @@ import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentRequestDTO;
 import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentResponseDTO;
+import com.undefinedus.backend.repository.ReportRepository;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -44,6 +45,8 @@ class DiscussionCommentServiceImplTest {
     private CommentLikeRepository commentLikeRepository;
     @Mock
     private DiscussionParticipantRepository discussionParticipantRepository;
+    @Mock
+    private ReportRepository reportRepository;
 
     @InjectMocks
     private DiscussionCommentServiceImpl discussionCommentService;
@@ -233,35 +236,35 @@ class DiscussionCommentServiceImplTest {
     @Test
     @DisplayName("댓글에 좋아요를 추가하는 테스트")
     void testAddLike() {
-        Long memberId = 1L;
-        Long discussionCommentId = 2L;
+        // given
+        Long memberId = member1.getId(); // @BeforeEach에서 생성된 member1 사용
+        Long discussionCommentId = comment2.getId(); // @BeforeEach에서 생성된 comment2 사용
 
-        DiscussionComment comment = new DiscussionComment();
-        Member member = new Member();
+        // Mocking 중복 확인 (새로운 좋아요는 없다고 가정)
+        when(commentLikeRepository.findByCommentAndMember(comment2, member1)).thenReturn(Optional.empty());
 
-        when(discussionCommentRepository.findById(discussionCommentId)).thenReturn(Optional.of(comment));
-        when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
-
+        // when
         discussionCommentService.addLike(memberId, discussionCommentId);
 
-        verify(commentLikeRepository, times(1)).save(any(CommentLike.class));
+        // then
+        verify(commentLikeRepository, times(1)).save(any(CommentLike.class)); // 새로운 좋아요가 저장되는지 확인
     }
 
     @Test
     @DisplayName("댓글에 싫어요를 추가하는 테스트")
     void testAddDislike() {
-        Long memberId = 1L;
-        Long discussionCommentId = 2L;
+        // given
+        Long memberId = member1.getId(); // @BeforeEach에서 생성된 member1 사용
+        Long discussionCommentId = comment2.getId(); // @BeforeEach에서 생성된 comment2 사용
 
-        DiscussionComment comment = new DiscussionComment();
-        Member member = new Member();
+        // Mocking 중복 확인 (새로운 좋아요는 없다고 가정)
+        when(commentLikeRepository.findByCommentAndMember(comment2, member1)).thenReturn(Optional.empty());
 
-        when(discussionCommentRepository.findById(discussionCommentId)).thenReturn(Optional.of(comment));
-        when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
-
+        // when
         discussionCommentService.addDislike(memberId, discussionCommentId);
 
-        verify(commentLikeRepository, times(1)).save(any(CommentLike.class));
+        // then
+        verify(commentLikeRepository, times(1)).save(any(CommentLike.class)); // 새로운 좋아요가 저장되는지 확인
     }
 
     @Test
@@ -426,13 +429,16 @@ class DiscussionCommentServiceImplTest {
                 CommentLike.builder().isLike(true).build()    // 좋아요
             ))
             .build();
+        
+        Long loginMemberId = 2L;
 
         List<DiscussionComment> bestCommentTop3List = Arrays.asList(comment3, comment1, comment2);
 
         when(discussionCommentRepository.findBest3CommentList(discussion.getId())).thenReturn(
             Optional.of(bestCommentTop3List));
 
-        List<DiscussionCommentResponseDTO> results = discussionCommentService.getBest3CommentByCommentLikes(discussion.getId());
+        List<DiscussionCommentResponseDTO> results =
+                discussionCommentService.getBest3CommentByCommentLikes(loginMemberId, discussion.getId());
         for (DiscussionCommentResponseDTO dto : results) {
             System.out.println("dto = " + dto);
         }

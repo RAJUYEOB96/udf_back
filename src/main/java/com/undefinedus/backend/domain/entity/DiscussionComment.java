@@ -1,6 +1,6 @@
 package com.undefinedus.backend.domain.entity;
 
-import com.undefinedus.backend.domain.enums.DiscussionCommentStatus;
+import com.undefinedus.backend.domain.enums.ViewStatus;
 import com.undefinedus.backend.domain.enums.VoteType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -86,7 +86,7 @@ public class DiscussionComment extends BaseEntity {
     // === 신고 관련 === //
     @Column(nullable = false)
     @Builder.Default
-    private DiscussionCommentStatus discussionCommentStatus = DiscussionCommentStatus.ACTIVE; // 누적 신고 3회 이상시 자동으로 BLOCKED 처리 됨
+    private ViewStatus viewStatus = ViewStatus.ACTIVE; // 누적 신고 3회 이상시 자동으로 BLOCKED 처리 됨
 
     // === Soft Delete 관련 === //
     @Column(nullable = false)
@@ -108,8 +108,7 @@ public class DiscussionComment extends BaseEntity {
         this.groupId = groupId;
     }
 
-    public void changeDiscussionCommentStatus(
-        DiscussionCommentStatus discussionCommentStatus) {
-        this.discussionCommentStatus = discussionCommentStatus;
+    public void changeViewStatus(ViewStatus viewStatus) {
+        this.viewStatus = viewStatus;
     }
 }
