@@ -14,7 +14,7 @@ public interface AladinBookService {
     AladinBook insertAladinBook(AladinBookRequestDTO requestDTO);
 
     Map<String, Object> searchKeywordAladinAPI(Integer page,
-        String search, String sort);
+        String search, String sort, Long memberId);
 
     List<AladinApiResponseDTO> searchBestsellerAladinAPIList();
 

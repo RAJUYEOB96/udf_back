@@ -42,8 +42,8 @@ public class QuartzConfig {
         }
 
         // PROPOSED -> SCHEDULED (시작 3시간 전)
-//        LocalDateTime startDateTime = targetTime.minusHours(3);
-        LocalDateTime startDateTime = targetTime.minusMinutes(2); // 3분전
+        LocalDateTime startDateTime = targetTime.minusHours(3);
+//        LocalDateTime startDateTime = targetTime.minusMinutes(2); // 3분전
         Date startDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
         JobDetail scheduleDetail = JobBuilder.newJob(Scheduled.class)
@@ -74,8 +74,8 @@ public class QuartzConfig {
         saveQuartzDiscussionTrigger(discussionId, startDate, DiscussionStatus.IN_PROGRESS);
 
         // IN_PROGRESS -> ANALYZING (시작 24시간 후)
-//        startDateTime = targetTime.plusHours(24);
-        startDateTime = targetTime.plusSeconds(10); // 30초 뒤
+        startDateTime = targetTime.plusHours(24);
+//        startDateTime = targetTime.plusSeconds(10); // 30초 뒤
         startDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
         JobDetail analyzingDetail = JobBuilder.newJob(Analyzing.class)
@@ -91,8 +91,8 @@ public class QuartzConfig {
         saveQuartzDiscussionTrigger(discussionId, startDate, DiscussionStatus.ANALYZING);
 
         // ANALYZING -> COMPLETED (시작 25시간 후, 분석에 1시간 가정)
-//        startDateTime = targetTime.plusHours(25);
-        startDateTime = targetTime.plusMinutes(2); // 2분 뒤
+        startDateTime = targetTime.plusHours(25);
+//        startDateTime = targetTime.plusMinutes(2); // 2분 뒤
         startDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
         JobDetail completedDetail = JobBuilder.newJob(Completed.class)
@@ -116,7 +116,7 @@ public class QuartzConfig {
 
         Trigger repeatTrigger = TriggerBuilder.newTrigger()
             .withIdentity("KakaoTalkCronTrigger")
-            .withSchedule(CronScheduleBuilder.cronSchedule("0 0 12 * * ?")) // 오후 12시
+            .withSchedule(CronScheduleBuilder.cronSchedule("0 0 8 * * ?")) // 오전 8시
             .build();
 
         scheduler.scheduleJob(kakaoTalkDetail, repeatTrigger);

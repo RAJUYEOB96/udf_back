@@ -5,6 +5,7 @@ import com.undefinedus.backend.domain.entity.SocialLogin;
 import com.undefinedus.backend.domain.enums.MemberType;
 import com.undefinedus.backend.domain.enums.PreferencesType;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
+import com.undefinedus.backend.dto.request.member.PasswordUpdateRequestDTO;
 import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.MemberRepository;
@@ -188,7 +189,16 @@ public class MemberServiceImpl implements MemberService {
         }
 
     }
-
+    
+    @Override
+    public void updatePassword(PasswordUpdateRequestDTO requestDTO) {
+        
+        Member member = memberRepository.findByUsername(requestDTO.getEmail())
+                .orElseThrow(() -> new MemberNotFoundException("해당 member를 찾을 수 없습니다. : " + requestDTO.getEmail()));
+        
+        member.updatePassword(passwordEncoder.encode(requestDTO.getNewPassword()));
+    }
+    
     private Member makeSocialMember(RegisterRequestDTO requestDTO) {
 
         // 소셜 로그인 비밀번호는 사용자가 사용하진 않지만 최소한의 보안은 하도록 아래처럼

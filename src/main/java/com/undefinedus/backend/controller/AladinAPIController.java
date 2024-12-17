@@ -26,11 +26,14 @@ public class AladinAPIController {
     public ResponseEntity<ApiResponseDTO<Map<String, Object>>> getKeywordAladinAPIList(
         @RequestParam("page") Integer page,
         @RequestParam("keyword") String keyword,
-        @RequestParam("sort") String sort
+        @RequestParam("sort") String sort,
+        @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO
     ) {
 
+        Long memberId = memberSecurityDTO.getId();
+
         Map<String, Object> result = aladinBookService.searchKeywordAladinAPI(
-            page, keyword, sort);
+            page, keyword, sort, memberId);
 
         return ResponseEntity.ok(ApiResponseDTO.success(result));
     }
