@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.undefinedus'
-version = '1.0.0'  // 정식 배포 버전
+version = '1.0.1'  // 정식 배포 버전
 
 java {
     toolchain {

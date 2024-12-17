@@ -3,6 +3,7 @@ package com.undefinedus.backend.controller;
 import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.dto.MemberSecurityDTO;
 import com.undefinedus.backend.dto.request.book.BookRequestDTO;
+import com.undefinedus.backend.dto.request.member.PasswordUpdateRequestDTO;
 import com.undefinedus.backend.dto.request.social.RegisterRequestDTO;
 import com.undefinedus.backend.dto.response.ApiResponseDTO;
 import com.undefinedus.backend.service.EmailService;
@@ -139,6 +140,13 @@ public class MemberController {
     @DeleteMapping
     public ResponseEntity<ApiResponseDTO<Void>> deleteMember(@AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO) {
         memberService.deleteMember(memberSecurityDTO.getId());
+        return ResponseEntity.ok(ApiResponseDTO.success(null));
+    }
+    
+    @PatchMapping("/updatePassword")
+    public ResponseEntity<ApiResponseDTO<Void>> updatePassword(@RequestBody PasswordUpdateRequestDTO requestDTO) {
+        memberService.updatePassword(requestDTO);
+        
         return ResponseEntity.ok(ApiResponseDTO.success(null));
     }
 }
