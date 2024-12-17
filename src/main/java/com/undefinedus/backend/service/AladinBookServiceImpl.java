@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -67,7 +68,7 @@ public class AladinBookServiceImpl implements AladinBookService {
 
     @Override
     public Map<String, Object> searchKeywordAladinAPI(Integer page,
-        String search, String sort) {
+        String search, String sort, Long memberId) {
 
         String ttbkey = "ttbrladyd971718002";
         String url = "http://www.aladin.co.kr/ttb/api/ItemSearch.aspx";
@@ -77,33 +78,35 @@ public class AladinBookServiceImpl implements AladinBookService {
 
         try {
 
-                URI uri = UriComponentsBuilder.fromHttpUrl(url)
-                    .queryParam("ttbkey", ttbkey)
-                    .queryParam("Query", search)
-                    .queryParam("QueryType", "Keyword")
-                    .queryParam("MaxResults", 30)
-                    .queryParam("start", page)
-                    .queryParam("SearchTarget", "Book")
-                    .queryParam("output", "js")
-                    .queryParam("Version", "20131101")
-                    .queryParam("Sort", sort)
-                    .build()
-                    .toUri();
+            URI uri = UriComponentsBuilder.fromHttpUrl(url)
+                .queryParam("ttbkey", ttbkey)
+                .queryParam("Query", search)
+                .queryParam("QueryType", "Keyword")
+                .queryParam("MaxResults", 30)
+                .queryParam("start", page)
+                .queryParam("SearchTarget", "Book")
+                .queryParam("output", "js")
+                .queryParam("Version", "20131101")
+                .queryParam("Sort", sort)
+                .build()
+                .toUri();
 
-                AladinApiDTOList response = restTemplate.getForObject(uri,
-                    AladinApiDTOList.class);
+            AladinApiDTOList response = restTemplate.getForObject(uri,
+                AladinApiDTOList.class);
 
+            // adult가 아닌 책만 필터링하여 리스트에 추가
+            List<AladinApiResponseDTO> filteredNotAdultList = response.getItem().stream()
+                .filter(item -> !item.getAdult())
+                .collect(Collectors.toList());
 
-                // adult가 아닌 책만 필터링하여 리스트에 추가
-                List<AladinApiResponseDTO> filteredNotAdultList = response.getItem().stream()
-                    .filter(item -> !item.getAdult())
-                    .collect(Collectors.toList());
+            // 사용자의 책 상태를 체크하고 업데이트
+            List<AladinApiResponseDTO> updatedList = checkMyBooksFromAladinAPI(memberId, filteredNotAdultList);
 
-                keywordAladinBookNotAdultList.addAll(filteredNotAdultList);
+            keywordAladinBookNotAdultList.addAll(updatedList);
 
-                log.info("알라딘 API 연결 성공");
-            return Map.of("items", keywordAladinBookNotAdultList, "currentPage", page, "totalResults", response.getTotalResults());
-//            return Map.of(page, keywordAladinBookNotAdultList);
+            log.info("알라딘 API 연결 성공");
+            return Map.of("items", keywordAladinBookNotAdultList, "currentPage", page,
+                "totalResults", response.getTotalResults());
         } catch (Exception e) {
             log.error("알라딘 API 연결 실패", e);
             return null;
@@ -230,7 +233,8 @@ public class AladinBookServiceImpl implements AladinBookService {
                     // 현재 수집된 책의 개수가 10개 이상이면 더 이상 페이지를 넘기지 않음
                     if (booksForCategoryNotAdult.size() >= 10) {
                         // `subList`를 사용하지 않고, 10개 이상의 책이 모이면 그만두기
-                        booksForCategoryNotAdult = new ArrayList<>(booksForCategoryNotAdult.subList(0, 10)); // 새로운 ArrayList로 복사
+                        booksForCategoryNotAdult = new ArrayList<>(
+                            booksForCategoryNotAdult.subList(0, 10)); // 새로운 ArrayList로 복사
                         break;
                     }
 
@@ -278,8 +282,25 @@ public class AladinBookServiceImpl implements AladinBookService {
             RestTemplate restTemplate = new RestTemplate();
             AladinApiDTOList response = restTemplate.getForObject(uri, AladinApiDTOList.class);
 
-            if (response != null) {
-                return response.getItem(); // List<AladinApiResponseDTO> 반환
+            if (response != null && response.getItem() != null) {
+                // fullDescription 필드를 변환
+                response.getItem().forEach(item -> {
+                    String description = item.getFullDescription();
+                    if (description != null) {
+                        // HTML 엔티티 변환
+                        description = StringEscapeUtils.unescapeHtml4(description);
+                        // <BR>과 그 변형들을 제거
+                        description = description.replaceAll("(?i)<BR>\\n<BR>\\n",
+                            ""); // <BR>\n<BR>\n
+                        description = description.replaceAll("(?i)<BR>\\n?",
+                            "");       // <BR>\n, <BR>
+                        // 나머지 HTML 태그 제거
+                        description = description.replaceAll("<[^>]*>", "");
+                        // 변환된 내용을 다시 설정
+                        item.setFullDescription(description);
+                    }
+                });
+                return response.getItem();
             }
             log.error("알라딘 API 응답이 null입니다.");
         } catch (Exception e) {
@@ -318,5 +339,4 @@ public class AladinBookServiceImpl implements AladinBookService {
 
         return aladinApiResponseDTOList;
     }
-
 }
