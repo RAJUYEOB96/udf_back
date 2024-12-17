@@ -5,7 +5,7 @@ import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.entity.DiscussionComment;
 import com.undefinedus.backend.domain.entity.DiscussionParticipant;
 import com.undefinedus.backend.domain.entity.Member;
-import com.undefinedus.backend.domain.enums.DiscussionCommentStatus;
+import com.undefinedus.backend.domain.enums.ViewStatus;
 import com.undefinedus.backend.domain.enums.VoteType;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentRequestDTO;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentsScrollRequestDTO;
@@ -231,7 +231,6 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 discussionComment.getMember().isDeleted() ? "탈퇴한 회원입니다"
                     : discussionComment.getMember().getHonorific();
 
-
             Long groupId = discussionComment.getGroupId();
             Long commentId = discussionComment.getId();
             Long parentId = discussionComment.getParentId();
@@ -256,7 +255,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             long dislikeCount = discussionComment.getLikes().size() - likeCount;
             LocalDateTime createdDate = discussionComment.getCreatedDate();
             Long totalOrder = discussionComment.getTotalOrder();
-            DiscussionCommentStatus discussionCommentStatus = discussionComment.getDiscussionCommentStatus();
+            ViewStatus viewStatus = discussionComment.getViewStatus();
 
             // DTO 객체 생성 후 리스트에 추가
             DiscussionCommentResponseDTO dto = DiscussionCommentResponseDTO.builder()
@@ -278,7 +277,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .dislike(dislikeCount)
                 .isSelected(false)
                 .createTime(createdDate)
-                .viewStatus(discussionCommentStatus)
+                .viewStatus(viewStatus)
                 .isReport(isReport)  // 신고 여부 추가
                 .build();
 
@@ -434,7 +433,8 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
     }
 
     @Override
-    public List<DiscussionCommentResponseDTO> getBest3CommentByCommentLikes(Long loginMemberId, Long discussionId) {
+    public List<DiscussionCommentResponseDTO> getBest3CommentByCommentLikes(Long loginMemberId,
+        Long discussionId) {
 
         List<DiscussionComment> bestCommentTop3List = discussionCommentRepository.findBest3CommentList(
             discussionId).orElseThrow(
@@ -443,13 +443,14 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
         // 결과를 담을 리스트
         List<DiscussionCommentResponseDTO> responseDTOList = new ArrayList<>();
-        
+
         // 한번에 신고된 댓글 ID들을 가져옴
-        Set<Long> reportedCommentIds = discussionCommentRepository.findDiscussionCommentIdsByReporterId(loginMemberId);
+        Set<Long> reportedCommentIds = discussionCommentRepository.findDiscussionCommentIdsByReporterId(
+            loginMemberId);
 
         for (DiscussionComment discussionComment : bestCommentTop3List) {
             // 각 토론 댓글의 관련 정보를 추출
-            
+
             // Set에서 해당 댓글 ID가 있는지 확인
             boolean isReport = reportedCommentIds.contains(discussionComment.getId());
 
@@ -475,7 +476,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             long dislikeCount = discussionComment.getLikes().size() - likeCount;
             LocalDateTime createdDate = discussionComment.getCreatedDate();
             Long totalOrder = discussionComment.getTotalOrder();
-            DiscussionCommentStatus discussionCommentStatus = discussionComment.getDiscussionCommentStatus();
+            ViewStatus viewStatus = discussionComment.getViewStatus();
 
             // DTO 객체 생성 후 리스트에 추가
             DiscussionCommentResponseDTO dto = DiscussionCommentResponseDTO.builder()
@@ -495,7 +496,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
                 .dislike(dislikeCount)
                 .isSelected(true)
                 .createTime(createdDate)
-                .viewStatus(discussionCommentStatus)
+                .viewStatus(viewStatus)
                 .isReport(isReport)
                 .build();
 

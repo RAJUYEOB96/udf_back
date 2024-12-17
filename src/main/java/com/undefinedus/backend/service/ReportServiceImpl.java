@@ -4,8 +4,6 @@ import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.entity.DiscussionComment;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.Report;
-import com.undefinedus.backend.domain.enums.DiscussionCommentStatus;
-import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.domain.enums.ReportStatus;
 import com.undefinedus.backend.domain.enums.ReportTargetType;
 import com.undefinedus.backend.domain.enums.ViewStatus;
@@ -101,8 +99,9 @@ public class ReportServiceImpl implements ReportService {
         Member reporter = memberRepository.findById(reporterId)
             .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + reporterId));
 
-        DiscussionComment discussionComment = discussionCommentRepository.findById(commentId).orElseThrow(
-            () -> new DiscussionNotFoundException("해당 댓글을 찾을 수 없습니다. : " + commentId));
+        DiscussionComment discussionComment = discussionCommentRepository.findById(commentId)
+            .orElseThrow(
+                () -> new DiscussionNotFoundException("해당 댓글을 찾을 수 없습니다. : " + commentId));
 
         Member reported = discussionComment.getMember();
 
@@ -132,7 +131,7 @@ public class ReportServiceImpl implements ReportService {
                 reportRepository.saveAll(commentReports);  // 변경된 신고들을 저장
 
                 // 상태 변경 후 댓글 상태를 BLOCKED로 변경
-                discussionComment.changeDiscussionCommentStatus(DiscussionCommentStatus.BLOCKED);
+                discussionComment.changeViewStatus(ViewStatus.BLOCKED);
                 discussionCommentRepository.save(discussionComment);  // 변경된 댓글 저장
                 entityManager.flush();
             }
@@ -144,7 +143,7 @@ public class ReportServiceImpl implements ReportService {
 
         // 해당 tabCondition에 따른 전체 갯수
         Long totalElements = reportRepository.countReportListByTabCondition(requestDTO);
-        
+
         // size + 1개 데이터 조회해서 가져옴 (size가 10이면 11개 가져옴)
         List<Report> findReports = reportRepository.getReportListByTabCondition(requestDTO);
 
@@ -206,7 +205,7 @@ public class ReportServiceImpl implements ReportService {
         }
 
         if (discussionComment != null) {
-            discussionComment.changeDiscussionCommentStatus(DiscussionCommentStatus.ACTIVE);
+            discussionComment.changeViewStatus(ViewStatus.ACTIVE);
         }
 
     }
@@ -230,7 +229,7 @@ public class ReportServiceImpl implements ReportService {
 
         Optional.ofNullable(report.getComment())
             .ifPresent(
-                comment -> comment.changeDiscussionCommentStatus(DiscussionCommentStatus.BLOCKED));
+                comment -> comment.changeViewStatus(ViewStatus.BLOCKED));
     }
 
 }

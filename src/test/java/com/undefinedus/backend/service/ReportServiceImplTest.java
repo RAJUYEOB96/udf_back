@@ -10,7 +10,6 @@ import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.entity.Report;
 import com.undefinedus.backend.domain.enums.BookStatus;
-import com.undefinedus.backend.domain.enums.DiscussionCommentStatus;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.domain.enums.ReportStatus;
 import com.undefinedus.backend.domain.enums.ReportTargetType;
@@ -195,7 +194,7 @@ class ReportServiceImplTest {
             .totalOrder(1L)
             .voteType(VoteType.AGREE)
             .content("I agree with this point.")
-            .discussionCommentStatus(DiscussionCommentStatus.ACTIVE)
+            .viewStatus(ViewStatus.ACTIVE)
             .isDeleted(false)
             .deletedAt(null)
             .build();
@@ -212,7 +211,7 @@ class ReportServiceImplTest {
             .totalOrder(2L)
             .voteType(VoteType.DISAGREE)
             .content("I disagree with this point.")
-            .discussionCommentStatus(DiscussionCommentStatus.ACTIVE)
+            .viewStatus(ViewStatus.ACTIVE)
             .isDeleted(false)
             .deletedAt(null)
             .build();
@@ -229,7 +228,7 @@ class ReportServiceImplTest {
             .totalOrder(3L)
             .voteType(VoteType.AGREE)
             .content("I support your view on this.")
-            .discussionCommentStatus(DiscussionCommentStatus.ACTIVE)
+            .viewStatus(ViewStatus.ACTIVE)
             .isDeleted(false)
             .deletedAt(null)
             .build();
@@ -355,8 +354,8 @@ class ReportServiceImplTest {
 
         DiscussionComment blockedComment = discussionCommentRepository.findById(comment.getId())
             .orElseThrow();
-        assertThat(blockedComment.getDiscussionCommentStatus()).isEqualTo(
-            DiscussionCommentStatus.BLOCKED);
+        assertThat(blockedComment.getViewStatus()).isEqualTo(
+            ViewStatus.BLOCKED);
     }
 
     @Test
@@ -590,7 +589,7 @@ class ReportServiceImplTest {
             .build();
 
         Report savedReport = reportRepository.save(report);
-        comment.changeDiscussionCommentStatus(DiscussionCommentStatus.BLOCKED);
+        comment.changeViewStatus(ViewStatus.BLOCKED);
 
         entityManager.flush();
         entityManager.clear();
@@ -604,8 +603,8 @@ class ReportServiceImplTest {
             .orElseThrow();
 
         assertThat(rejectedReport.getStatus()).isEqualTo(ReportStatus.REJECTED);
-        assertThat(updatedComment.getDiscussionCommentStatus()).isEqualTo(
-            DiscussionCommentStatus.ACTIVE);
+        assertThat(updatedComment.getViewStatus()).isEqualTo(
+            ViewStatus.ACTIVE);
     }
 
     @Test
@@ -704,8 +703,8 @@ class ReportServiceImplTest {
             .orElseThrow();
 
         assertThat(approvedReport.getStatus()).isEqualTo(ReportStatus.ACCEPTED);
-        assertThat(blockedComment.getDiscussionCommentStatus()).isEqualTo(
-            DiscussionCommentStatus.BLOCKED);
+        assertThat(blockedComment.getViewStatus()).isEqualTo(
+            ViewStatus.BLOCKED);
     }
 
     @Test
