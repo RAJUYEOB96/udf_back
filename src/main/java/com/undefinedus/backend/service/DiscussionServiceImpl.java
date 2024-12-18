@@ -29,6 +29,7 @@ import com.undefinedus.backend.repository.MyBookRepository;
 import com.undefinedus.backend.repository.ReportRepository;
 import com.undefinedus.backend.scheduler.config.QuartzConfig;
 import com.undefinedus.backend.scheduler.repository.QuartzTriggerRepository;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,6 +41,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.quartz.SchedulerException;
@@ -65,26 +67,25 @@ public class DiscussionServiceImpl implements DiscussionService {
 
     @Override
     public Long discussionRegister(Long memberId,
-        DiscussionRegisterRequestDTO discussionRegisterRequestDTO) {
+                                   DiscussionRegisterRequestDTO discussionRegisterRequestDTO) {
 
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new MemberNotFoundException("해당 사용자를 찾을 수 없습니다. : " + memberId));
+                .orElseThrow(() -> new MemberNotFoundException("해당 사용자를 찾을 수 없습니다. : " + memberId));
 
         String isbn13 = discussionRegisterRequestDTO.getIsbn13();
 
         MyBook myBook = myBookRepository.findByMemberIdAndIsbn13(memberId, isbn13)
-            .orElseThrow(() -> new BookNotFoundException("해당 책을 찾을 수 없습니다. : " + isbn13));
+                .orElseThrow(() -> new BookNotFoundException("해당 책을 찾을 수 없습니다. : " + isbn13));
 
         Discussion discussion = Discussion.builder()
-//            .myBook(myBook)  // MyBook 객체
-            .member(member)  // Member 객체
-            .aladinBook(myBook.getAladinBook()) // MyBook 정보가 삭제 되었을 때를 위해
-            .title(discussionRegisterRequestDTO.getTitle())
-            .content(discussionRegisterRequestDTO.getContent())
-            .status(DiscussionStatus.PROPOSED)
-            .startDate(discussionRegisterRequestDTO.getStartDate())
-            .closedAt(discussionRegisterRequestDTO.getStartDate().plusDays(1)) // 하루 뒤 토론 마감
-            .build();
+                .member(member)  // Member 객체
+                .aladinBook(myBook.getAladinBook()) // MyBook 정보가 삭제 되었을 때를 위해
+                .title(discussionRegisterRequestDTO.getTitle())
+                .content(discussionRegisterRequestDTO.getContent())
+                .status(DiscussionStatus.PROPOSED)
+                .startDate(discussionRegisterRequestDTO.getStartDate())
+                .closedAt(discussionRegisterRequestDTO.getStartDate().plusDays(1)) // 하루 뒤 토론 마감
+                .build();
 
         Discussion savedDiscussion = discussionRepository.save(discussion);
         log.info(savedDiscussion.toString());
@@ -92,11 +93,11 @@ public class DiscussionServiceImpl implements DiscussionService {
         // 상태 변경 작업 스케줄링
         try {
             quartzConfig.scheduleDiscussionJobs(savedDiscussion.getStartDate(),
-                savedDiscussion.getId());
+                    savedDiscussion.getId());
         } catch (SchedulerException e) {
             log.error(
-                "토론 상태 변경 작업 스케줄링에 실패했습니다. 토론 ID: " + savedDiscussion.getId(),
-                e);
+                    "토론 상태 변경 작업 스케줄링에 실패했습니다. 토론 ID: " + savedDiscussion.getId(),
+                    e);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -118,10 +119,12 @@ public class DiscussionServiceImpl implements DiscussionService {
 
     @Override
     public ScrollResponseDTO<DiscussionListResponseDTO> getDiscussionList(
-        DiscussionScrollRequestDTO discussionScrollRequestDTO) {
+            DiscussionScrollRequestDTO discussionScrollRequestDTO) {
 
         List<Discussion> discussionList = discussionRepository.findDiscussionsWithScroll(
-            discussionScrollRequestDTO);
+                discussionScrollRequestDTO);
+
+        Long discussionsListCount = discussionRepository.findAllByStatus(DiscussionStatus.valueOf(discussionScrollRequestDTO.getStatus())).stream().count();
 
         boolean hasNext = false;
         if (discussionList.size() > discussionScrollRequestDTO.getSize()) { // 11 > 10 이면 있다는 뜻
@@ -134,7 +137,7 @@ public class DiscussionServiceImpl implements DiscussionService {
 
         for (Discussion discussion : discussionList) {
             // 각 토론의 관련 정보를 추출
-            
+
             Long memberId = discussion.getMember().getId();
             String memberName = discussion.getMember().isDeleted() ? "탈퇴한 회원" : discussion.getMember().getNickname();
 
@@ -143,13 +146,13 @@ public class DiscussionServiceImpl implements DiscussionService {
             Set<String> agrees = new HashSet<>();
             Set<String> disagrees = new HashSet<>();
             comments.stream()
-                .filter(comment -> comment.getVoteType().equals(VoteType.AGREE))
-                .filter(comment -> agrees.add(comment.getMember().getId() + "_" + comment.getVoteType()))
-                .collect(Collectors.toList());  // 또는 다른 종단 연산 사용
+                    .filter(comment -> comment.getVoteType().equals(VoteType.AGREE))
+                    .filter(comment -> agrees.add(comment.getMember().getId() + "_" + comment.getVoteType()))
+                    .collect(Collectors.toList());  // 또는 다른 종단 연산 사용
             comments.stream()
-                .filter(comment -> comment.getVoteType().equals(VoteType.DISAGREE))
-                .filter(comment -> disagrees.add(comment.getMember().getId() + "_" + comment.getVoteType()))
-                .collect(Collectors.toList());  // 또는 다른 종단 연산 사용
+                    .filter(comment -> comment.getVoteType().equals(VoteType.DISAGREE))
+                    .filter(comment -> disagrees.add(comment.getMember().getId() + "_" + comment.getVoteType()))
+                    .collect(Collectors.toList());  // 또는 다른 종단 연산 사용
 
 
             Integer agreeCount = agrees.size();
@@ -157,12 +160,12 @@ public class DiscussionServiceImpl implements DiscussionService {
 
             log.info("agreeCount : {}, disAgreeCount : {}", agreeCount, disagreeCount);
 
-            
+
             String title = discussion.getTitle();
             Long agree = discussion.getParticipants().stream().filter(isAgree -> isAgree.isAgree())
-                .count();  // 찬성 참여자 수
+                    .count();  // 찬성 참여자 수
             Long disagree = discussion.getParticipants().stream()
-                .filter(disAgree -> !disAgree.isAgree()).count();  // 반대 참여자 수
+                    .filter(disAgree -> !disAgree.isAgree()).count();  // 반대 참여자 수
             LocalDateTime createdDate = discussion.getCreatedDate();
             Long views = discussion.getViews();
             Long discussionId = discussion.getId();
@@ -177,68 +180,68 @@ public class DiscussionServiceImpl implements DiscussionService {
 
             // DTO 객체 생성 후 리스트에 추가
             DiscussionListResponseDTO dto = DiscussionListResponseDTO.builder()
-                .discussionId(discussionId)
-                .isbn13(isbn13)
-                .bookTitle(aladinBook.getTitle())
-                .memberId(memberId)
-                .memberName(memberName)
-                .title(title)
-                .agree(agree)
-                .disagree(disagree)
-                .createdDate(createdDate)
-                .startDateTime(startDateTime)
-                .closedAt(closedAt)
-                .views(views)
-                .commentCount(count)
-                .cover(cover)
-                .status(String.valueOf(discussion.getStatus()))
-                .agreePercent(discussion.getAgreePercent())
-                .disagreePercent(discussion.getDisagreePercent())
-                .viewStatus(discussion.getViewStatus())
-                .agreeCommentCount(agreeCount)
-                .disagreeCommentCount(disagreeCount)
-                .build();
+                    .discussionId(discussionId)
+                    .isbn13(isbn13)
+                    .bookTitle(aladinBook.getTitle())
+                    .memberId(memberId)
+                    .memberName(memberName)
+                    .title(title)
+                    .agree(agree)
+                    .disagree(disagree)
+                    .createdDate(createdDate)
+                    .startDateTime(startDateTime)
+                    .closedAt(closedAt)
+                    .views(views)
+                    .commentCount(count)
+                    .cover(cover)
+                    .status(String.valueOf(discussion.getStatus()))
+                    .agreePercent(discussion.getAgreePercent())
+                    .disagreePercent(discussion.getDisagreePercent())
+                    .viewStatus(discussion.getViewStatus())
+                    .agreeCommentCount(agreeCount)
+                    .disagreeCommentCount(disagreeCount)
+                    .build();
 
             responseDTOList.add(dto);
         }
 
         // 마지막 항목의 ID 설정
         Long lastId = discussionList.isEmpty() ?
-            discussionScrollRequestDTO.getLastId() :    // 조회된 목록이 비어있는 경우를 대비해 삼항 연산자 사용
-            discussionList.get(discussionList.size() - 1)
-                .getId(); // lastId를 요청 DTO의 값이 아닌, 실제 조회된 마지막 항목의 ID로 설정
+                discussionScrollRequestDTO.getLastId() :    // 조회된 목록이 비어있는 경우를 대비해 삼항 연산자 사용
+                discussionList.get(discussionList.size() - 1)
+                        .getId(); // lastId를 요청 DTO의 값이 아닌, 실제 조회된 마지막 항목의 ID로 설정
 
         return ScrollResponseDTO.<DiscussionListResponseDTO>withAll()
-            .content(responseDTOList)
-            .hasNext(hasNext)
-            .lastId(lastId) // 조회된 목록의 마지막 항목의 ID ? INDEX ?
-            .numberOfElements(responseDTOList.size())
-            .totalElements((long) discussionList.size())
-            .build();
+                .content(responseDTOList)
+                .hasNext(hasNext)
+                .lastId(lastId) // 조회된 목록의 마지막 항목의 ID ? INDEX ?
+                .numberOfElements(responseDTOList.size())
+                .totalElements(discussionsListCount)
+                .build();
     }
 
     @Override
     public DiscussionDetailResponseDTO getDiscussionDetail(Long loginMemberId, Long discussionId) {
 
         Discussion discussion = discussionRepository.findById(discussionId)
-            .orElseThrow(() -> new DiscussionException("해당 토론방을 찾을 수 없습니다. : " + discussionId));
-        
+                .orElseThrow(() -> new DiscussionException("해당 토론방을 찾을 수 없습니다. : " + discussionId));
+
         AladinBook discussionBook = discussion.getAladinBook();
-        
+
         List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
-        
-        Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
-        
+
+        Long agreeCount = findDPList.stream().filter(dp -> dp.isAgree()).count();
+
         Long disagreeCount = findDPList.size() - agreeCount;
-        
+
         // 조회수 증가 쿼리 실행
         discussionRepository.increaseViews(discussionId);
-        
+
         String isAgree = null;
-        
+
         Optional<DiscussionParticipant> findDiscussionParticipant = discussionParticipantRepository.findByMemberIdAndDiscussionId(
                 loginMemberId, discussion.getId());
-        
+
         if (findDiscussionParticipant.isEmpty()) {
             isAgree = "null";
         } else {
@@ -249,40 +252,40 @@ public class DiscussionServiceImpl implements DiscussionService {
                 isAgree = "disagree";
             }
         }
-        
+
         Boolean isReport = reportRepository.existsByReporterIdAndDiscussionId(loginMemberId, discussionId);
-        
+
         Long currentViews = discussionRepository.findViewsById(discussionId);
-        
+
         Long memberId = discussion.getMember().getId();
         String profileImage =
                 discussion.getMember().isDeleted() ? "defaultProfileImage.jpg" : discussion.getMember().getProfileImage();
         String nickname =
                 discussion.getMember().isDeleted() ? "탈퇴한 회원" : discussion.getMember().getNickname();
-        
+
         DiscussionDetailResponseDTO discussionDetailResponseDTO = DiscussionDetailResponseDTO.builder()
-            .discussionId(discussionId)
-            .bookTitle(discussionBook.getTitle())
-            .memberId(memberId)
-            .memberName(nickname)
-            .profileImage(profileImage)
-            .title(discussion.getTitle())
-            .content(discussion.getContent())
-            .agreeCount(agreeCount)
-            .disagreeCount(disagreeCount)
-            .startDate(discussion.getStartDate())
-            .closedAt(discussion.getStartDate().plusDays(1))
-            .createdDate(discussion.getCreatedDate())
-            .views(currentViews)
-            .commentCount(discussion.getComments().stream().count())
-            .cover(discussionBook.getCover())
-            .status(String.valueOf(discussion.getStatus()))
-            .agreePercent(discussion.getAgreePercent())
-            .disagreePercent(discussion.getDisagreePercent())
-            .isReport(isReport)
-            .isAgree(isAgree)
-            .viewStatus(discussion.getViewStatus())
-            .build();
+                .discussionId(discussionId)
+                .bookTitle(discussionBook.getTitle())
+                .memberId(memberId)
+                .memberName(nickname)
+                .profileImage(profileImage)
+                .title(discussion.getTitle())
+                .content(discussion.getContent())
+                .agreeCount(agreeCount)
+                .disagreeCount(disagreeCount)
+                .startDate(discussion.getStartDate())
+                .closedAt(discussion.getStartDate().plusDays(1))
+                .createdDate(discussion.getCreatedDate())
+                .views(currentViews)
+                .commentCount(discussion.getComments().stream().count())
+                .cover(discussionBook.getCover())
+                .status(String.valueOf(discussion.getStatus()))
+                .agreePercent(discussion.getAgreePercent())
+                .disagreePercent(discussion.getDisagreePercent())
+                .isReport(isReport)
+                .isAgree(isAgree)
+                .viewStatus(discussion.getViewStatus())
+                .build();
 
         return discussionDetailResponseDTO;
     }
@@ -293,16 +296,16 @@ public class DiscussionServiceImpl implements DiscussionService {
         Long discussionId = discussionUpdateRequestDTO.getDiscussionId();
 
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId));
+                .orElseThrow(() -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId));
 
         Discussion discussion = discussionRepository.findById(discussionId)
-            .orElseThrow(
-                () -> new DiscussionNotFoundException("해당 토론을 찾을 수 없습니다. : " + discussionId));
+                .orElseThrow(
+                        () -> new DiscussionNotFoundException("해당 토론을 찾을 수 없습니다. : " + discussionId));
 
         if (member.getId() != discussion.getMember().getId()) {
 
             throw new DiscussionException("발의한 회원만 수정 할 수 있습니다. : " + "수정 할 회원 : " + memberId + " 토론 만든 회원 : "
-                + discussion.getMember().getId());
+                    + discussion.getMember().getId());
         }
 
         if (discussion.getStatus() != DiscussionStatus.PROPOSED) {
@@ -339,33 +342,33 @@ public class DiscussionServiceImpl implements DiscussionService {
     public Map<String, String> joinAgree(Long memberId, Long discussionId) {
 
         Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(
-            () -> new DiscussionNotFoundException("해당 토론을 찾을 수 없습니다. : " + discussionId));
+                () -> new DiscussionNotFoundException("해당 토론을 찾을 수 없습니다. : " + discussionId));
 
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId));
+                .orElseThrow(() -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId));
 
         DiscussionParticipant savedParticipant = discussionParticipantRepository.findByDiscussionAndMember(
-            discussion, member).orElse(null);
-        
+                discussion, member).orElse(null);
+
         Map<String, String> result = new HashMap<>();
 
         if (discussion.getStatus() == DiscussionStatus.PROPOSED) {
 
             if (savedParticipant == null) {
                 DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
-                    .discussion(discussion)
-                    .member(member)
-                    .isAgree(true)
-                    .build();
+                        .discussion(discussion)
+                        .member(member)
+                        .isAgree(true)
+                        .build();
 
                 discussionParticipantRepository.save(discussionParticipant);
-                
+
                 List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
-                
-                Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
-                
+
+                Long agreeCount = findDPList.stream().filter(dp -> dp.isAgree()).count();
+
                 Long disagreeCount = findDPList.size() - agreeCount;
-                
+
                 result.put("isAgree", "agree");
                 result.put("agreeCount", String.valueOf(agreeCount));
                 result.put("disagreeCount", String.valueOf(disagreeCount));
@@ -376,42 +379,42 @@ public class DiscussionServiceImpl implements DiscussionService {
                     discussionParticipantRepository.deleteById(savedParticipant.getId());
 
                     DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
-                        .discussion(discussion)
-                        .member(member)
-                        .isAgree(true)
-                        .build();
+                            .discussion(discussion)
+                            .member(member)
+                            .isAgree(true)
+                            .build();
                     discussionParticipantRepository.save(discussionParticipant);
-                    
+
                     List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
-                    
-                    Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
-                    
+
+                    Long agreeCount = findDPList.stream().filter(dp -> dp.isAgree()).count();
+
                     Long disagreeCount = findDPList.size() - agreeCount;
-                    
+
                     result.put("isAgree", "agree");
                     result.put("agreeCount", String.valueOf(agreeCount));
                     result.put("disagreeCount", String.valueOf(disagreeCount));
                     return result;
                 }
                 discussionParticipantRepository.delete(savedParticipant);   // agree 눌러져 있는데 한번더 눌릴때
-                
+
                 List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
-                
-                Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
-                
+
+                Long agreeCount = findDPList.stream().filter(dp -> dp.isAgree()).count();
+
                 Long disagreeCount = findDPList.size() - agreeCount;
-                
+
                 result.put("isAgree", "null");
                 result.put("agreeCount", String.valueOf(agreeCount));
                 result.put("disagreeCount", String.valueOf(disagreeCount));
                 return result;
             }
         }
-        
+
         List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
-        
-        Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
-        
+
+        Long agreeCount = findDPList.stream().filter(dp -> dp.isAgree()).count();
+
         Long disagreeCount = findDPList.size() - agreeCount;
         result.put("isAgree", "isOver");
         result.put("agreeCount", String.valueOf(agreeCount));
@@ -424,33 +427,33 @@ public class DiscussionServiceImpl implements DiscussionService {
     public Map<String, String> joinDisagree(Long memberId, Long discussionId) {
 
         Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(
-            () -> new DiscussionNotFoundException("해당 토론을 찾을 수 없습니다. : " + discussionId));
+                () -> new DiscussionNotFoundException("해당 토론을 찾을 수 없습니다. : " + discussionId));
 
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId));
+                .orElseThrow(() -> new MemberNotFoundException("해당 멤버를 찾을 수 없습니다. : " + memberId));
 
         DiscussionParticipant savedParticipant = discussionParticipantRepository.findByDiscussionAndMember(
-            discussion, member).orElse(null);
-        
+                discussion, member).orElse(null);
+
         Map<String, String> result = new HashMap<>();
 
-        
+
         if (discussion.getStatus() == DiscussionStatus.PROPOSED) {
             if (savedParticipant == null) {
                 DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
-                    .discussion(discussion)
-                    .member(member)
-                    .isAgree(false)
-                    .build();
+                        .discussion(discussion)
+                        .member(member)
+                        .isAgree(false)
+                        .build();
 
                 discussionParticipantRepository.save(discussionParticipant);
-                
+
                 List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
-                
-                Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
-                
+
+                Long agreeCount = findDPList.stream().filter(dp -> dp.isAgree()).count();
+
                 Long disagreeCount = findDPList.size() - agreeCount;
-                
+
                 result.put("isAgree", "disagree");
                 result.put("agreeCount", String.valueOf(agreeCount));
                 result.put("disagreeCount", String.valueOf(disagreeCount));
@@ -461,45 +464,45 @@ public class DiscussionServiceImpl implements DiscussionService {
                     discussionParticipantRepository.deleteById(savedParticipant.getId());
 
                     DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
-                        .discussion(discussion)
-                        .member(member)
-                        .isAgree(false)
-                        .build();
+                            .discussion(discussion)
+                            .member(member)
+                            .isAgree(false)
+                            .build();
 
                     discussionParticipantRepository.save(discussionParticipant);
-                    
+
                     List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
-                    
-                    Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
-                    
+
+                    Long agreeCount = findDPList.stream().filter(dp -> dp.isAgree()).count();
+
                     Long disagreeCount = findDPList.size() - agreeCount;
-                    
+
                     result.put("isAgree", "disagree");
                     result.put("agreeCount", String.valueOf(agreeCount));
                     result.put("disagreeCount", String.valueOf(disagreeCount));
                     return result;
                 }
                 discussionParticipantRepository.delete(savedParticipant);
-                
+
                 List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
-                
-                Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
-                
+
+                Long agreeCount = findDPList.stream().filter(dp -> dp.isAgree()).count();
+
                 Long disagreeCount = findDPList.size() - agreeCount;
-                
+
                 result.put("isAgree", "null");
                 result.put("agreeCount", String.valueOf(agreeCount));
                 result.put("disagreeCount", String.valueOf(disagreeCount));
                 return result;
             }
         }
-        
+
         List<DiscussionParticipant> findDPList = discussionParticipantRepository.findByDiscussion(discussion);
-        
-        Long agreeCount= findDPList.stream().filter(dp -> dp.isAgree()).count();
-        
+
+        Long agreeCount = findDPList.stream().filter(dp -> dp.isAgree()).count();
+
         Long disagreeCount = findDPList.size() - agreeCount;
-        
+
         result.put("isAgree", "isOver");
         result.put("agreeCount", String.valueOf(agreeCount));
         result.put("disagreeCount", String.valueOf(disagreeCount));
@@ -510,7 +513,7 @@ public class DiscussionServiceImpl implements DiscussionService {
     public void deleteDiscussion(Long memberId, Long discussionId) throws SchedulerException {
 
         Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(
-            () -> new DiscussionNotFoundException("해당 토론을 찾을 수 없습니다. : " + discussionId));
+                () -> new DiscussionNotFoundException("해당 토론을 찾을 수 없습니다. : " + discussionId));
 
         if (Objects.equals(discussion.getMember().getId(), memberId)) {
 
