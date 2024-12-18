@@ -13,6 +13,16 @@ java {
     }
 }
 
+bootJar {
+    enabled = true
+    archiveClassifier = ''
+}
+
+jar {
+    enabled = true
+    archiveClassifier = 'plain'
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
