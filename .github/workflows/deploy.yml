@@ -25,9 +25,15 @@ jobs:
         run: ./gradlew test
 
   deploy-to-production:
-    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'  # main 브랜치 관련 작업만
+    if: github.ref == 'refs/heads/main'  # main 브랜치 관련 작업만
     runs-on: ubuntu-latest
     steps:
+      - name: Debug information
+        run: |
+          echo "github.ref: ${{ github.ref }}"
+          echo "github.base_ref: ${{ github.base_ref }}"
+          echo "github.head_ref: ${{ github.head_ref }}"
+          echo "github.event_name: ${{ github.event_name }}"
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         env:
@@ -72,11 +78,19 @@ jobs:
             chmod +x ./gradlew
             export GRADLE_OPTS="-Xmx512m -XX:MaxMetaspaceSize=256m"
             
+            # Gradle 빌드 전에 추가
+            echo "현재 build/libs 디렉토리 내용:"
+            ls -la build/libs || echo "디렉토리가 없음"
+            
             # main 브랜치는 테스트 없이 빌드만 실행
-            if ! timeout 600s ./gradlew clean build -x test --info; then
+            if ! timeout 600s ./gradlew clean bootJar --rerun-tasks --info; then
               echo "Gradle 빌드 실패"
               exit 1
             fi
+            
+            # Gradle 빌드 후에 추가
+            echo "빌드 후 build/libs 디렉토리 내용:"
+            ls -la build/libs
             
             echo "Gradle 빌드 성공"
             
