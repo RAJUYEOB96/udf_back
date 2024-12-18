@@ -213,7 +213,7 @@ class DiscussionCommentServiceImplTest {
     
     @Test
     @DisplayName("댓글 목록을 스크롤 방식으로 조회하는 테스트")
-    void testGetCommentList() {
+    void testGetCommentDTOList() {
         // Given
         DiscussionCommentsScrollRequestDTO requestDTO = new DiscussionCommentsScrollRequestDTO();
         requestDTO.setSize(10);
