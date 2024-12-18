@@ -7,13 +7,14 @@ import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentRequestDTO;
 import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentResponseDTO;
 import java.util.List;
+import java.util.Map;
 
 public interface DiscussionCommentService {
 
-    DiscussionCommentResponseDTO writeComment(Long discussionId, Long memberId,
+    Map<String, Object> writeComment(Long discussionId, Long memberId,
         DiscussionCommentRequestDTO discussionCommentRequestDTO);
 
-    DiscussionCommentResponseDTO writeReply(Long discussionId, Long discussionCommentId, Long memberId,
+    Map<String, Object> writeReply(Long discussionId, Long discussionCommentId, Long memberId,
         DiscussionCommentRequestDTO discussionCommentRequestDTO);
 
     ScrollResponseDTO<DiscussionCommentResponseDTO> getCommentList(

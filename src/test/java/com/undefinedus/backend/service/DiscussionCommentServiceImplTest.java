@@ -227,7 +227,7 @@ class DiscussionCommentServiceImplTest {
         requestDTO.setSize(10);
         requestDTO.setLastId(0L);
         
-        Long discussionId = 42L;
+//        Long discussionId = 42L;
         
         Member member = new Member();
         member.setId(1L);
@@ -238,12 +238,12 @@ class DiscussionCommentServiceImplTest {
         List<DiscussionComment> commentList = Arrays.asList(comment2);
         
         // When
-        when(discussionCommentRepository.findDiscussionCommentListWithScroll(any(DiscussionCommentsScrollRequestDTO.class), eq(discussionId)))
+        when(discussionCommentRepository.findDiscussionCommentListWithScroll(any(DiscussionCommentsScrollRequestDTO.class), eq(discussion.getId())))
                 .thenReturn(commentList);
         when(memberRepository.findById(eq(1L))).thenReturn(Optional.of(member));
         
         ScrollResponseDTO<DiscussionCommentResponseDTO> result =
-                discussionCommentService.getCommentList(member.getId(), requestDTO, discussionId);
+                discussionCommentService.getCommentList(member.getId(), requestDTO, discussion.getId());
 
         System.out.println("result = " + result);
         

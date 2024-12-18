@@ -22,7 +22,9 @@ import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.ReportRepository;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -47,8 +49,10 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
     // 댓글 달기
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public DiscussionCommentResponseDTO writeComment(Long discussionId, Long memberId,
+    public Map<String, Object> writeComment(Long discussionId, Long memberId,
         DiscussionCommentRequestDTO discussionCommentRequestDTO) {
+
+        Map<String, Object> result = new HashMap<>();
 
         // VoteType 값 변환
         VoteType voteType;
@@ -83,15 +87,27 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
         DiscussionComment savedComment = discussionCommentRepository.save(discussionComment);
 
-        return getCommentDTO(savedComment, member);
+        DiscussionCommentResponseDTO commentDTO = getCommentDTO(savedComment, member);
+
+        List<DiscussionComment> discussionCommentList = discussionCommentRepository.findByDiscussion(
+            discussionComment.getDiscussion());
+
+        long commentCount = discussionCommentList.stream().count();
+
+        result.put("content", commentDTO);
+        result.put("commentCount", commentCount);
+
+        return result;
     }
 
     // 답글 달기
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public DiscussionCommentResponseDTO writeReply(Long discussionId, Long discussionCommentId,
+    public Map<String, Object> writeReply(Long discussionId, Long discussionCommentId,
         Long memberId,
         DiscussionCommentRequestDTO discussionCommentRequestDTO) {
+
+        Map<String, Object> result = new HashMap<>();
 
         // VoteType 값 변환
         VoteType voteType;
@@ -139,7 +155,17 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
         DiscussionComment savedComment = discussionCommentRepository.save(childDiscussionComment);
 
-        return getCommentDTO(savedComment, member);
+        DiscussionCommentResponseDTO commentDTO = getCommentDTO(savedComment, member);
+
+        List<DiscussionComment> discussionCommentList = discussionCommentRepository.findByDiscussion(
+            childDiscussionComment.getDiscussion());
+
+        long commentCount = discussionCommentList.stream().count();
+
+        result.put("content", commentDTO);
+        result.put("commentCount", commentCount);
+
+        return result;
     }
 
     @Override
@@ -149,6 +175,12 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
         List<DiscussionComment> discussionCommentList = discussionCommentRepository.findDiscussionCommentListWithScroll(
             discussionCommentsScrollRequestDTO, discussionId);
+
+        Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(
+            () -> new DiscussionNotFoundException("해당 토론을 찾지 못했습니다. : " + discussionId));
+
+        long discussionCommentTotal = discussionCommentRepository.findByDiscussion(
+            discussion).stream().count();
 
         boolean hasNext = false;
         if (discussionCommentList.size()
@@ -179,7 +211,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             .hasNext(hasNext)
             .lastId(lastId) // 조회된 목록의 마지막 항목의 ID ? INDEX ?
             .numberOfElements(responseDTOList.size())
-            .totalElements(discussionCommentList.stream().count())
+            .totalElements(discussionCommentTotal)
             .build();
     }
 
@@ -351,9 +383,6 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
     public DiscussionCommentResponseDTO getCommentDTO(DiscussionComment discussionComment,
         Member member) {
 
-        List<DiscussionComment> discussionCommentList = discussionCommentRepository.findByDiscussion(
-            discussionComment.getDiscussion());
-
         String profileImage =
             discussionComment.getMember().isDeleted() ? "defaultProfileImage.jpg"
                 : discussionComment.getMember().getProfileImage();
@@ -422,7 +451,6 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             .createTime(discussionComment.getCreatedDate())
             .viewStatus(discussionComment.getViewStatus())
             .isReport(commentReported.isPresent())
-            .commentCount(discussionCommentList.stream().count())
             .build();
 
         return discussionCommentResponseDTO;
