@@ -82,12 +82,12 @@ jobs:
             
             # 애플리케이션 실행 부분에도 메모리 설정 추가
             echo "8. 애플리케이션 실행"
-            nohup java -Xmx512m -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &
+            nohup java -Xmx512m -jar build/libs/*.jar > ./output.log 2>&1 &
             
             echo "9. 배포 상태 확인 중... (10초 대기)"
             sleep 10
             
-            if ps aux | grep "[S]NAPSHOT.jar" > /dev/null; then
+            if ps aux | grep "build/libs/.*.jar" > /dev/null && ss -tunlp | grep 8080 > /dev/null; then
               echo "===== 배포 성공 ====="
               echo "애플리케이션 로그:"
               tail -n 50 ./output.log
@@ -95,6 +95,10 @@ jobs:
               echo "===== 배포 실패 ====="
               echo "애플리케이션 로그:"
               cat ./output.log
+              echo "Java 프로세스 상태:"
+              ps -ef | grep java
+              echo "포트 상태:"
+              ss -tunlp | grep 8080 || echo "8080 포트 사용 중이 아님"
               exit 1
             fi
             
