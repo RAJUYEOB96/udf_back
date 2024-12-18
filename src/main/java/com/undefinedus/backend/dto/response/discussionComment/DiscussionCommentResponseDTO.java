@@ -52,4 +52,6 @@ public class DiscussionCommentResponseDTO {
     private ViewStatus viewStatus;
     
     private Boolean isReport;
+
+    private Long commentCount; // 현재 댓글 총 개수 같은 토론의 댓글의 commentCount는 같은 숫자를 공유한다.
 }

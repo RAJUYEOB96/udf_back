@@ -10,10 +10,10 @@ import java.util.List;
 
 public interface DiscussionCommentService {
 
-    void writeComment(Long discussionId, Long memberId,
+    DiscussionCommentResponseDTO writeComment(Long discussionId, Long memberId,
         DiscussionCommentRequestDTO discussionCommentRequestDTO);
 
-    void writeReply(Long discussionId, Long discussionCommentId, Long memberId,
+    DiscussionCommentResponseDTO writeReply(Long discussionId, Long discussionCommentId, Long memberId,
         DiscussionCommentRequestDTO discussionCommentRequestDTO);
 
     ScrollResponseDTO<DiscussionCommentResponseDTO> getCommentList(

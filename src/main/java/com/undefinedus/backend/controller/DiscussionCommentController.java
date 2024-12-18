@@ -32,7 +32,7 @@ public class DiscussionCommentController {
 
     // 댓글 달기
     @PostMapping("/writeComment/{discussionId}")
-    public ResponseEntity<ApiResponseDTO<Void>> writeComment(
+    public ResponseEntity<ApiResponseDTO<DiscussionCommentResponseDTO>> writeComment(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @PathVariable("discussionId") Long discussionId,
         @Valid @RequestBody DiscussionCommentRequestDTO discussionCommentRequestDTO
@@ -40,15 +40,16 @@ public class DiscussionCommentController {
 
         Long memberId = memberSecurityDTO.getId();
 
-        discussionCommentService.writeComment(discussionId, memberId, discussionCommentRequestDTO);
+        DiscussionCommentResponseDTO discussionCommentResponseDTO = discussionCommentService.writeComment(
+            discussionId, memberId, discussionCommentRequestDTO);
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(ApiResponseDTO.success(null));
+            .body(ApiResponseDTO.success(discussionCommentResponseDTO));
     }
 
     // 답글 달기
     @PostMapping("/writeComment/{discussionId}/{discussionCommentId}")
-    public ResponseEntity<ApiResponseDTO<Void>> writeReply(
+    public ResponseEntity<ApiResponseDTO<DiscussionCommentResponseDTO>> writeReply(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @PathVariable("discussionId") Long discussionId,
         @PathVariable("discussionCommentId") Long discussionCommentId,
@@ -57,11 +58,12 @@ public class DiscussionCommentController {
 
         Long memberId = memberSecurityDTO.getId();
 
-        discussionCommentService.writeReply(discussionId, discussionCommentId, memberId,
+        DiscussionCommentResponseDTO discussionCommentResponseDTO = discussionCommentService.writeReply(
+            discussionId, discussionCommentId, memberId,
             discussionCommentRequestDTO);
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(ApiResponseDTO.success(null));
+            .body(ApiResponseDTO.success(discussionCommentResponseDTO));
     }
 
     // 베스트 3 댓글 목록
