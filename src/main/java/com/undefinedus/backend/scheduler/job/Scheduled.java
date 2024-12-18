@@ -52,8 +52,6 @@ public class Scheduled implements Job {
 
                 discussionForChangeStatus.changeStatus(DiscussionStatus.SCHEDULED);
 
-                discussionParticipantRepository.deleteAllByDiscussion(discussion);
-
                 discussionRepository.save(discussionForChangeStatus);
                 log.info("{}번 토론이 {}상태로 변경 되었습니다.", discussion.getId(), discussion.getStatus());
             } else {
