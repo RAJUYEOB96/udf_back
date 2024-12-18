@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -48,7 +47,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
     // 댓글 달기
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void writeComment(Long discussionId, Long memberId,
+    public DiscussionCommentResponseDTO writeComment(Long discussionId, Long memberId,
         DiscussionCommentRequestDTO discussionCommentRequestDTO) {
 
         // VoteType 값 변환
@@ -82,13 +81,16 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             .content(discussionCommentRequestDTO.getContent())
             .build();
 
-        discussionCommentRepository.save(discussionComment);
+        DiscussionComment savedComment = discussionCommentRepository.save(discussionComment);
+
+        return getCommentDTO(savedComment, member);
     }
 
     // 답글 달기
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void writeReply(Long discussionId, Long discussionCommentId, Long memberId,
+    public DiscussionCommentResponseDTO writeReply(Long discussionId, Long discussionCommentId,
+        Long memberId,
         DiscussionCommentRequestDTO discussionCommentRequestDTO) {
 
         // VoteType 값 변환
@@ -135,7 +137,9 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             .content(discussionCommentRequestDTO.getContent())
             .build();
 
-        discussionCommentRepository.save(childDiscussionComment);
+        DiscussionComment savedComment = discussionCommentRepository.save(childDiscussionComment);
+
+        return getCommentDTO(savedComment, member);
     }
 
     @Override
@@ -347,6 +351,9 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
     public DiscussionCommentResponseDTO getCommentDTO(DiscussionComment discussionComment,
         Member member) {
 
+        List<DiscussionComment> discussionCommentList = discussionCommentRepository.findByDiscussion(
+            discussionComment.getDiscussion());
+
         String profileImage =
             discussionComment.getMember().isDeleted() ? "defaultProfileImage.jpg"
                 : discussionComment.getMember().getProfileImage();
@@ -415,6 +422,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             .createTime(discussionComment.getCreatedDate())
             .viewStatus(discussionComment.getViewStatus())
             .isReport(commentReported.isPresent())
+            .commentCount(discussionCommentList.stream().count())
             .build();
 
         return discussionCommentResponseDTO;
