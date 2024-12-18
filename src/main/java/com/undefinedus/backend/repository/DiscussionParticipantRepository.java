@@ -12,6 +12,10 @@ public interface DiscussionParticipantRepository extends JpaRepository<Discussio
     Optional<DiscussionParticipant> findByDiscussionAndMember(Discussion discussion, Member member);
     
     Boolean existsByMemberIdAndDiscussionId(Long loginMemberId, Long id);
+
+    List<DiscussionParticipant> findAllByDiscussion(Discussion discussion);
+
+    void deleteAllByDiscussion(Discussion discussion);
     
     Optional<DiscussionParticipant> findByMemberIdAndDiscussionId(Long loginMemberId, Long discussionId);
     

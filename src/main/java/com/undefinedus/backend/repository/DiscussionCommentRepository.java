@@ -1,5 +1,6 @@
 package com.undefinedus.backend.repository;
 
+import com.undefinedus.backend.domain.entity.Discussion;
 import com.undefinedus.backend.domain.entity.DiscussionComment;
 import com.undefinedus.backend.domain.enums.VoteType;
 import com.undefinedus.backend.repository.queryDSL.DiscussionCommentsRepositoryCustom;
@@ -61,7 +62,7 @@ public interface DiscussionCommentRepository extends JpaRepository<DiscussionCom
             + " FROM discussion_comment dc"
             + " JOIN comment_like l ON dc.id = l.comment_id"
             + " WHERE dc.discussion_id = :discussionId"
-            + " AND dc.discussion_comment_status = 'ACTIVE'"
+            + " AND dc.view_status = 'ACTIVE'"
             + " AND dc.is_child = false"
             + " AND dc.is_deleted = false"
             + " GROUP BY dc.id"
@@ -77,4 +78,6 @@ public interface DiscussionCommentRepository extends JpaRepository<DiscussionCom
     
     @Query("SELECT r.comment.id FROM Report r WHERE r.reporter.id = :reporterId")
     Set<Long> findDiscussionCommentIdsByReporterId(@Param("reporterId") Long reporterId);
+
+    List<DiscussionComment> findByDiscussion(Discussion discussion);
 }

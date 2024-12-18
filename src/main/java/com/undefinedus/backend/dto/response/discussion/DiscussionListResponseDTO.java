@@ -44,4 +44,8 @@ public class DiscussionListResponseDTO {
     private String status; // 게시물 상태
     
     private ViewStatus viewStatus; // Blocked 되었는지에 대한 필드
+
+    private Integer agreeCommentCount;
+
+    private Integer disagreeCommentCount;
 }

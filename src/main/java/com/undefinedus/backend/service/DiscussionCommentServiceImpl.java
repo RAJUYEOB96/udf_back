@@ -86,24 +86,6 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
         discussionCommentRepository.save(discussionComment);
 
-        DiscussionParticipant savedDiscussionParticipant = discussionParticipantRepository.findByDiscussionAndMember(
-            discussion, member).orElse(null);
-
-        // VoteType에 따라 isAgree 값을 결정
-        boolean newIsAgree = voteType == VoteType.AGREE;
-
-        // 이미 저장된 Participant가 있는 경우, 기존의 isAgree와 비교
-        if (savedDiscussionParticipant != null) {
-
-            if (savedDiscussionParticipant.isAgree() == newIsAgree) {
-
-                // 기존의 isAgree 값과 동일하다면 추가 작업을 하지 않음
-                return;
-            } else {
-                discussionParticipantRepository.deleteById(savedDiscussionParticipant.getId());
-            }
-        }
-
         // 새로운 isAgree 값인 경우에만 추가
         addParticipant(discussion, member, voteType);
     }
@@ -212,88 +194,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
         // 결과를 담을 리스트
         List<DiscussionCommentResponseDTO> responseDTOList = new ArrayList<>();
 
-//        // 한번에 신고된 댓글 ID들을 가져옴
-//        Set<Long> reportedCommentIds = discussionCommentRepository.findDiscussionCommentIdsByReporterId(
-//            loginMemberId);
-
         for (DiscussionComment discussionComment : discussionCommentList) {
-
-            // Set에서 해당 댓글 ID가 있는지 확인
-//            boolean isReport = reportedCommentIds.contains(discussionComment.getId());
-//
-//            // 각 토론 댓글의 관련 정보를 추출
-//            Long memberId = discussionComment.getMember().getId();
-//            String profileImage =
-//                discussionComment.getMember().isDeleted() ? "defaultProfileImage.jpg"
-//                    : discussionComment.getMember().getProfileImage();
-//            String nickname =
-//                discussionComment.getMember().isDeleted() ? "탈퇴한 회원"
-//                    : discussionComment.getMember().getNickname();
-//            String honorific =
-//                discussionComment.getMember().isDeleted() ? "탈퇴한 회원입니다"
-//                    : discussionComment.getMember().getHonorific();
-//
-//            Long groupId = discussionComment.getGroupId();
-//            Long commentId = discussionComment.getId();
-//            Long parentId = discussionComment.getParentId();
-//
-//            Optional<DiscussionComment> parentComment = null;
-//
-//            if (parentId != null) {
-//                parentComment = discussionCommentRepository.findById(parentId);
-//            }
-//
-//            String parentNickname = null;
-//
-//            if (parentComment != null && parentComment.isPresent()) {
-//
-//                if (parentComment.get().isDeleted() == false) {
-//
-//                    parentNickname = parentComment.get().getMember().getNickname();
-//                } else {
-//
-//                    parentNickname = "탈퇴한 회원";
-//                }
-//            }
-//
-//            Long order = discussionComment.getGroupOrder();
-//            boolean isChild = discussionComment.isChild();
-//            VoteType voteType = discussionComment.getVoteType();
-//            String content = discussionComment.getContent();
-//            long likeCount = discussionComment.getLikes().stream()
-//                .filter(commentLike -> commentLike.isLike() == true).count();
-//            long dislikeCount = discussionComment.getLikes().size() - likeCount;
-//            LocalDateTime createdDate = discussionComment.getCreatedDate();
-//            Long totalOrder = discussionComment.getTotalOrder();
-//            ViewStatus viewStatus = discussionComment.getViewStatus();
-//
-//            // DTO 객체 생성 후 리스트에 추가
-//            DiscussionCommentResponseDTO dto = DiscussionCommentResponseDTO.builder()
-//                .commentId(commentId)
-//                .discussionId(discussionId)
-//                .memberId(memberId)
-//                .profileImage(profileImage)
-//                .nickname(nickname)
-//                .honorific(honorific)
-//                .parentId(parentId)
-//                .parentNickname(parentNickname)
-//                .groupId(groupId)
-//                .groupOrder(order)
-//                .totalOrder(totalOrder)
-//                .isChild(isChild)
-//                .isLike()
-//                .voteType(String.valueOf(voteType))
-//                .content(content)
-//                .like(likeCount)
-//                .dislike(dislikeCount)
-//                .isSelected(false)
-//                .createTime(createdDate)
-//                .viewStatus(viewStatus)
-//                .isReport(isReport)  // 신고 여부 추가
-//                .build();
-//
-//            DiscussionCommentResponseDTO commentResponseDTO = getComment(discussionComment,
-//                discussionComment.getMember());
 
             DiscussionCommentResponseDTO commentResponseDTO = getComment(discussionComment,
                 discussionComment.getMember());
@@ -305,7 +206,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
         Long lastId = discussionCommentList.isEmpty() ?
             discussionCommentsScrollRequestDTO.getLastId() :    // 조회된 목록이 비어있는 경우를 대비해 삼항 연산자 사용
             discussionCommentList.get(discussionCommentList.size() - 1)
-                .getId(); // lastId를 요청 DTO의 값이 아닌, 실제 조회된 마지막 항목의 ID로 설정
+                .getTotalOrder(); // lastId를 요청 DTO의 값이 아닌, 실제 조회된 마지막 항목의 ID로 설정
 
         return ScrollResponseDTO.<DiscussionCommentResponseDTO>withAll()
             .content(responseDTOList)
