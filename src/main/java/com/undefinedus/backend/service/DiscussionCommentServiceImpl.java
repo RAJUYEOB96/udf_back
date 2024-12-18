@@ -85,9 +85,6 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             .build();
 
         discussionCommentRepository.save(discussionComment);
-
-        // 새로운 isAgree 값인 경우에만 추가
-        addParticipant(discussion, member, voteType);
     }
 
     // 답글 달기
@@ -141,39 +138,6 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             .build();
 
         discussionCommentRepository.save(childDiscussionComment);
-
-        DiscussionParticipant savedDiscussionParticipant = discussionParticipantRepository.findByDiscussionAndMember(
-            discussion, member).orElse(null);
-
-        // VoteType에 따라 isAgree 값을 결정
-        boolean newIsAgree = voteType == VoteType.AGREE;
-
-        // 이미 저장된 Participant가 있는 경우, 기존의 isAgree와 비교
-        if (savedDiscussionParticipant != null) {
-
-            if (savedDiscussionParticipant.isAgree() == newIsAgree) {
-
-                // 기존의 isAgree 값과 동일하다면 추가 작업을 하지 않음
-                return;
-            } else {
-
-                discussionParticipantRepository.deleteById(savedDiscussionParticipant.getId());
-            }
-        }
-
-        // 새로운 isAgree 값인 경우에만 추가
-        addParticipant(discussion, member, voteType);
-    }
-
-    private void addParticipant(Discussion discussion, Member member, VoteType voteType) {
-
-        DiscussionParticipant discussionParticipant = DiscussionParticipant.builder()
-            .discussion(discussion)
-            .member(member)
-            .isAgree(voteType == VoteType.AGREE)
-            .build();
-
-        discussionParticipantRepository.save(discussionParticipant);
     }
 
     @Override
