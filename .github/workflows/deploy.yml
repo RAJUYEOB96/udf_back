@@ -25,9 +25,15 @@ jobs:
         run: ./gradlew test
 
   deploy-to-production:
-    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'  # main 브랜치 관련 작업만
+    if: github.ref == 'refs/heads/main'  # main 브랜치 관련 작업만
     runs-on: ubuntu-latest
     steps:
+      - name: Debug information
+        run: |
+          echo "github.ref: ${{ github.ref }}"
+          echo "github.base_ref: ${{ github.base_ref }}"
+          echo "github.head_ref: ${{ github.head_ref }}"
+          echo "github.event_name: ${{ github.event_name }}"
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         env:
@@ -72,22 +78,30 @@ jobs:
             chmod +x ./gradlew
             export GRADLE_OPTS="-Xmx512m -XX:MaxMetaspaceSize=256m"
             
+            # Gradle 빌드 전에 추가
+            echo "현재 build/libs 디렉토리 내용:"
+            ls -la build/libs || echo "디렉토리가 없음"
+            
             # main 브랜치는 테스트 없이 빌드만 실행
-            if ! timeout 600s ./gradlew clean build -x test --info; then
+            if ! timeout 600s ./gradlew clean bootJar --rerun-tasks --info; then
               echo "Gradle 빌드 실패"
               exit 1
             fi
+            
+            # Gradle 빌드 후에 추가
+            echo "빌드 후 build/libs 디렉토리 내용:"
+            ls -la build/libs
             
             echo "Gradle 빌드 성공"
             
             # 애플리케이션 실행 부분에도 메모리 설정 추가
             echo "8. 애플리케이션 실행"
-            nohup java -Xmx512m -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &
+            nohup java -Xmx512m -jar $(ls build/libs/*.jar | grep -v plain) > ./output.log 2>&1 &
             
-            echo "9. 배포 상태 확인 중... (10초 대기)"
-            sleep 10
+            echo "9. 배포 상태 확인 중... (60초 대기)"
+            sleep 60
             
-            if ps aux | grep "[S]NAPSHOT.jar" > /dev/null; then
+            if ps aux | grep "build/libs/.*.jar" > /dev/null && ss -tunlp | grep 8080 > /dev/null; then
               echo "===== 배포 성공 ====="
               echo "애플리케이션 로그:"
               tail -n 50 ./output.log
@@ -95,6 +109,10 @@ jobs:
               echo "===== 배포 실패 ====="
               echo "애플리케이션 로그:"
               cat ./output.log
+              echo "Java 프로세스 상태:"
+              ps -ef | grep java
+              echo "포트 상태:"
+              ss -tunlp | grep 8080 || echo "8080 포트 사용 중이 아님"
               exit 1
             fi
             

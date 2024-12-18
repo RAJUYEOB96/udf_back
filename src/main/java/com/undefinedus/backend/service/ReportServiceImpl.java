@@ -142,7 +142,7 @@ public class ReportServiceImpl implements ReportService {
             }
         }
 
-        discussionCommentResponseDTO = discussionCommentService.getComment(discussionComment, reporter);
+        discussionCommentResponseDTO = discussionCommentService.getCommentDTO(discussionComment, reporter);
 
         return discussionCommentResponseDTO;
     }

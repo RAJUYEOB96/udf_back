@@ -53,6 +53,8 @@ public class SocialController {
             @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
             @ModelAttribute ScrollRequestDTO requestDTO) {
         
+        requestDTO.updateSize(100); // 소셜을 불러올때는 100을 기본으로
+        
         Long memberId = memberSecurityDTO.getId();
         
         ScrollResponseDTO<OtherMemberInfoResponseDTO> response = socialService.getOtherMembers(memberId, requestDTO);

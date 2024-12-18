@@ -7,13 +7,14 @@ import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentRequestDTO;
 import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentResponseDTO;
 import java.util.List;
+import java.util.Map;
 
 public interface DiscussionCommentService {
 
-    void writeComment(Long discussionId, Long memberId,
+    Map<String, Object> writeComment(Long discussionId, Long memberId,
         DiscussionCommentRequestDTO discussionCommentRequestDTO);
 
-    void writeReply(Long discussionId, Long discussionCommentId, Long memberId,
+    Map<String, Object> writeReply(Long discussionId, Long discussionCommentId, Long memberId,
         DiscussionCommentRequestDTO discussionCommentRequestDTO);
 
     ScrollResponseDTO<DiscussionCommentResponseDTO> getCommentList(
@@ -27,5 +28,5 @@ public interface DiscussionCommentService {
 
     List<DiscussionCommentResponseDTO> getBest3CommentByCommentLikes(Long loginMemberId, Long discussionId);
 
-    DiscussionCommentResponseDTO getComment(DiscussionComment discussionComment, Member member);
+    DiscussionCommentResponseDTO getCommentDTO(DiscussionComment discussionComment, Member member);
 }
