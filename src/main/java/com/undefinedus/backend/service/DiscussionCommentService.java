@@ -27,5 +27,5 @@ public interface DiscussionCommentService {
 
     List<DiscussionCommentResponseDTO> getBest3CommentByCommentLikes(Long loginMemberId, Long discussionId);
 
-    DiscussionCommentResponseDTO getComment(DiscussionComment discussionComment, Member member);
+    DiscussionCommentResponseDTO getCommentDTO(DiscussionComment discussionComment, Member member);
 }

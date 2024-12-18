@@ -6,7 +6,6 @@ import com.undefinedus.backend.domain.entity.DiscussionComment;
 import com.undefinedus.backend.domain.entity.DiscussionParticipant;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.Report;
-import com.undefinedus.backend.domain.enums.ViewStatus;
 import com.undefinedus.backend.domain.enums.VoteType;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentRequestDTO;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionCommentsScrollRequestDTO;
@@ -22,7 +21,6 @@ import com.undefinedus.backend.repository.DiscussionParticipantRepository;
 import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MemberRepository;
 import com.undefinedus.backend.repository.ReportRepository;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -160,7 +158,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
         for (DiscussionComment discussionComment : discussionCommentList) {
 
-            DiscussionCommentResponseDTO commentResponseDTO = getComment(discussionComment,
+            DiscussionCommentResponseDTO commentResponseDTO = getCommentDTO(discussionComment,
                 discussionComment.getMember());
 
             responseDTOList.add(commentResponseDTO);
@@ -203,7 +201,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
                 commentLikeRepository.deleteById(existingLikeOpt.getId());
 
-                return getComment(discussionComment, member);
+                return getCommentDTO(discussionComment, member);
             }
             // 기존 상태가 싫어요라면 싫어요를 삭제
             commentLikeRepository.delete(existingLikeOpt);
@@ -217,7 +215,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
         commentLikeRepository.save(commentLike);
 
-        return getComment(discussionComment, member);
+        return getCommentDTO(discussionComment, member);
     }
 
     @Override
@@ -242,7 +240,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
                 commentLikeRepository.deleteById(existingLikeOpt.getId());
 
-                return getComment(discussionComment, member);
+                return getCommentDTO(discussionComment, member);
             }
             commentLikeRepository.deleteById(existingLikeOpt.getId());
         }
@@ -255,76 +253,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
 
         commentLikeRepository.save(commentLike);
 
-        return getComment(discussionComment, member);
-    }
-
-    @Override
-    public DiscussionCommentResponseDTO getComment(DiscussionComment discussionComment, Member member) {
-
-        String profileImage =
-            discussionComment.getMember().isDeleted() ? "defaultProfileImage.jpg"
-                : discussionComment.getMember().getProfileImage();
-        String nickname =
-            discussionComment.getMember().isDeleted() ? "탈퇴한 회원"
-                : discussionComment.getMember().getNickname();
-        String honorific =
-            discussionComment.getMember().isDeleted() ? "탈퇴한 회원입니다"
-                : discussionComment.getMember().getHonorific();
-
-        Optional<Report> commentReported = reportRepository.findByReporterAndComment(
-            member, discussionComment);
-
-        Optional<CommentLike> commentIsLike = commentLikeRepository.findByCommentAndMember(
-            discussionComment, member);
-
-        String parentCommentNickname;
-
-        Optional<DiscussionComment> parentComment = discussionCommentRepository.findById(discussionComment.getParentId() != null ? discussionComment.getParentId() : 0L);
-
-        if (parentComment.isPresent()) {
-
-            if (parentComment.get().getMember().isDeleted()) {
-
-                parentCommentNickname = "탈퇴한 회원";
-            } else {
-
-                parentCommentNickname = parentComment.get().getMember().getNickname();
-            }
-        } else {
-
-            parentCommentNickname = null;
-        }
-
-        List<CommentLike> commentLikeList = commentLikeRepository.findByComment(discussionComment);
-
-        long likeCount = commentLikeList.stream()
-            .filter(commentLike -> commentLike.isLike() == true).count();
-        long dislikeCount = commentLikeList.size() - likeCount;
-
-        DiscussionCommentResponseDTO discussionCommentResponseDTO = DiscussionCommentResponseDTO.builder()
-            .commentId(discussionComment.getId())
-            .discussionId(discussionComment.getDiscussion().getId())
-            .memberId(discussionComment.getMember().getId())
-            .profileImage(profileImage)
-            .nickname(nickname)
-            .parentNickname(parentCommentNickname)
-            .honorific(honorific)
-            .parentId(parentComment.map(DiscussionComment::getId).orElse(null))
-            .groupId(discussionComment.getGroupId() != null ? discussionComment.getGroupId() : null)
-            .groupOrder(discussionComment.getGroupOrder() != null ? discussionComment.getGroupOrder() : null)
-            .totalOrder(discussionComment.getTotalOrder())
-            .isChild(discussionComment.isChild())
-            .isLike(commentIsLike.isPresent() ? commentIsLike.get().isLike() : null)
-            .voteType(String.valueOf(discussionComment.getVoteType()))
-            .content(discussionComment.getContent())
-            .like(likeCount)
-            .dislike(dislikeCount)
-            .createTime(discussionComment.getCreatedDate())
-            .viewStatus(discussionComment.getViewStatus())
-            .isReport(commentReported.isPresent())
-            .build();
-
-        return discussionCommentResponseDTO;
+        return getCommentDTO(discussionComment, member);
     }
 
     @Override
@@ -398,70 +327,96 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
             () -> new DiscussionCommentNotFoundException("댓글을 찾을 수 없습니다.")
         );
 
+        Member member = memberRepository.findById(loginMemberId)
+            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + loginMemberId));
+
         // 결과를 담을 리스트
         List<DiscussionCommentResponseDTO> responseDTOList = new ArrayList<>();
 
-        // 한번에 신고된 댓글 ID들을 가져옴
-        Set<Long> reportedCommentIds = discussionCommentRepository.findDiscussionCommentIdsByReporterId(
-            loginMemberId);
-
         for (DiscussionComment discussionComment : bestCommentTop3List) {
-            // 각 토론 댓글의 관련 정보를 추출
 
-            // Set에서 해당 댓글 ID가 있는지 확인
-            boolean isReport = reportedCommentIds.contains(discussionComment.getId());
+            DiscussionCommentResponseDTO commentDTO = getCommentDTO(discussionComment, member);
 
-            Long memberId = discussionComment.getMember().getId();
-            String profileImage =
-                discussionComment.getMember().isDeleted() ? "defaultProfileImage.jpg"
-                    : discussionComment.getMember().getProfileImage();
-            String nickname =
-                discussionComment.getMember().isDeleted() ? "탈퇴한 회원"
-                    : discussionComment.getMember().getNickname();
-            String honorific =
-                discussionComment.getMember().isDeleted() ? "탈퇴한 회원입니다" :
-                    discussionComment.getMember().getHonorific();
-
-            Long commentId = discussionComment.getId();
-            Long parentId = discussionComment.getParentId();
-            Long order = discussionComment.getGroupOrder();
-            boolean isChild = discussionComment.isChild();
-            VoteType voteType = discussionComment.getVoteType();
-            String content = discussionComment.getContent();
-            long likeCount = discussionComment.getLikes().stream()
-                .filter(commentLike -> commentLike.isLike() == true).count();
-            long dislikeCount = discussionComment.getLikes().size() - likeCount;
-            LocalDateTime createdDate = discussionComment.getCreatedDate();
-            Long totalOrder = discussionComment.getTotalOrder();
-            ViewStatus viewStatus = discussionComment.getViewStatus();
-
-            // DTO 객체 생성 후 리스트에 추가
-            DiscussionCommentResponseDTO dto = DiscussionCommentResponseDTO.builder()
-                .commentId(commentId)
-                .discussionId(discussionId)
-                .memberId(memberId)
-                .profileImage(profileImage)
-                .nickname(nickname)
-                .honorific(honorific)
-                .parentId(parentId)
-                .groupOrder(order)
-                .totalOrder(totalOrder)
-                .isChild(isChild)
-                .voteType(String.valueOf(voteType))
-                .content(content)
-                .like(likeCount)
-                .dislike(dislikeCount)
-                .isSelected(true)
-                .createTime(createdDate)
-                .viewStatus(viewStatus)
-                .isReport(isReport)
-                .build();
-
-            responseDTOList.add(dto);
+            responseDTOList.add(commentDTO);
         }
 
         return responseDTOList;
     }
 
+    @Override
+    public DiscussionCommentResponseDTO getCommentDTO(DiscussionComment discussionComment,
+        Member member) {
 
+        String profileImage =
+            discussionComment.getMember().isDeleted() ? "defaultProfileImage.jpg"
+                : discussionComment.getMember().getProfileImage();
+        String nickname =
+            discussionComment.getMember().isDeleted() ? "탈퇴한 회원"
+                : discussionComment.getMember().getNickname();
+        String honorific =
+            discussionComment.getMember().isDeleted() ? "탈퇴한 회원입니다"
+                : discussionComment.getMember().getHonorific();
+
+        Optional<Report> commentReported = reportRepository.findByReporterAndComment(
+            member, discussionComment);
+
+        Optional<CommentLike> commentIsLike = commentLikeRepository.findByCommentAndMember(
+            discussionComment, member);
+
+        if (commentIsLike.isPresent()) {
+            log.info("isLike : " + commentIsLike.get().isLike());
+        }
+
+        String parentCommentNickname;
+
+        Optional<DiscussionComment> parentComment = discussionCommentRepository.findById(
+            discussionComment.getParentId() != null ? discussionComment.getParentId() : 0L);
+
+        if (parentComment.isPresent()) {
+
+            if (parentComment.get().getMember().isDeleted()) {
+
+                parentCommentNickname = "탈퇴한 회원";
+            } else {
+
+                parentCommentNickname = parentComment.get().getMember().getNickname();
+            }
+        } else {
+
+            parentCommentNickname = null;
+        }
+
+        List<CommentLike> commentLikeList = commentLikeRepository.findByComment(discussionComment);
+
+        long likeCount = commentLikeList.stream()
+            .filter(commentLike -> commentLike.isLike() == true).count();
+        long dislikeCount = commentLikeList.size() - likeCount;
+
+        DiscussionCommentResponseDTO discussionCommentResponseDTO = DiscussionCommentResponseDTO.builder()
+            .commentId(discussionComment.getId())
+            .discussionId(discussionComment.getDiscussion().getId())
+            .memberId(discussionComment.getMember().getId())
+            .profileImage(profileImage)
+            .nickname(nickname)
+            .parentNickname(parentCommentNickname)
+            .honorific(honorific)
+            .parentId(parentComment.map(DiscussionComment::getId).orElse(null))
+            .groupId(discussionComment.getGroupId() != null ? discussionComment.getGroupId() : null)
+            .groupOrder(
+                discussionComment.getGroupOrder() != null ? discussionComment.getGroupOrder()
+                    : null)
+            .totalOrder(discussionComment.getTotalOrder())
+            .isChild(discussionComment.isChild())
+            .isLike(commentIsLike.isPresent() ? commentIsLike.get().isLike() : null)
+            .voteType(String.valueOf(discussionComment.getVoteType()))
+            .content(discussionComment.getContent())
+            .like(likeCount)
+            .dislike(dislikeCount)
+            .createTime(discussionComment.getCreatedDate())
+            .viewStatus(discussionComment.getViewStatus())
+            .isReport(commentReported.isPresent())
+            .build();
+
+        return discussionCommentResponseDTO;
+    }
 }
