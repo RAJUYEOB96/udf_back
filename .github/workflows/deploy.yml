@@ -82,7 +82,7 @@ jobs:
             
             # 애플리케이션 실행 부분에도 메모리 설정 추가
             echo "8. 애플리케이션 실행"
-            nohup java -Xmx512m -jar build/libs/*.jar > ./output.log 2>&1 &
+            nohup java -Xmx512m -jar build/libs/*[!plain].jar > ./output.log 2>&1 &
             
             echo "9. 배포 상태 확인 중... (10초 대기)"
             sleep 10
