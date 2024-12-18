@@ -16,11 +16,13 @@ java {
 bootJar {
     enabled = true
     archiveClassifier = ''
+    archiveVersion = '1.0.1'  // 버전 명시
 }
 
 jar {
     enabled = true
     archiveClassifier = 'plain'
+    archiveVersion = '1.0.1'  // 버전 명시
 }
 
 configurations {
