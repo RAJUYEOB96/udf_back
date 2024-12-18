@@ -73,7 +73,7 @@ jobs:
             export GRADLE_OPTS="-Xmx512m -XX:MaxMetaspaceSize=256m"
             
             # main 브랜치는 테스트 없이 빌드만 실행
-            if ! timeout 600s ./gradlew clean build -x test --info; then
+            if ! timeout 600s ./gradlew clean bootJar --info; then
               echo "Gradle 빌드 실패"
               exit 1
             fi
