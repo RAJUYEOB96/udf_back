@@ -42,6 +42,8 @@ public class DiscussionCommentResponseDTO {
 
     private Long dislike;
 
+    private Boolean isLike; // 좋아요: true, 싫어요: false, 안눌렀으면: null
+
     @Builder.Default
     private Boolean isSelected = false;  // 채택된 답변인지, 댓글의 최상위로 좋아요 많이 받은 3개를 올리기 위한? 잘 모르겠음
 
