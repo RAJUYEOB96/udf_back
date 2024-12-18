@@ -2,11 +2,13 @@ package com.undefinedus.backend.service;
 
 import com.undefinedus.backend.domain.entity.AladinBook;
 import com.undefinedus.backend.domain.entity.Discussion;
+import com.undefinedus.backend.domain.entity.DiscussionComment;
 import com.undefinedus.backend.domain.entity.DiscussionParticipant;
 import com.undefinedus.backend.domain.entity.Member;
 import com.undefinedus.backend.domain.entity.MyBook;
 import com.undefinedus.backend.domain.entity.Report;
 import com.undefinedus.backend.domain.enums.DiscussionStatus;
+import com.undefinedus.backend.domain.enums.VoteType;
 import com.undefinedus.backend.dto.request.discussion.DiscussionRegisterRequestDTO;
 import com.undefinedus.backend.dto.request.discussion.DiscussionUpdateRequestDTO;
 import com.undefinedus.backend.dto.request.discussionComment.DiscussionScrollRequestDTO;
@@ -19,6 +21,7 @@ import com.undefinedus.backend.exception.discussion.DiscussionException;
 import com.undefinedus.backend.exception.discussion.DiscussionNotFoundException;
 import com.undefinedus.backend.exception.member.MemberNotFoundException;
 import com.undefinedus.backend.repository.AladinBookRepository;
+import com.undefinedus.backend.repository.DiscussionCommentRepository;
 import com.undefinedus.backend.repository.DiscussionParticipantRepository;
 import com.undefinedus.backend.repository.DiscussionRepository;
 import com.undefinedus.backend.repository.MemberRepository;
@@ -29,10 +32,14 @@ import com.undefinedus.backend.scheduler.repository.QuartzTriggerRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.quartz.SchedulerException;
@@ -54,6 +61,7 @@ public class DiscussionServiceImpl implements DiscussionService {
     private final DiscussionParticipantRepository discussionParticipantRepository;
     private final QuartzTriggerRepository quartzTriggerRepository;
     private final ReportRepository reportRepository;
+    private final DiscussionCommentRepository discussionCommentRepository;
 
     @Override
     public Long discussionRegister(Long memberId,
@@ -129,7 +137,26 @@ public class DiscussionServiceImpl implements DiscussionService {
             
             Long memberId = discussion.getMember().getId();
             String memberName = discussion.getMember().isDeleted() ? "탈퇴한 회원" : discussion.getMember().getNickname();
-            
+
+            List<DiscussionComment> comments = discussionCommentRepository.findByDiscussion(discussion);
+
+            Set<String> agrees = new HashSet<>();
+            Set<String> disagrees = new HashSet<>();
+            comments.stream()
+                .filter(comment -> comment.getVoteType().equals(VoteType.AGREE))
+                .filter(comment -> agrees.add(comment.getMember().getId() + "_" + comment.getVoteType()))
+                .collect(Collectors.toList());  // 또는 다른 종단 연산 사용
+            comments.stream()
+                .filter(comment -> comment.getVoteType().equals(VoteType.DISAGREE))
+                .filter(comment -> disagrees.add(comment.getMember().getId() + "_" + comment.getVoteType()))
+                .collect(Collectors.toList());  // 또는 다른 종단 연산 사용
+
+
+            Integer agreeCount = agrees.size();
+            Integer disagreeCount = disagrees.size();
+
+            log.info("agreeCount : {}, disAgreeCount : {}", agreeCount, disagreeCount);
+
             
             String title = discussion.getTitle();
             Long agree = discussion.getParticipants().stream().filter(isAgree -> isAgree.isAgree())
@@ -168,6 +195,8 @@ public class DiscussionServiceImpl implements DiscussionService {
                 .agreePercent(discussion.getAgreePercent())
                 .disagreePercent(discussion.getDisagreePercent())
                 .viewStatus(discussion.getViewStatus())
+                .agreeCommentCount(agreeCount)
+                .disagreeCommentCount(disagreeCount)
                 .build();
 
             responseDTOList.add(dto);
@@ -184,7 +213,7 @@ public class DiscussionServiceImpl implements DiscussionService {
             .hasNext(hasNext)
             .lastId(lastId) // 조회된 목록의 마지막 항목의 ID ? INDEX ?
             .numberOfElements(responseDTOList.size())
-            .totalElements(discussionList.stream().count())
+            .totalElements((long) discussionList.size())
             .build();
     }
 

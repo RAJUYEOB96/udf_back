@@ -8,7 +8,10 @@ import com.undefinedus.backend.dto.response.ScrollResponseDTO;
 import com.undefinedus.backend.dto.response.discussionComment.DiscussionCommentResponseDTO;
 import com.undefinedus.backend.service.DiscussionCommentService;
 import jakarta.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +35,7 @@ public class DiscussionCommentController {
 
     // 댓글 달기
     @PostMapping("/writeComment/{discussionId}")
-    public ResponseEntity<ApiResponseDTO<Void>> writeComment(
+    public ResponseEntity<ApiResponseDTO<Map<String, Object>>> writeComment(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @PathVariable("discussionId") Long discussionId,
         @Valid @RequestBody DiscussionCommentRequestDTO discussionCommentRequestDTO
@@ -40,15 +43,16 @@ public class DiscussionCommentController {
 
         Long memberId = memberSecurityDTO.getId();
 
-        discussionCommentService.writeComment(discussionId, memberId, discussionCommentRequestDTO);
+        Map<String, Object> result = discussionCommentService.writeComment(
+            discussionId, memberId, discussionCommentRequestDTO);
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(ApiResponseDTO.success(null));
+            .body(ApiResponseDTO.success(result));
     }
 
     // 답글 달기
     @PostMapping("/writeComment/{discussionId}/{discussionCommentId}")
-    public ResponseEntity<ApiResponseDTO<Void>> writeReply(
+    public ResponseEntity<ApiResponseDTO<Map<String, Object>>> writeReply(
         @AuthenticationPrincipal MemberSecurityDTO memberSecurityDTO,
         @PathVariable("discussionId") Long discussionId,
         @PathVariable("discussionCommentId") Long discussionCommentId,
@@ -57,11 +61,12 @@ public class DiscussionCommentController {
 
         Long memberId = memberSecurityDTO.getId();
 
-        discussionCommentService.writeReply(discussionId, discussionCommentId, memberId,
+        Map<String, Object> result = discussionCommentService.writeReply(
+            discussionId, discussionCommentId, memberId,
             discussionCommentRequestDTO);
 
         return ResponseEntity.status(HttpStatus.OK)
-            .body(ApiResponseDTO.success(null));
+            .body(ApiResponseDTO.success(result));
     }
 
     // 베스트 3 댓글 목록

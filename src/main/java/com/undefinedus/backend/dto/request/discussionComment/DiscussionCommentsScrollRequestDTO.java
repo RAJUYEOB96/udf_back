@@ -16,7 +16,4 @@ public class DiscussionCommentsScrollRequestDTO {
     
     @Builder.Default
     private int size = 100;    // 한 번에 로드할 항목 수
-    
-    @Builder.Default
-    private String sort = "asc"; // asc : 오름차순, desc : 내림차순
 }

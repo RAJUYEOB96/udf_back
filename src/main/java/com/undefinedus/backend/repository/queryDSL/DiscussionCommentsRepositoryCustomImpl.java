@@ -33,16 +33,13 @@ public class DiscussionCommentsRepositoryCustomImpl implements DiscussionComment
         // 이전/다음 페이지로 이동할 때 offset을 사용하는 대신 마지막으로 본 항목의 ID를 기준으로 데이터를 가져옵니다
         // Cursor 조건 추가
         if (requestDTO.getLastId() > 0) {
-            if ("asc".equals(requestDTO.getSort())) {
-                builder.and(qDiscussionComment.id.lt(requestDTO.getLastId()));
-            } else {
-                builder.and(qDiscussionComment.id.gt(requestDTO.getLastId()));
-            }
+
+            // LastId가 totalOrder보다 작을 때 LastId보다 큰 totalOrder를 가져 온다.
+            builder.and(qDiscussionComment.totalOrder.gt(requestDTO.getLastId()));
         }
         
         // 정렬 조건 설정
-        OrderSpecifier<?> orderSpecifier = "desc".equals(requestDTO.getSort()) ?
-            qDiscussionComment.totalOrder.desc() : qDiscussionComment.totalOrder.asc();
+        OrderSpecifier<?> orderSpecifier = qDiscussionComment.totalOrder.asc();
         
         // 요청한 크기보다 1개 더 가져오는 이유는 다음 페이지 존재 여부를 확인하기 위함입니다
         // 만약 size가 10이고 11개가 조회되면, 마지막 1개는 제거하고 hasNext를 true로 설정합니다
