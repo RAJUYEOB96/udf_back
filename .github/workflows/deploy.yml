@@ -25,7 +25,7 @@ jobs:
         run: ./gradlew test
 
   deploy-to-production:
-    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'  # main 브랜치 관련 작업만
+    if: github.ref == 'refs/heads/main'  # main 브랜치 관련 작업만
     runs-on: ubuntu-latest
     steps:
       - name: Debug information
