@@ -72,11 +72,19 @@ jobs:
             chmod +x ./gradlew
             export GRADLE_OPTS="-Xmx512m -XX:MaxMetaspaceSize=256m"
             
+            # Gradle 빌드 전에 추가
+            echo "현재 build/libs 디렉토리 내용:"
+            ls -la build/libs || echo "디렉토리가 없음"
+            
             # main 브랜치는 테스트 없이 빌드만 실행
-            if ! timeout 600s ./gradlew clean bootJar --info; then
+            if ! timeout 600s ./gradlew clean bootJar --rerun-tasks --info; then
               echo "Gradle 빌드 실패"
               exit 1
             fi
+            
+            # Gradle 빌드 후에 추가
+            echo "빌드 후 build/libs 디렉토리 내용:"
+            ls -la build/libs
             
             echo "Gradle 빌드 성공"
             
