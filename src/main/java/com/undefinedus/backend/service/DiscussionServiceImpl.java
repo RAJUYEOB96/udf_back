@@ -213,7 +213,7 @@ public class DiscussionServiceImpl implements DiscussionService {
             .hasNext(hasNext)
             .lastId(lastId) // 조회된 목록의 마지막 항목의 ID ? INDEX ?
             .numberOfElements(responseDTOList.size())
-            .totalElements(discussionList.stream().count())
+            .totalElements((long) discussionList.size())
             .build();
     }
 

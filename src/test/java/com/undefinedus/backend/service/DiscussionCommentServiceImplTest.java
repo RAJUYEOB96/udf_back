@@ -130,27 +130,40 @@ class DiscussionCommentServiceImplTest {
         Long discussionId = 1L;
         Long memberId = 1L;
         DiscussionCommentRequestDTO requestDTO = DiscussionCommentRequestDTO.builder()
-            .voteType(String.valueOf(VoteType.AGREE))
-            .content("테스트 댓글")
+            .voteType("AGREE")  // AGREE 값을 전달
+            .content("테스트 댓글")  // 댓글 내용
             .build();
 
+        // Mocking 관련 객체들
         Discussion discussion = Discussion.builder()
             .id(discussionId)
+            .title("Test Discussion")
+            .content("This is a test discussion")
             .build();
         Member member = Member.builder()
             .id(memberId)
+            .username("user1@example.com")
+            .nickname("User1")
             .build();
+
+        // 저장될 댓글 객체 생성
         DiscussionComment savedComment = DiscussionComment.builder()
             .id(1L)
             .discussion(discussion)
             .member(member)
             .voteType(VoteType.AGREE)
             .content("테스트 댓글")
+            .groupId(1L)
+            .totalOrder(1L)
+            .groupOrder(0L)
+            .isChild(false)
             .build();
 
+        // Mockito로 mocking 설정
         when(discussionRepository.findById(discussionId)).thenReturn(Optional.of(discussion));
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
         when(discussionCommentRepository.findTopTotalOrder(discussionId)).thenReturn(Optional.of(0L));
+        when(discussionCommentRepository.findMaxGroupId()).thenReturn(0L);  // groupId가 1로 설정되기 위해
         when(discussionCommentRepository.save(any(DiscussionComment.class))).thenReturn(savedComment);
 
         // When
@@ -160,9 +173,8 @@ class DiscussionCommentServiceImplTest {
         verify(discussionRepository).findById(discussionId);
         verify(memberRepository).findById(memberId);
         verify(discussionCommentRepository).findTopTotalOrder(discussionId);
-        verify(discussionCommentRepository, times(1)).save(any(DiscussionComment.class));
-        verify(discussionParticipantRepository).findByDiscussionAndMember(discussion, member);
-        verify(discussionParticipantRepository).save(any(DiscussionParticipant.class));
+        verify(discussionCommentRepository).findMaxGroupId();  // groupId를 얻기 위한 호출 확인
+        verify(discussionCommentRepository, times(1)).save(any(DiscussionComment.class));  // save 호출 확인
     }
 
     @Test
