@@ -182,6 +182,9 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
         long discussionCommentTotal = discussionCommentRepository.findByDiscussion(
             discussion).stream().count();
 
+        Member member = memberRepository.findById(loginMemberId)
+            .orElseThrow(() -> new MemberNotFoundException("해당 회원을 찾을 수 없습니다 : " + loginMemberId));
+
         boolean hasNext = false;
         if (discussionCommentList.size()
             > discussionCommentsScrollRequestDTO.getSize()) { // 11 > 10 이면 있다는 뜻
@@ -195,7 +198,7 @@ public class DiscussionCommentServiceImpl implements DiscussionCommentService {
         for (DiscussionComment discussionComment : discussionCommentList) {
 
             DiscussionCommentResponseDTO commentResponseDTO = getCommentDTO(discussionComment,
-                discussionComment.getMember());
+                member);
 
             responseDTOList.add(commentResponseDTO);
         }
