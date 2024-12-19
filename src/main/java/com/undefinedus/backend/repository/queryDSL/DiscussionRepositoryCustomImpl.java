@@ -60,7 +60,7 @@ public class DiscussionRepositoryCustomImpl implements DiscussionRepositoryCusto
         
         // 정렬 조건 설정
         OrderSpecifier<?> orderSpecifier = "desc".equals(requestDTO.getSort()) ?
-            qDiscussion.createdDate.desc() : qDiscussion.createdDate.asc();
+            qDiscussion.id.desc() : qDiscussion.id.asc();
         
         // 요청한 크기보다 1개 더 가져오는 이유는 다음 페이지 존재 여부를 확인하기 위함입니다
         // 만약 size가 10이고 11개가 조회되면, 마지막 1개는 제거하고 hasNext를 true로 설정합니다
