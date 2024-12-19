@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Optional;
 
 import java.util.Random;
+import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,9 +61,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ExtendWith(MockitoExtension.class)
+@Log4j2
 class DiscussionServiceImplTest {
 
-    private static final Logger log = LoggerFactory.getLogger(DiscussionServiceImplTest.class);
     @Mock
     private MemberRepository memberRepository;
     @Mock
@@ -89,6 +90,8 @@ class DiscussionServiceImplTest {
     private String isbn13;
     private AladinBook mockAladinBook; // 추가
     private Member member; // 추가
+    private MyBook mockMyBook;
+    private Discussion discussion;
 
     @BeforeEach
     void setUp() {
@@ -117,7 +120,7 @@ class DiscussionServiceImplTest {
     private Discussion createMockDiscussion(Long id, String title, int agreeCount,
         int disagreeCount, Member member, AladinBook aladinBook) {
         // MyBook mock 데이터 생성
-        MyBook mockMyBook = MyBook.builder()
+        mockMyBook = MyBook.builder()
             .id(id)
             .isbn13(aladinBook.getIsbn13())
             .member(member)
@@ -126,7 +129,7 @@ class DiscussionServiceImplTest {
             .build();
 
         // Discussion 객체 생성
-        Discussion discussion = Discussion.builder()
+        discussion = Discussion.builder()
             .id(id)
             .title(title)
             .member(member)
@@ -218,34 +221,35 @@ class DiscussionServiceImplTest {
     @DisplayName("토론 목록 조회 성공 테스트")
     void getDiscussionList_shouldReturnScrollResponse() {
         // Given
-        int size = 10;
+        int size = 30;
         List<Discussion> mockDiscussions = new ArrayList<>();
-        for (int i = 1; i <= size; i++) {
-            Discussion discussion = Discussion.builder()
-                .id((long) i)
-                .title("Test Discussion " + i)
-                .member(member)
-                .aladinBook(mockAladinBook)
-                .build();
+        for (int i = 1; i <= size + 1; i++) { // hasNext를 위한 +1
+            Discussion discussion = createMockDiscussion((long) i, "Test Discussion " + i, 5, 3, member, mockAladinBook);
             mockDiscussions.add(discussion);
         }
 
         when(discussionRepository.findDiscussionsWithScroll(any(DiscussionScrollRequestDTO.class)))
             .thenReturn(mockDiscussions);
 
+        when(discussionRepository.findAllByStatus(any(DiscussionStatus.class)))
+            .thenReturn(mockDiscussions);
+
         // When
-        ScrollResponseDTO<DiscussionListResponseDTO> response =
-            discussionServiceImpl.getDiscussionList(new DiscussionScrollRequestDTO());
+        DiscussionScrollRequestDTO requestDTO = DiscussionScrollRequestDTO.builder()
+            .size(10)
+            .status("PROPOSED")
+            .lastId(0L)
+            .build();
+
+        ScrollResponseDTO<DiscussionListResponseDTO> response = discussionServiceImpl.getDiscussionList(requestDTO);
 
         // Then
-        verify(discussionRepository).findDiscussionsWithScroll(any(DiscussionScrollRequestDTO.class));  // mock이 호출되었는지 확인
-        assertEquals(size, response.getTotalElements());
+        verify(discussionRepository).findDiscussionsWithScroll(any(DiscussionScrollRequestDTO.class));
+        verify(discussionRepository).findAllByStatus(any(DiscussionStatus.class));
 
-        // 실제로 어떤 DTO가 전달되었는지 확인
-        ArgumentCaptor<DiscussionScrollRequestDTO> dtoCaptor = ArgumentCaptor.forClass(DiscussionScrollRequestDTO.class);
-        verify(discussionRepository).findDiscussionsWithScroll(dtoCaptor.capture());
-        DiscussionScrollRequestDTO capturedDto = dtoCaptor.getValue();
-        log.info("Captured DTO: {}", capturedDto);
+        assertEquals(size, response.getContent().size()); // 실제 반환된 개수 확인
+        assertEquals(size, response.getNumberOfElements()); // 요소의 총 개수
+        assertTrue(response.isHasNext()); // hasNext 확인
     }
 
     @Test
