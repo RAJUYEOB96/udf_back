@@ -51,5 +51,9 @@ public class DiscussionDetailResponseDTO {
     private String isAgree; // isAgree, disAgree, null
     
     private ViewStatus viewStatus;  // Blocked 되었는지에 대한 필드
+    
+    private Integer agreeCommentCount;
+    
+    private Integer disagreeCommentCount;
 
 }
