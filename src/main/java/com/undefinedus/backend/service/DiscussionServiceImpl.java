@@ -252,6 +252,23 @@ public class DiscussionServiceImpl implements DiscussionService {
                 isAgree = "disagree";
             }
         }
+        
+        List<DiscussionComment> comments = discussionCommentRepository.findByDiscussion(discussion);
+        
+        Set<String> agrees = new HashSet<>();
+        Set<String> disagrees = new HashSet<>();
+        comments.stream()
+                .filter(comment -> comment.getVoteType().equals(VoteType.AGREE))
+                .filter(comment -> agrees.add(comment.getMember().getId() + "_" + comment.getVoteType()))
+                .collect(Collectors.toList());  // 또는 다른 종단 연산 사용
+        comments.stream()
+                .filter(comment -> comment.getVoteType().equals(VoteType.DISAGREE))
+                .filter(comment -> disagrees.add(comment.getMember().getId() + "_" + comment.getVoteType()))
+                .collect(Collectors.toList());  // 또는 다른 종단 연산 사용
+        
+        
+        Integer agreeCommentCount = agrees.size();
+        Integer disagreeCommentCount = disagrees.size();
 
         Boolean isReport = reportRepository.existsByReporterIdAndDiscussionId(loginMemberId, discussionId);
 
@@ -285,6 +302,8 @@ public class DiscussionServiceImpl implements DiscussionService {
                 .isReport(isReport)
                 .isAgree(isAgree)
                 .viewStatus(discussion.getViewStatus())
+                .agreeCommentCount(agreeCommentCount)
+                .disagreeCommentCount(disagreeCommentCount)
                 .build();
 
         return discussionDetailResponseDTO;
