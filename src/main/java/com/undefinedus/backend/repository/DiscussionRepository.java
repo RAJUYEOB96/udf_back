@@ -1,6 +1,7 @@
 package com.undefinedus.backend.repository;
 
 import com.undefinedus.backend.domain.entity.Discussion;
+import com.undefinedus.backend.domain.enums.DiscussionStatus;
 import com.undefinedus.backend.repository.queryDSL.DiscussionRepositoryCustom;
 import java.util.List;
 import java.util.Optional;
@@ -24,4 +25,6 @@ public interface DiscussionRepository extends JpaRepository<Discussion, Long>,
     
     @Query("SELECT d.views FROM Discussion d WHERE d.id = :discussionId")
     Long findViewsById(@Param("discussionId") Long discussionId);
+
+    List<Discussion> findAllByStatus(DiscussionStatus discussionStatus);
 }
