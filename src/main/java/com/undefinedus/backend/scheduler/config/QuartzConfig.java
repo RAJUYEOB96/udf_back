@@ -90,8 +90,8 @@ public class QuartzConfig {
         saveQuartzDiscussionJobDetail(discussionId, DiscussionStatus.ANALYZING);
         saveQuartzDiscussionTrigger(discussionId, startDate, DiscussionStatus.ANALYZING);
 
-        // ANALYZING -> COMPLETED (시작 25시간 후, 분석에 1시간 가정)
-        startDateTime = targetTime.plusHours(25);
+        // ANALYZING -> COMPLETED (시작 24시간 20분 후, 분석에 20분 가정)
+        startDateTime = targetTime.plusHours(24).plusMinutes(20);
 //        startDateTime = targetTime.plusMinutes(2); // 2분 뒤
         startDate = Date.from(startDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
